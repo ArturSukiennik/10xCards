@@ -1,0 +1,43 @@
+<conversation_summary>
+<decisions>
+1. Projekt zakłada automatyczne synchroniczne generowanie fiszek przez AI z opcją manualnej interakcji podczas recenzji wyników.  
+2. Lista kandydatów na fiszki musi zawierać pełne informacje dotyczące obu pól – "przód" (200 znaków) i "tył" (600 znaków).  
+3Tekst wejściowy do generowania fiszek przez AImusi mieć od 1000 do 10000 znaków, co pozwoli wygenerować od kilku do kilkunastu fiszek.
+4. Użytkownik w procesie recenzji przegląda listę kandydatów i wybiera dla każdego: "zaakceptuj", "edytuj" lub "odrzuć".  
+5. Po kliknięciu wskazanych przycisków system natychmiast wizualnie sygnalizuje dokonane wybory przed wykonaniem bulk zapisu.  
+6. Bulk zapis zostaje poprzedzony podsumowaniem decyzji, z możliwością przerwania całego procesu (bez cofania pojedynczych decyzji).  
+7. Opcja "edytuj" umożliwia modyfikację obu pól fiszki, tj. zarówno "przód", jak i "tył".  
+8 Po zatwierdzeniu bulk zapisu zaakceptowane fiszki są zapisywane do bazy danych, a lista kandydatów zostaje automatycznie odświeżona.  
+9 Projekt ma charakter startowy i prosty, przeznaczony do wdrożenia w ciągu jednego tygodnia przez jedną osobę.  
+10 Główne kryteria sukcesu to wskaźnik akceptacji fiszek oraz oceny numeryczne dokonywane przez użytkownika.
+</decisions>
+
+<matched_recommendations>
+1. Skoncentrowanie się na uproszczonym procesie recenzji, z wykorzystaniem listy kandydatów i minimalistycznego formularza.  
+2. Zaprojektowanie intuicyjnego interfejsu z wyraźnymi wizualnymi wskaźnikami wybranych opcji przed bulk zapisem.  
+3. Utrzymanie możliwości pełnej edycji fiszek, obejmującej oba pola ("przód" i "tył").  
+4. Wdrożenie systemu statystycznego opartego na numerycznych ocenach fiszek do monitorowania wskaźnika akceptacji.  
+5. Zapewnienie automatycznego odświeżania listy kandydatów po zapisaniu bulk wybranych fiszek.
+</matched_recommendations>
+
+<prd_planning_summary>
+1. Główne wymagania funkcjonalne produktu obejmują generowanie fiszek przez AI, wyświetlanie pełnej listy kandydatów oraz umożliwienie ich recenzji przez użytkownika przy użyciu prostego, minimalistycznego interfejsu.  
+2. Kluczowe historie użytkownika to: generowanie fiszek za pomocą formularza, przeglądanie listy wyników, recenzja kandydatów poprzez wybór opcji "zaakceptuj", "edytuj" lub "odrzuć", a następnie bulk zapis zaakceptowanych wyników do bazy danych.  
+3. Ważne kryteria sukcesu to: wysoki wskaźnik akceptacji, potwierdzany poprzez numeryczne oceny fiszek, oraz intuicyjna, szybka obsługa procesu recenzji, w tym wizualne potwierdzenia wyborów i automatyczne odświeżenie listy.  
+4. System musi umożliwiać podsumowanie decyzji przed bulk zapisem z opcją przerwania całego procesu, bez zbędnej logiki cofania pojedynczych decyzji.  
+5. Proces recenzji powinien być synchroniczny – kandydaci są wyświetlani pod formularzem generowania, a decyzje użytkownika są dokonywane na bieżąco, z natychmiastową informacją zwrotną.
+6.Kluczowe historie użytkownika i ścieżki korzystania:
+-użytkownik wprowadza tekst wejściowy do generacji fiszek, po czym AI generuje kandydatów na fiszki,
+-użytkownik przegląda liste kandydatów na fiszki, dokonuje recenzji (akceptuje, uzupełnia, odrzuca) i zapisuje swoje wybory w bulk,
+-użytkownik może tworzyć fiszki manualnie poprzez prosty modal formularza dostepny w widoku listy fiszek,
+-uzytkownik korzysta z prostego interfejsulisty do  przeglądania, wyszukiwania, edycji i usuwania zapisanych fiszek
+7.Wazne kryteria sukcesu i sposoby ich mierzenia:
+-co n ajmniej 75% fiszek generowanych przez AI musi zostac zaakceptowanych przez uzytkownika,
+-monitorowanie wskaźników sukcesu odbywać się będzie poprzez analize logów z dedykowanej tabeli w bazie danych
+</prd_planning_summary>
+
+<unresolved_issues>
+1. Szczegóły dotyczące struktury bazy danych oraz kontraktów i endpointów API nie zostały jeszcze sprecyzowane.  
+2. Dalsze omówienie ewentualnych dodatkowych funkcjonalności interfejsu (np. dodatkowe elementy nawigacyjne lub raportowanie) może być rozważone w kolejnych iteracjach.
+</unresolved_issues>
+</conversation_summary>

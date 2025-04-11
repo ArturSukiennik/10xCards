@@ -1,0 +1,56 @@
+<prd_planning_output>
+<pytania_runda_1>
+1.Głównymi bolączkami są czasochłonność tworzenia dobrych jakościowo fiszek, standaryzacja czy trudność w utrzymaniu dobrej jakosci fiszek.
+2. Fiszki tworzone automatycznie przez Ai jak również manualnie (na to też chcemy pozwolić) powinny składać się z pól "przód" i "tył" (fiszki to nie tylko stericte pytania i odpowiedzi).
+Przód fiszki powinien mieć do 200 znaków a tyl do 600 znaków. Fiszki będziemy początkowo przechowywać w formacie tekstowym.
+3.W całym MVP stawiamy na prostotę a naszym priorytetem jest generowanie fiszek przez AI. Manualne tworzenie fiszek to prosty formularz pozwalający na definiowanie "przód"(front) i "tył"(back).
+4.Będziemy bazowali n a gotowym algorytmie poprzez wykorzystanie biblioteki open-source.
+5.Głównym priorytetem jest tworzenie fiszek przez AI, póżniej manualne ich tworzenie, zarządzanie kontem to juz dalsze iteracje.
+6.Nie ma wymagań w systemie kont użytkowników, powinna byc tylko możliwość edycji hasła i usunięcie konta użytkownika.
+7.Jakie są oczekiwania dotyczące harmonogramu wdrożenia poszczególnych funkcjonalności oraz dostępnych zasobów (np. zespół, budżet) do realizacji projektu?
+</pytania_runda_1>
+<rekomendacje_runda_1>
+Przeprowadzić dogłębną analizę person użytkowników, aby lepiej zrozumieć ich potrzeby i oczekiwania wobec narzędzia do tworzenia fiszek.
+Określić szczegółowe metryki sukcesu, w tym jasne kryteria akceptacji fiszek generowanych przez AI oraz mechanizmy zbierania opinii użytkowników.
+Zaprojektować prototyp interfejsu użytkownika, który umożliwi intuicyjne korzystanie zarówno z funkcji automatycznego generowania, jak i ręcznego tworzenia fiszek.
+Rozważyć integrację z istniejącymi narzędziami lub API dla algorytmów powtórek, aby skupić wysiłki rozwojowe na jakości samej aplikacji.
+Ustalić priorytety funkcjonalności MVP, wyraźnie oddzielając kluczowe funkcje od dodatkowych usprawnień, które możliwe są do wdrożenia w późniejszym czasie.
+Zaplanować etapy projektowe uwzględniając aspekty techniczne, harmonogram wdrożenia oraz zasoby, biorąc pod uwagę przyszłą skalowalność i bezpieczeństwo systemu.
+</rekomendacje_runda_1>
+</prd_planning_output>Jakie są dokładne bolączki użytkowników związane z tworzeniem oraz utrzymaniem wysokiej jakości fiszek?
+Czy możemy uzyskać przykłady sytuacji, w których użytkownicy szczególnie odczuwają problem czasochłonności tworzenia fiszek?
+W jaki sposób priorytetowo traktujemy funkcjonalność automatycznego generowania fiszek w porównaniu do manualnego ich tworzenia?
+Jakie dodatkowe funkcjonalności, poza generowaniem, powinny znaleźć się w MVP (np. edycja, walidacja treści, standaryzacja fiszek)?
+Jakie oczekiwania mamy dotyczące interfejsu użytkownika – czy preferujemy minimalistyczny formularz, czy bardziej interaktywną ścieżkę użytkownika?
+Czy przewidujemy zróżnicowane ścieżki korzystania z produktu dla różnych grup użytkowników (np. początkujących vs. zaawansowanych)?
+Jakie mierzalne kryteria sukcesu określą jakość i efektywność generowanych fiszek (np. czas tworzenia, wskaźnik akceptacji, feedback od użytkowników)?
+W jaki sposób planujemy zbierać i analizować opinie użytkowników dotyczące jakości generowanych fiszek oraz ich użyteczności?
+Jakie potencjalne ryzyka technologiczne lub operacyjne widzimy przy zastosowaniu algorytmów AI do generowania treści?
+Czy są ograniczenia techniczne lub zasobowe, które mogą wpłynąć na jakość lub harmonogram wdrożenia produktu?
+Jaki jest oczekiwany harmonogram wdrożenia MVP i jakie są kluczowe kamienie milowe w rozwoju produktu?
+Czy zespół projektowy posiada wystarczające zasoby i kompetencje, szczególnie w zakresie wykorzystania bibliotek open-source, które mają stanowić podstawę rozwiązania?
+
+
+RUNDA 2
+<pytania>
+Jakie konkretne etapy i wyzwania wiążą się z procesem zbierania wiedzy z danej dziedziny oraz jej podziałem na pytania i odpowiedzi?
+Jakie dokładnie kryteria walidacji powinny zostać zastosowane przy recenzji kandydatów na fiszki generowanych przez AI?
+W jaki sposób powinien wyglądać przepływ recenzji kandydatów – od wyświetlenia listy pod minimalistycznym formularzem, poprzez możliwość akceptacji, edycji lub odrzucenia, aż do finalnego zapisu zaakceptowanych fiszek w bazie danych?
+Jakie szczegółowe elementy minimalistycznego formularza są niezbędne, aby zapewnić efektywną recenzję generowanych kandydatów?
+Czy system powinien przechowywać tylko zaakceptowane fiszki, czy też zachowywać historię odrzuconych lub edytowanych kandydatów na potrzeby analizy jakości?
+Jakie dokładne wskaźniki sukcesu, takie jak wskaźnik akceptacji oraz numeryczna ocena fiszek w skali 1 do 10, będą wdrożone i w jaki sposób będą mierzone?
+Jakie wymagania co do struktury bazy danych oraz kontraktów i endpointów API są kluczowe dla zapewnienia stabilnego wdrożenia MVP w zakładanym tygodniowym harmonogramie?
+Czy użytkownik powinien mieć możliwość dodania dodatkowych komentarzy lub opinii podczas recenzji wygenerowanych fiszek w celu dalszej iteracji produktu?
+Jakie mechanizmy lub narzędzia mogą wspierać szybkie, acz skuteczne zbieranie feedbacku od użytkowników na temat jakości fiszek?
+Czy istnieją przewidywane możliwości skalowania produktu w przyszłych iteracjach, które mogłyby wpłynąć na obecne wymagania MVP?
+</pytania>
+<rekomendacje>
+Skoncentrować się na opracowaniu precyzyjnego procesu walidacji, w którym kandydaci na fiszki generowani przez AI są najpierw recenzowani przez użytkownika, a dopiero zaakceptowane są zapisywane w bazie danych.
+Zaprojektować minimalistyczny interfejs użytkownika, który umożliwi szybki i intuicyjny przegląd oraz recenzję listy kandydatów na fiszki.
+Zdefiniować szczegółowe wymagania, dotyczące zarówno procesu zbierania wiedzy i jej dzielenia na pytania oraz odpowiedzi, jak i kryteriów walidacji, aby ograniczyć czasochłonność tworzenia fiszek.
+Wdrożyć mierzalne wskaźniki sukcesu, przede wszystkim wskaźnik akceptacji oraz numeryczną ocenę fiszek w skali 1 do 10, jako kluczowe metryki do monitorowania jakości.
+Ustalić jasny harmonogram wdrożenia MVP, obejmujący etapy projektowania bazy danych, definiowania kontraktów i endpointów API, stworzenia interfejsu użytkownika oraz implementacji logiki biznesowej – wszystko w ramach jednego tygodnia.
+Utrzymać prostotę projektu, aby umożliwić łatwe wprowadzanie przyszłych rozszerzeń, np. mechanizmów zbierania dodatkowego feedbacku lub zaawansowanej analizy recenzji użytkowników.
+</rekomendacje>
+
+ostatecznas dezyzja

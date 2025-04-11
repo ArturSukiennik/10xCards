@@ -1,0 +1,48 @@
+**Objective:**  
+Build a proof of concept (PoC) that validates the core functionality of the application—automatically generating flashcards based on user-input text. The PoC should accept text between 1,000 and 10,000 characters, send it to the LLM API (via Openrouter.ai), and then display a list of generated flashcards (each containing a "Front" and "Back") with options to accept, edit, or reject each card.
+
+**Requirements:**  
+1. **User Input:**  
+   - A form enabling the user to paste text between 1,000 and 10,000 characters.
+
+2. **LLM API Integration:**  
+   - Upon form submission, the system sends the text to the LLM API (Openrouter.ai) to generate a set of flashcards (question-answer pairs).
+
+3. **Displaying Results:**  
+   - The generated flashcards are displayed as a list.
+   - Each flashcard shows the "Front" and "Back" fields.
+   - Action buttons (accept, edit, reject) are available next to each flashcard.
+
+4. **Functional Limitations:**  
+   - Focus solely on the automatic flashcard generation.
+   - Exclude all additional features (such as registration, login, account management, statistics, or advanced editing).
+
+5. **Architecture and Technology Stack:**  
+   - **Frontend:** Utilize Astro with React for interactive components, TypeScript for static type-checking, Tailwind CSS for styling, and the shadcn/ui component library.
+   - **AI Integration:** Communicate with the LLM model through Openrouter.ai.
+
+6. **Implementation Process:**  
+   - The PoC generator should initially provide a detailed work plan outlining:
+     - The separation into main components (e.g., input form, API communication module, flashcards display component).
+     - The approach for communicating with the API (endpoints, example request/response formats).
+     - A proposed timeline and implementation phases.
+   - **Critical Point:** The plan must be reviewed and approved by me before proceeding with the PoC implementation.
+
+**Additional Instructions:**  
+- The entire PoC should be minimal, focusing exclusively on validating the key mechanism of flashcard generation.
+- The PoC is intended solely to confirm the effectiveness of the LLM API integration and the correct operation of the flashcard generation process—it does not need to be a production-ready application.
+- When preparing the plan, ensure that each phase is clearly described and that the use of the technological stack (as outlined in `tech-stack.md`) is appropriately incorporated.
+- Please review and approve the above plan before any coding  begins.
+- When running PoC please try to fix any errors by yourself
+- Please use OpenAI API rather Openrouter.ai, I will provide the key later
+- Please use gpt-4o-mini
+---
+
+Please ask the generator to present a comprehensive work plan, specifically detailing:  
+• The description of the component architecture and their interactions.  
+• Details concerning API communication (request and response formats).  
+• The proposed timeline and implementation phases.  
+
+Ensure that you obtain my approval on the plan before beginning the actual development of the PoC.
+
+Does this English version meet your needs, or would you like to make any changes or additions?
