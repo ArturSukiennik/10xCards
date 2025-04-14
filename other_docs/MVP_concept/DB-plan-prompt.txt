@@ -1,0 +1,81 @@
+Jesteś architektem baz danych, którego zadaniem jest stworzenie schematu bazy danych PostgreSQL na podstawie informacji dostarczonych z sesji planowania, dokumentu wymagań produktu (PRD) i stacku technologicznym. Twoim celem jest zaprojektowanie wydajnej i skalowalnej struktury bazy danych, która spełnia wymagania projektu.
+
+1. <prd>
+@.ai\prd.md
+</prd>
+
+Jest to dokument wymagań produktu, który określa cechy, funkcjonalności i wymagania projektu.
+
+2. <session_notes>
+<conversation_summary>
+<decisions>
+1. Kluczowe encje zostały określone jako: users (zarządzane przez Supabase), flashcards, generations oraz generation_error_logs.  
+2. Dla encji generations wprowadzono dodatkowe pole generation_time (czas trwania generacji) oraz dodano standardowe timestampy dla rekordów.  
+3. Użytkownik jest powiązany z wieloma flashcards oraz sesjami generacji (relacja 1:n).  
+4. Preferowany mechanizm usuwania rekordów to restrict, co zapobiega kaskadowemu usunięciu powiązanych danych.  
+5. Polityka RLS opiera się na kolumnie user_id, umożliwiając dostęp danych tylko właścicielowi, przy czym w przyszłości może ulec zmianie.  
+6. Ograniczenia dotyczące długości pól: dla flashcards – front do 200 znaków, back do 500 znaków; dla generations i generation_error_logs – source_text_length między 1000 a 10000 znaków.  
+7. Podstawowe indeksy (na kluczach głównych i obcych) są wystarczające na obecnym etapie.  
+8. W przyszłości planowane jest rozszerzenie schematu, m.in. o encję learning sessions.
+</decisions>
+
+<matched_recommendations>
+1. Utworzenie tabel zgodnie z ustalonymi encjami i atrybutami.  
+2. Zastosowanie ograniczeń długości oraz check constraints dla wybranych pól.  
+3. Ustanowienie relacji między tabelami przy użyciu kluczy obcych, zgodnie z relacją 1:n.  
+4. Wdrożenie polityki RLS opartej na kolumnie user_id i mechanizmu restrict przy usuwaniu rekordów.  
+5. Wykorzystanie podstawowych indeksów, wystarczających do zapewnienia wydajności na obecnym etapie.  
+6. Przygotowanie schematu z możliwością przyszłego rozszerzenia (np. o learning sessions).
+</matched_recommendations>
+
+<database_planning_summary>
+W rozmowie ustalono główne wymagania dotyczące schematu bazy danych dla MVP. Kluczowe encje obejmują: users (zarządzane przez Supabase), flashcards, generations oraz generation_error_logs.  
+Flashcards mają ograniczenia dotyczące długości pól (front do 200 znaków, back do 500 znaków) oraz check constraint dla pola source (akceptujące wartości "ai-full", "ai-edited", "manual").  
+Dla encji generations i generation_error_logs wprowadzono ograniczenie dla pola source_text_length (w zakresie 1000–10000 znaków), a dla generations dodatkowo dodano pole generation_time, określające czas trwania operacji generacji, oraz standardowe timestampy.  
+Relacje między encjami definiują, że jeden użytkownik może posiadać wiele flashcards i sesji generacji. Usuwanie rekordów odbywa się według mechanizmu restrict, co zabezpiecza integralność danych. Polityka RLS opiera się na kolumnie user_id, ograniczając dostęp użytkownika wyłącznie do jego danych.  
+Na obecnym etapie podstawowe klucze i indeksy są wystarczające, a partycjonowanie oraz zaawansowane funkcje PostgreSQL nie są wymagane, chociaż projekt przewiduje możliwość rozbudowy w przyszłości.
+</database_planning_summary>
+
+<unresolved_issues>
+1. Potencjalna zmiana polityki RLS w przyszłości.  
+2. Wpływ ewentualnego rozszerzenia o encję learning sessions na aktualny schemat bazy danych.
+</unresolved_issues>
+</conversation_summary>
+</session_notes>
+
+Są to notatki z sesji planowania schematu bazy danych. Mogą one zawierać ważne decyzje, rozważania i konkretne wymagania omówione podczas spotkania.
+
+3. <tech_stack>
+@.ai\tech-stack.md 
+</tech_stack>
+
+Opisuje stack technologiczny, który zostanie wykorzystany w projekcie, co może wpłynąć na decyzje dotyczące projektu bazy danych.
+
+Wykonaj następujące kroki, aby utworzyć schemat bazy danych:
+
+1. Dokładnie przeanalizuj notatki z sesji, identyfikując kluczowe jednostki, atrybuty i relacje omawiane podczas sesji planowania.
+2. Przejrzyj PRD, aby upewnić się, że wszystkie wymagane funkcje i funkcjonalności są obsługiwane przez schemat bazy danych.
+3. Przeanalizuj stack technologiczny i upewnij się, że projekt bazy danych jest zoptymalizowany pod kątem wybranych technologii.
+
+4. Stworzenie kompleksowego schematu bazy danych, który obejmuje
+   a. Tabele z odpowiednimi nazwami kolumn i typami danych
+   b. Klucze podstawowe i klucze obce
+   c. Indeksy poprawiające wydajność zapytań
+   d. Wszelkie niezbędne ograniczenia (np. unikalność, not null)
+
+5. Zdefiniuj relacje między tabelami, określając kardynalność (jeden-do-jednego, jeden-do-wielu, wiele-do-wielu) i wszelkie tabele łączące wymagane dla relacji wiele-do-wielu.
+
+6. Opracowanie zasad PostgreSQL dla zabezpieczeń na poziomie wiersza (RLS), jeśli dotyczy, w oparciu o wymagania określone w notatkach z sesji lub PRD.
+
+7. Upewnij się, że schemat jest zgodny z najlepszymi praktykami projektowania baz danych, w tym normalizacji do odpowiedniego poziomu (zwykle 3NF, chyba że denormalizacja jest uzasadniona ze względu na wydajność).
+
+Ostateczny wynik powinien mieć następującą strukturę:
+```markdown
+1. Lista tabel z ich kolumnami, typami danych i ograniczeniami
+2. Relacje między tabelami
+3. Indeksy
+4. Zasady PostgreSQL (jeśli dotyczy)
+5. Wszelkie dodatkowe uwagi lub wyjaśnienia dotyczące decyzji projektowych
+```
+
+W odpowiedzi należy podać tylko ostateczny schemat bazy danych w formacie markdown, który zapiszesz w pliku .ai/db-plan.md bez uwzględniania procesu myślowego lub kroków pośrednich. Upewnij się, że schemat jest kompleksowy, dobrze zorganizowany i gotowy do wykorzystania jako podstawa do tworzenia migracji baz danych.
