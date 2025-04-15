@@ -18,6 +18,7 @@
 - `source` VARCHAR(20) NOT NULL CHECK (source IN ('ai-full', 'ai-edited', 'manual'))
 - `created_at` TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 - `updated_at` TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+- `generation_id` BIGSERIAL  NOT NULL REFERENCES generations(id)
 
 ### Tabela `generations`
 - `id` BIGSERIAL PRIMARY KEY
