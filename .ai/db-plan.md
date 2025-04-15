@@ -4,10 +4,14 @@
 
 ### Tabela `users`
 - `id` UUID PRIMARY KEY
-- Inne kolumny zarządzane przez Supabase.
+- `email`: VARCHAR(255) NOT NULL UNIQUE
+- `encrypted_password`: VARCHAR NOT NULL
+- `created_at`: TIMESTAMPTZ NOT NULL DEFAULT now()
+- `confirmed_at`: TIMESTAMPTZ
+- To jest tabela zarządzana przez Supabase.
 
 ### Tabela `flashcards`
-- `id` SERIAL PRIMARY KEY
+- `id` BIGSERIAL PRIMARY KEY
 - `user_id` UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT
 - `front` VARCHAR(200) NOT NULL
 - `back` VARCHAR(500) NOT NULL
@@ -16,20 +20,27 @@
 - `updated_at` TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 
 ### Tabela `generations`
-- `id` SERIAL PRIMARY KEY
+- `id` BIGSERIAL PRIMARY KEY
 - `user_id` UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT
-- `generation_time` INTEGER NOT NULL -- czas generacji w milisekundach
-- `source_text` TEXT NOT NULL CHECK (char_length(source_text) BETWEEN 1000 AND 10000)
+- `model` VARCHAR NOT NULL
+- `generated_count` INTEGER NOT NULL
+- `generated_unedited_count` INTEGER NULLABLE
+- `accepted_edited_count` INTEGER NULLABLE
+- `source_text_hash` VARCHAR NOT NULL
+- `generation_duration` INTEGER NOT NULL 
+- `source_text_lemgth` TEXT NOT NULL CHECK (char_length(source_text) BETWEEN 1000 AND 10000)
 - `created_at` TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 - `updated_at` TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 
 ### Tabela `generation_error_logs`
-- `id` SERIAL PRIMARY KEY
+- `id` BIGSERIAL PRIMARY KEY
 - `user_id` UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT
-- `source_text` TEXT NOT NULL CHECK (char_length(source_text) BETWEEN 1000 AND 10000)
+- `model` VARCHAR NOT NULL
+- `source_text_hash` VARCHAR NOT NULL
+- `source_text_length` INTEGER NOT NULL CHECK (source_text_length BETWEEN 1000 AND 10000)
+- `error_code` VARCHAR(100) NOT NULL
 - `error_message` TEXT NOT NULL
 - `created_at` TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
-- `updated_at` TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 
 ## 2. Relacje między tabelami
 - Relacja 1:n: Jeden użytkownik (`users`) może posiadać wiele rekordów w tabelach `flashcards`, `generations` oraz `generation_error_logs`.
