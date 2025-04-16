@@ -1,7 +1,7 @@
 ---
 description: 
 globs: 
-alwaysApply: true
+alwaysApply: false
 ---
 ---
 Rule Type: Always
@@ -18,7 +18,6 @@ enabling users to quickly transform the test they enter (copy-paste) into high-q
 - TypeScript 5
 - React 19
 - Tailwind 4
-- Shadcn/ui
 
 ## Project Structure
 
@@ -28,12 +27,7 @@ When introducing changes to the project, always follow the directory structure b
 - `./src/layouts` - Astro layouts
 - `./src/pages` - Astro pages
 - `./src/pages/api` - API endpoints
-- `./src/middleware/index.ts` - Astro middleware
-- `./src/db` - Supabase clients and types
-- `./src/types.ts` - Shared types for backend and frontend (Entities, DTOs)
 - `./src/components` - client-side components written in Astro (static) and React (dynamic)
-- `./src/components/ui` - Client-side components from Shadcn/ui
-- `./src/lib` - Services and helpers 
 - `./src/assets` - static internal assets
 - `./public` - public assets
 
@@ -44,8 +38,6 @@ When modifying the directory structure, always update this section.
 ### Guidelines for clean code
 
 - Prioritize error handling and edge cases
-- Use feedback from linters to improve the code when making changes.
-- Prioritize error handling and edge cases.
 - Handle errors and edge cases at the beginning of functions.
 - Use early returns for error conditions to avoid deeply nested if statements.
 - Place the happy path last in the function for improved readability.
