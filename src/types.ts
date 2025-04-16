@@ -1,4 +1,4 @@
-import { Tables } from "./db/database.types";
+import type { Tables } from "./db/database.types";
 
 // ========================
 // Enum Types
@@ -44,7 +44,7 @@ export type FlashcardDto = {
  * DTO reprezentujące tymczasową fiszkę przed zapisaniem
  */
 export type TemporaryFlashcardDto = {
-  temp_id: string;
+  id: string;
   front: string;
   back: string;
 };
@@ -104,7 +104,7 @@ export interface GenerateFlashcardsCommand {
  */
 export interface SaveGeneratedFlashcardsCommand {
   flashcards: Array<{
-    temp_id: string;
+    id: string;
     front: string;
     back: string;
     source: FlashcardSource;
