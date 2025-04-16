@@ -66,50 +66,50 @@ export type PaginationResponseDto = {
 /**
  * Command model do ręcznego tworzenia pojedynczej fiszki
  */
-export type CreateFlashcardCommand = {
+export interface CreateFlashcardCommand {
   front: string;
   back: string;
-};
+}
 
 /**
  * Command model do aktualizacji fiszki
  */
-export type UpdateFlashcardCommand = {
+export interface UpdateFlashcardCommand {
   front: string;
   back: string;
-};
+}
 
 /**
  * Command model do tworzenia wielu fiszek jednocześnie
  */
-export type CreateMultipleFlashcardsCommand = {
+export interface CreateMultipleFlashcardsCommand {
   flashcards: Array<{
     front: string;
     back: string;
     source: FlashcardSource;
   }>;
   generation_id?: number;
-};
+}
 
 /**
  * Command model do generowania fiszek przez AI
  */
-export type GenerateFlashcardsCommand = {
+export interface GenerateFlashcardsCommand {
   source_text: string;
   model: string;
-};
+}
 
 /**
  * Command model dla zapisu wygenerowanych fiszek
  */
-export type SaveGeneratedFlashcardsCommand = {
+export interface SaveGeneratedFlashcardsCommand {
   flashcards: Array<{
     temp_id: string;
     front: string;
     back: string;
     source: FlashcardSource;
   }>;
-};
+}
 
 // ========================
 // Response DTOs
