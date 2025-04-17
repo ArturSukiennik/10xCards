@@ -112,6 +112,20 @@ export interface SaveGeneratedFlashcardsCommand {
 }
 
 // ========================
+// AI Service Types
+// ========================
+
+/**
+ * Interface representing the raw AI response structure
+ */
+export interface AIFlashcardResponse {
+  flashcards: Array<{
+    front: string;
+    back: string;
+  }>;
+}
+
+// ========================
 // Response DTOs
 // ========================
 

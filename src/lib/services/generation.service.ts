@@ -1,5 +1,9 @@
-import type { TemporaryFlashcardDto, GenerateFlashcardsResponseDto } from '../../types';
+import type { TemporaryFlashcardDto, GenerateFlashcardsResponseDto, AIFlashcardResponse } from '../../types';
 import OpenAI from 'openai';
+
+// Constants for validation
+const MAX_FRONT_LENGTH = 200;
+const MAX_BACK_LENGTH = 500;
 
 // Validate required environment variable
 if (!import.meta.env.OPENAI_API_KEY) {
@@ -15,6 +19,19 @@ const openai = new OpenAI({
  */
 export class GenerationService {
   /**
+   * Validates a single flashcard's content length
+   * @throws Error if validation fails
+   */
+  private static validateFlashcardLength(front: string, back: string, index: number): void {
+    if (front.length > MAX_FRONT_LENGTH) {
+      throw new Error(`Flashcard ${index + 1} front side exceeds ${MAX_FRONT_LENGTH} characters`);
+    }
+    if (back.length > MAX_BACK_LENGTH) {
+      throw new Error(`Flashcard ${index + 1} back side exceeds ${MAX_BACK_LENGTH} characters`);
+    }
+  }
+
+  /**
    * Generates flashcards from the provided text using the specified model
    * @param sourceText The text to generate flashcards from
    * @param model The model to use for generation
@@ -26,7 +43,7 @@ export class GenerationService {
         Please create educational flashcards from the following text. 
         Each flashcard should have a question on the front and a concise answer on the back.
         The questions should test understanding of key concepts and important details.
-        Keep the front (question) under 200 characters and the back (answer) under 500 characters.
+        Keep the front (question) under ${MAX_FRONT_LENGTH} characters and the back (answer) under ${MAX_BACK_LENGTH} characters.
         Format your response as a JSON array of objects with 'front' and 'back' properties.
 
         Text to process:
@@ -55,21 +72,29 @@ export class GenerationService {
         throw new Error('No content in AI response');
       }
 
-      const parsedContent = JSON.parse(content);
+      const parsedContent = JSON.parse(content) as AIFlashcardResponse;
       if (!Array.isArray(parsedContent.flashcards)) {
         throw new Error('Invalid response format from AI');
       }
 
-      // Map the response to TemporaryFlashcardDto format
-      const generatedFlashcards = parsedContent.flashcards.map((card: any, index: number) => ({
-        id: `temp_${index + 1}`,
-        front: card.front,
-        back: card.back
-      }));
+      // Map and validate the response
+      const generatedFlashcards: TemporaryFlashcardDto[] = parsedContent.flashcards.map((card, index) => {
+        if (typeof card.front !== 'string' || typeof card.back !== 'string') {
+          throw new Error(`Invalid flashcard format at index ${index}`);
+        }
+        
+        // Validate content length
+        this.validateFlashcardLength(card.front, card.back, index);
 
-      // Note: generation_id will be set by the API endpoint
+        return {
+          id: `temp_${index + 1}`,
+          front: card.front,
+          back: card.back
+        };
+      });
+
       return {
-        generation_id: 0,
+        generation_id: 0, // Will be set by the API endpoint
         generated_flashcards: generatedFlashcards
       };
 

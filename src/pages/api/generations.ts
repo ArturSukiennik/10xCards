@@ -8,7 +8,7 @@ import crypto from 'crypto';
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     // 1. Parse and validate request body
-    const rawBody = await request.json();
+    const rawBody: GenerateFlashcardsCommand = await request.json();
     const validationResult = generateFlashcardsSchema.safeParse(rawBody);
 
     if (!validationResult.success) {
