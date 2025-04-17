@@ -5,6 +5,8 @@ import { generateFlashcardsSchema } from '../../lib/validation/generation.schema
 import { ZodError } from 'zod';
 import crypto from 'crypto';
 
+export const prerender = false;
+
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     // 1. Parse and validate request body
