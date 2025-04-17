@@ -52,8 +52,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
         model: body.model,
         generated_count: 0,
         source_text_hash: sourceTextHash,
-        source_text_length: body.source_text,
-        generation_duration: 0
+        source_text_length: body.source_text.length.toString(),
+        generation_duration: 0,
+        generated_unedited_count: 0
       })
       .select()
       .single();
