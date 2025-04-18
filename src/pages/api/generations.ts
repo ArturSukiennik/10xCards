@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import type { GenerateFlashcardsCommand, TemporaryFlashcardDto, GenerateFlashcardsResponseDto } from '../../types';
+import type { GenerateFlashcardsCommand, GenerateFlashcardsResponseDto } from '../../types';
 import { GenerationService } from '../../lib/services/generation.service';
 import { generateFlashcardsSchema } from '../../lib/validation/generation.schema';
 import { ZodError } from 'zod';
@@ -41,7 +41,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    // 3. Create generation record
+    // 3. Create generation record with mock data
     const sourceTextHash = crypto
       .createHash('sha256')
       .update(body.source_text)
@@ -51,12 +51,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .from('generations')
       .insert({
         user_id: user.id,
-        model: body.model,
-        generated_count: 0,
+        model: 'mock-model',
+        generated_count: 4, // Number of mock flashcards
         source_text_hash: sourceTextHash,
         source_text_length: body.source_text.length.toString(),
         generation_duration: 0,
-        generated_unedited_count: 0
+        generated_unedited_count: 4 // Number of mock flashcards
       })
       .select()
       .single();
@@ -69,49 +69,21 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    // 4. Generate flashcards using AI
-    const startTime = Date.now();
+    // 4. Get mock flashcards
     let generationResult: GenerateFlashcardsResponseDto;
 
     try {
-      const result = await GenerationService.generateFlashcards(body.source_text, body.model);
+      const result = await GenerationService.generateFlashcards(body.source_text, 'mock-model');
       generationResult = {
         ...result,
         generation_id: generation.id
       };
-    } catch (aiError) {
-      // Log the error
-      await supabase
-        .from('generation_error_logs')
-        .insert({
-          user_id: user.id,
-          model: body.model,
-          source_text_hash: sourceTextHash,
-          source_text_length: body.source_text.length,
-          error_code: 'AI_SERVICE_ERROR',
-          error_message: aiError instanceof Error ? aiError.message : 'Unknown error'
-        });
-
+    } catch (error) {
+      console.error('Error generating mock flashcards:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to generate flashcards' }),
-        { status: 502 }
+        { status: 500 }
       );
-    }
-
-    // 5. Update generation record with results
-    const generationDuration = Date.now() - startTime;
-    const { error: updateError } = await supabase
-      .from('generations')
-      .update({
-        generated_count: generationResult.generated_flashcards.length,
-        generated_unedited_count: generationResult.generated_flashcards.length,
-        generation_duration: generationDuration
-      })
-      .eq('id', generation.id);
-
-    if (updateError) {
-      console.error('Error updating generation record:', updateError);
-      // We don't return an error here as the generation was successful
     }
 
     return new Response(

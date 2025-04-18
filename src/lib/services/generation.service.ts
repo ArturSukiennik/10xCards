@@ -1,21 +1,31 @@
-import type { TemporaryFlashcardDto, GenerateFlashcardsResponseDto, AIFlashcardResponse } from '../../types';
-import OpenAI from 'openai';
+import type { TemporaryFlashcardDto, GenerateFlashcardsResponseDto } from '../../types';
 
 // Constants for validation
 const MAX_FRONT_LENGTH = 200;
 const MAX_BACK_LENGTH = 500;
 
-// Validate required environment variable
-if (!import.meta.env.OPENAI_API_KEY) {
-  throw new Error('OPENAI_API_KEY environment variable is not set');
-}
-
-const openai = new OpenAI({
-  apiKey: import.meta.env.OPENAI_API_KEY,
-});
+// Mock flashcards data
+const MOCK_FLASHCARDS = [
+  {
+    front: "What is TypeScript?",
+    back: "TypeScript is a strongly typed programming language that builds on JavaScript, giving you better tooling at any scale."
+  },
+  {
+    front: "What is React?",
+    back: "React is a JavaScript library for building user interfaces, particularly single-page applications where you need a fast, interactive user experience."
+  },
+  {
+    front: "What is Astro?",
+    back: "Astro is a modern static site builder that allows you to use your favorite JavaScript framework while delivering lightning-fast performance."
+  },
+  {
+    front: "What is Tailwind CSS?",
+    back: "Tailwind CSS is a utility-first CSS framework that provides low-level utility classes to build custom designs directly in your markup."
+  }
+];
 
 /**
- * Service for handling flashcard generation using AI
+ * Service for handling flashcard generation using AI (currently mocked)
  */
 export class GenerationService {
   /**
@@ -32,57 +42,15 @@ export class GenerationService {
   }
 
   /**
-   * Generates flashcards from the provided text using the specified model
-   * @param sourceText The text to generate flashcards from
-   * @param model The model to use for generation
-   * @returns Generated flashcards with generation ID
+   * Returns mock flashcards instead of generating them with AI
+   * @param sourceText The text to generate flashcards from (currently ignored)
+   * @param model The model to use for generation (currently ignored)
+   * @returns Generated mock flashcards with generation ID
    */
   static async generateFlashcards(sourceText: string, model: string): Promise<GenerateFlashcardsResponseDto> {
     try {
-      const prompt = `
-        Please create educational flashcards from the following text. 
-        Each flashcard should have a question on the front and a concise answer on the back.
-        The questions should test understanding of key concepts and important details.
-        Keep the front (question) under ${MAX_FRONT_LENGTH} characters and the back (answer) under ${MAX_BACK_LENGTH} characters.
-        Format your response as a JSON array of objects with 'front' and 'back' properties.
-
-        Text to process:
-        ${sourceText}
-      `;
-
-      const response = await openai.chat.completions.create({
-        model: model,
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a helpful assistant that creates educational flashcards. Your responses should be in valid JSON format.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-        response_format: { type: 'json_object' }
-      });
-
-      const content = response.choices[0]?.message?.content;
-      if (!content) {
-        throw new Error('No content in AI response');
-      }
-
-      const parsedContent = JSON.parse(content) as AIFlashcardResponse;
-      if (!Array.isArray(parsedContent.flashcards)) {
-        throw new Error('Invalid response format from AI');
-      }
-
-      // Map and validate the response
-      const generatedFlashcards: TemporaryFlashcardDto[] = parsedContent.flashcards.map((card, index) => {
-        if (typeof card.front !== 'string' || typeof card.back !== 'string') {
-          throw new Error(`Invalid flashcard format at index ${index}`);
-        }
-        
+      // Map mock data to DTO format and validate
+      const generatedFlashcards: TemporaryFlashcardDto[] = MOCK_FLASHCARDS.map((card, index) => {
         // Validate content length
         this.validateFlashcardLength(card.front, card.back, index);
 
@@ -99,7 +67,7 @@ export class GenerationService {
       };
 
     } catch (error) {
-      console.error('Error generating flashcards:', error);
+      console.error('Error generating mock flashcards:', error);
       throw error;
     }
   }
