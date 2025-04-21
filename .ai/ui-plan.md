@@ -13,10 +13,10 @@ Architektura UI aplikacji 10xCards opiera się na minimalistycznym, intuicyjnym 
 
 - **Widok generowania fiszek**
   - Ścieżka: `/generate`
-  - Główny cel: Umożliwienie użytkownikowi wprowadzenia tekstu oraz wyboru modelu AI do autogeneracji fiszek.
-  - Kluczowe informacje: Pole tekstowe z ograniczeniem długości, dropdown wyboru modelu, przycisk "Generuj", wskaźnik ładowania (spinner).
-  - Kluczowe komponenty: Edytor tekstu, dropdown, przycisk wyzwalający akcję, lista propozycji fiszek.
-  - UX/dostępność: Intuicyjna walidacja wpisanego tekstu (od 1000 do 10 000 znaków), przejrzyste komunikaty błędów i wskaźniki postępu, automatyczne przewijanie do błędów.
+  - Główny cel: Umożliwienie użytkownikowi generowanie propozycji fiszek przez AI i ich rewizję (zaakceptuj, edytuj, odrzuć).
+  - Kluczowe informacje: Pole tekstowe z ograniczeniem długości do wpropwadzenia tekstu. lista propozycji fiszek wygenerowanych przez AI, dropdown wyboru modelu, przycisk "Generuj", wskaźnik ładowania (spinner), przyciski akceptacji, edycji lub odrzucenia dla każdej fiszki.
+  - Kluczowe komponenty: Edytor tekstu, dropdown, przycisk "Generuj fiszki", lista propozycji fiszek, przyciski akcji (zapisz wszystkie, zapisz zaakceptowane), komunikaty o błędach, wskaźnik ładowania (skeleton).
+  - UX/dostępność: Intuicyjna walidacja wpisanego tekstu (od 1000 do 10 000 znaków), responsywność,   przejrzyste komunikaty błędów i wskaźniki postępu, automatyczne przewijanie do błędów.
 
 - **Widok "Moje fiszki"**
   - Ścieżka: `/my-flashcards`
