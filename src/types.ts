@@ -8,19 +8,19 @@ import type { Tables } from "./db/database.types";
  * Możliwe źródła pochodzenia fiszek
  */
 export enum FlashcardSource {
-  AI_FULL = 'ai-full',
-  AI_EDITED = 'ai-edited',
-  MANUAL = 'manual',
+  AI_FULL = "ai-full",
+  AI_EDITED = "ai-edited",
+  MANUAL = "manual",
 }
 
 /**
  * Okresy dla statystyk generowania
  */
 export enum GenerationStatsPeriod {
-  DAY = 'day',
-  WEEK = 'week',
-  MONTH = 'month',
-  ALL = 'all',
+  DAY = "day",
+  WEEK = "week",
+  MONTH = "month",
+  ALL = "all",
 }
 
 // ========================
@@ -30,7 +30,7 @@ export enum GenerationStatsPeriod {
 /**
  * DTO reprezentujące fiszkę
  */
-export type FlashcardDto = {
+export interface FlashcardDto {
   id: number;
   front: string;
   back: string;
@@ -38,26 +38,26 @@ export type FlashcardDto = {
   generation_id: number;
   created_at: string;
   updated_at: string;
-};
+}
 
 /**
  * DTO reprezentujące tymczasową fiszkę przed zapisaniem
  */
-export type TemporaryFlashcardDto = {
+export interface TemporaryFlashcardDto {
   id: string;
   front: string;
   back: string;
-};
+}
 
 /**
  * DTO reprezentujące informacje o paginacji
  */
-export type PaginationResponseDto = {
+export interface PaginationResponseDto {
   current_page: number;
   total_pages: number;
   total_items: number;
   limit: number;
-};
+}
 
 // ========================
 // Command Models
@@ -83,11 +83,11 @@ export interface UpdateFlashcardCommand {
  * Command model do tworzenia wielu fiszek jednocześnie
  */
 export interface CreateMultipleFlashcardsCommand {
-  flashcards: Array<{
+  flashcards: {
     front: string;
     back: string;
     source: FlashcardSource;
-  }>;
+  }[];
   generation_id?: number;
 }
 
@@ -103,12 +103,12 @@ export interface GenerateFlashcardsCommand {
  * Command model dla zapisu wygenerowanych fiszek
  */
 export interface SaveGeneratedFlashcardsCommand {
-  flashcards: Array<{
+  flashcards: {
     id: string;
     front: string;
     back: string;
     source: FlashcardSource;
-  }>;
+  }[];
 }
 
 // ========================
@@ -119,10 +119,10 @@ export interface SaveGeneratedFlashcardsCommand {
  * Interface representing the raw AI response structure
  */
 export interface AIFlashcardResponse {
-  flashcards: Array<{
+  flashcards: {
     front: string;
     back: string;
-  }>;
+  }[];
 }
 
 // ========================
@@ -132,46 +132,46 @@ export interface AIFlashcardResponse {
 /**
  * DTO odpowiedzi dla listy fiszek
  */
-export type FlashcardListResponseDto = {
+export interface FlashcardListResponseDto {
   data: FlashcardDto[];
   pagination: PaginationResponseDto;
-};
+}
 
 /**
  * DTO odpowiedzi dla usunięcia fiszki
  */
-export type DeleteFlashcardResponseDto = {
+export interface DeleteFlashcardResponseDto {
   message: string;
-};
+}
 
 /**
- * DTO odpowiedzi dla utworzenia wielu fiszek
+ * Response DTO for creating multiple flashcards
  */
-export type CreateMultipleFlashcardsResponseDto = {
+export interface CreateMultipleFlashcardsResponseDto {
   created_count: number;
   flashcards: FlashcardDto[];
-};
+}
 
 /**
  * DTO odpowiedzi dla generowania fiszek przez AI
  */
-export type GenerateFlashcardsResponseDto = {
+export interface GenerateFlashcardsResponseDto {
   generation_id: number;
   generated_flashcards: TemporaryFlashcardDto[];
-};
+}
 
 /**
  * DTO odpowiedzi dla zapisania wygenerowanych fiszek
  */
-export type SaveGeneratedFlashcardsResponseDto = {
+export interface SaveGeneratedFlashcardsResponseDto {
   saved_count: number;
   flashcards: FlashcardDto[];
-};
+}
 
 /**
  * DTO odpowiedzi dla statystyk generowania
  */
-export type GenerationStatsResponseDto = {
+export interface GenerationStatsResponseDto {
   total_generations: number;
   total_flashcards_generated: number;
   flashcards_accepted: number;
@@ -181,7 +181,7 @@ export type GenerationStatsResponseDto = {
     ai_edited: number;
     manual: number;
   };
-};
+}
 
 // ========================
 // Mappers (Database -> DTO)
@@ -198,7 +198,7 @@ export function mapToFlashcardDto(flashcard: Tables<"flashcards">): FlashcardDto
     source: flashcard.source as FlashcardSource,
     generation_id: flashcard.generation_id,
     created_at: flashcard.created_at,
-    updated_at: flashcard.updated_at
+    updated_at: flashcard.updated_at,
   };
 }
 
@@ -207,4 +207,4 @@ export function mapToFlashcardDto(flashcard: Tables<"flashcards">): FlashcardDto
  */
 export function mapToFlashcardDtoArray(flashcards: Tables<"flashcards">[]): FlashcardDto[] {
   return flashcards.map(mapToFlashcardDto);
-} 
+}
