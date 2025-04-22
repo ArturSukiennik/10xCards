@@ -1,14 +1,14 @@
-import type { APIRoute } from 'astro';
-import { FlashcardsService } from '../../../lib/services/flashcards.service';
-import { 
-  AuthorizationError, 
-  ValidationError, 
+import type { APIRoute } from "astro";
+import { FlashcardsService } from "../../../lib/services/flashcards.service";
+import {
+  AuthorizationError,
+  ValidationError,
   RateLimitError,
-  GenerationNotFoundError
-} from '../../../lib/errors';
-import { authMiddleware } from '../../../middleware/auth';
-import { createRateLimitMiddleware } from '../../../middleware/rate-limit';
-import type { MiddlewareContext } from '../../../types/astro';
+  GenerationNotFoundError,
+} from "../../../lib/errors";
+import { authMiddleware } from "../../../middleware/auth";
+import { createRateLimitMiddleware } from "../../../middleware/rate-limit";
+import type { MiddlewareContext } from "../../../types/astro";
 
 export const prerender = false;
 
@@ -23,56 +23,53 @@ export const POST: APIRoute = async ({ request, locals }: MiddlewareContext) => 
     await rateLimit({ locals, request }, () => Promise.resolve(new Response()));
 
     if (!locals.user) {
-      throw new AuthorizationError('User not authenticated');
+      throw new AuthorizationError("User not authenticated");
     }
 
     const flashcardsService = new FlashcardsService(locals.supabase);
     const body = await request.json();
-    
-    const result = await flashcardsService.createFlashcards(
-      locals.user.id,
-      body
-    );
+
+    const result = await flashcardsService.createFlashcards(locals.user.id, body);
 
     return new Response(JSON.stringify(result), {
       status: 201,
       headers: {
-        'Content-Type': 'application/json'
-      }
+        "Content-Type": "application/json",
+      },
     });
   } catch (error) {
     if (error instanceof ValidationError) {
       return new Response(JSON.stringify({ error: error.message }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { "Content-Type": "application/json" },
       });
     }
 
     if (error instanceof AuthorizationError) {
       return new Response(JSON.stringify({ error: error.message }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { "Content-Type": "application/json" },
       });
     }
 
     if (error instanceof RateLimitError) {
       return new Response(JSON.stringify({ error: error.message }), {
         status: 429,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { "Content-Type": "application/json" },
       });
     }
 
     if (error instanceof GenerationNotFoundError) {
       return new Response(JSON.stringify({ error: error.message }), {
         status: 404,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { "Content-Type": "application/json" },
       });
     }
 
-    console.error('Unexpected error:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    console.error("Unexpected error:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { "Content-Type": "application/json" },
     });
   }
-}; 
+};

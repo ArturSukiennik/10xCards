@@ -1,0 +1,22 @@
+{
+  "endOfLine": "auto",
+  "semi": true,
+  "singleQuote": false,
+  "plugins": ["prettier-plugin-astro"],
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx", "*.js", "*.jsx", "*.astro"],
+      "options": {
+        "tabWidth": 2,
+        "printWidth": 100,
+        "endOfLine": "auto"
+      }
+    },
+    {
+      "files": "*.astro",
+      "options": {
+        "parser": "astro"
+      }
+    }
+  ]
+}
