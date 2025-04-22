@@ -1,7 +1,8 @@
 import { TextInputSection } from "./TextInputSection";
-import { FlashcardsList } from "src/components/generate/FlashcardsList";
+import { FlashcardsList } from "./FlashcardsList";
 import { useFlashcardGeneration } from "@/lib/hooks/useFlashcardGeneration";
 import { ErrorAlert } from "@/components/ui/error-alert";
+import { toast } from "sonner";
 
 export function GenerateView() {
   const {
@@ -11,6 +12,16 @@ export function GenerateView() {
     saveAllFlashcards,
     saveAcceptedFlashcards,
   } = useFlashcardGeneration();
+
+  const handleGenerateWithToast = async (params: { source_text: string; model: string }) => {
+    try {
+      await generateFlashcards(params);
+      toast.success("Flashcards generated successfully!");
+    } catch (error) {
+      toast.error("Failed to generate flashcards");
+      throw error;
+    }
+  };
 
   return (
     <div className="container mx-auto py-8 space-y-8">
@@ -22,13 +33,16 @@ export function GenerateView() {
           onRetry={
             state.errors.isRetryable
               ? () =>
-                  generateFlashcards({ source_text: state.sourceText, model: state.selectedModel })
+                  handleGenerateWithToast({
+                    source_text: state.sourceText,
+                    model: state.selectedModel,
+                  })
               : undefined
           }
         />
       )}
 
-      <TextInputSection onGenerate={generateFlashcards} isGenerating={state.isGenerating} />
+      <TextInputSection onGenerate={handleGenerateWithToast} isGenerating={state.isGenerating} />
 
       {state.flashcards.length > 0 && (
         <FlashcardsList

@@ -1,4 +1,6 @@
 ---
+import { Toaster } from "../components/ui/toaster";
+
 interface Props {
   title: string;
 }
@@ -17,5 +19,6 @@ const { title } = Astro.props;
     <main>
       <slot />
     </main>
+    <Toaster client:load />
   </body>
 </html>

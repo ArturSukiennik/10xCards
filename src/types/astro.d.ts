@@ -1,5 +1,5 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { User } from '@supabase/supabase-js';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 
 declare global {
   namespace App {
@@ -19,8 +19,8 @@ export interface MiddlewareContext {
 
 export type MiddlewareHandler = (
   context: MiddlewareContext,
-  next: MiddlewareNext
+  next: MiddlewareNext,
 ) => Promise<Response> | Response;
 
 // Need this to be a module
-export {}; 
+export {};
