@@ -95,10 +95,10 @@ export function FlashcardItem({ flashcard, onUpdate, onStatusChange }: Flashcard
         <div className="flex gap-2">
           {isEditing ? (
             <>
-              <Button onClick={handleSave} size="sm" variant="default">
+              <Button onClick={handleSave} size="sm" variant="primary">
                 Save
               </Button>
-              <Button onClick={handleCancel} size="sm" variant="outline">
+              <Button onClick={handleCancel} size="sm" variant="secondary">
                 Cancel
               </Button>
             </>
@@ -107,7 +107,7 @@ export function FlashcardItem({ flashcard, onUpdate, onStatusChange }: Flashcard
               <Button
                 onClick={handleAccept}
                 size="sm"
-                variant={flashcard.status === "accepted" ? "default" : "outline"}
+                variant={flashcard.status === "accepted" ? "primary" : "secondary"}
                 className="w-24"
               >
                 <Check className="mr-1 h-4 w-4" />
@@ -116,7 +116,7 @@ export function FlashcardItem({ flashcard, onUpdate, onStatusChange }: Flashcard
               <Button
                 onClick={handleReject}
                 size="sm"
-                variant={flashcard.status === "rejected" ? "destructive" : "outline"}
+                variant={flashcard.status === "rejected" ? "primary" : "secondary"}
                 className="w-24"
               >
                 <X className="mr-1 h-4 w-4" />
@@ -129,12 +129,12 @@ export function FlashcardItem({ flashcard, onUpdate, onStatusChange }: Flashcard
         <div className="flex gap-2">
           {!isEditing && (
             <>
-              <Button onClick={() => setIsEditing(true)} size="sm" variant="ghost" className="w-24">
+              <Button onClick={() => setIsEditing(true)} size="sm" variant="text" className="w-24">
                 <Edit2 className="mr-1 h-4 w-4" />
                 Edit
               </Button>
               {flashcard.hasBeenEdited && (
-                <Button onClick={handleReset} size="sm" variant="ghost" className="w-24">
+                <Button onClick={handleReset} size="sm" variant="text" className="w-24">
                   <RotateCcw className="mr-1 h-4 w-4" />
                   Reset
                 </Button>

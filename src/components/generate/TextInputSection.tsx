@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -72,11 +71,16 @@ export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionP
         </span>
       </div>
 
-      <Textarea
+      <textarea
         value={sourceText}
-        onChange={(e) => setSourceText(e.target.value)}
+        onChange={(e) => {
+          console.log("onChange event triggered");
+          const newText = e.target.value;
+          console.log("Text length:", newText.length);
+          setSourceText(newText);
+        }}
         placeholder="Paste your text here (minimum 1000 characters)"
-        className="min-h-[200px]"
+        className="min-h-[400px] w-full p-2 border rounded"
       />
 
       {validationErrors.length > 0 && <ValidationError errors={validationErrors} />}
