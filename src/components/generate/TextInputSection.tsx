@@ -55,7 +55,6 @@ export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionP
 
     try {
       await onGenerate(command);
-      // Clear validation errors on successful generation
       setValidationErrors([]);
     } catch {
       // Error handling is done by the parent component
@@ -63,49 +62,49 @@ export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionP
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Enter Your Text</h2>
-        <span className={`text-sm ${isTextValid ? "text-green-600" : "text-red-600"}`}>
-          {textLength}/{MAX_TEXT_LENGTH} characters
-        </span>
-      </div>
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold text-center mb-8">Generate Flashcards</h1>
 
-      <textarea
-        value={sourceText}
-        onChange={(e) => {
-          console.log("onChange event triggered");
-          const newText = e.target.value;
-          console.log("Text length:", newText.length);
-          setSourceText(newText);
-        }}
-        placeholder="Paste your text here (minimum 1000 characters)"
-        className="min-h-[400px] w-full p-2 border rounded"
-      />
+      <div className="space-y-4">
+        <div className="flex flex-col space-y-2">
+          <h2 className="text-xl font-semibold">Enter Your Text</h2>
+          <span className={`text-sm ${isTextValid ? "text-green-600" : "text-red-600"}`}>
+            {textLength}/{MAX_TEXT_LENGTH} characters
+          </span>
+        </div>
 
-      {validationErrors.length > 0 && <ValidationError errors={validationErrors} />}
+        <textarea
+          value={sourceText}
+          onChange={(e) => setSourceText(e.target.value)}
+          placeholder="Paste your text here (minimum 1000 characters)"
+          className="min-h-[300px] w-full p-4 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+        />
 
-      <div className="flex gap-4 items-center">
-        <Select value={selectedModel} onValueChange={setSelectedModel}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Select AI Model" />
-          </SelectTrigger>
-          <SelectContent>
-            {AI_MODELS.map((model) => (
-              <SelectItem key={model.id} value={model.id}>
-                {model.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {validationErrors.length > 0 && <ValidationError errors={validationErrors} />}
 
-        <Button
-          onClick={handleGenerate}
-          disabled={!isTextValid || isGenerating}
-          className="ml-auto"
-        >
-          {isGenerating ? "Generating..." : "Generate Flashcards"}
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <Select value={selectedModel} onValueChange={setSelectedModel}>
+            <SelectTrigger className="w-full sm:w-[250px]">
+              <SelectValue placeholder="Select AI Model" />
+            </SelectTrigger>
+            <SelectContent>
+              {AI_MODELS.map((model) => (
+                <SelectItem key={model.id} value={model.id}>
+                  {model.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Button
+            onClick={handleGenerate}
+            disabled={!isTextValid || isGenerating}
+            className="w-full sm:w-auto"
+            size="lg"
+          >
+            {isGenerating ? "Generating..." : "Generate Flashcards"}
+          </Button>
+        </div>
       </div>
     </div>
   );
