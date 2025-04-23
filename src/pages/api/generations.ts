@@ -9,7 +9,14 @@ export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    // 1. Parse and validate request body
+    // 1. Check if supabase client is available
+    if (!locals.supabase) {
+      return new Response(JSON.stringify({ error: "Database client not available" }), {
+        status: 500,
+      });
+    }
+
+    // 2. Parse and validate request body
     const rawBody: GenerateFlashcardsCommand = await request.json();
     const validationResult = generateFlashcardsSchema.safeParse(rawBody);
 
@@ -30,61 +37,64 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const body = validationResult.data;
 
-    // 2. Verify authentication
-    const { supabase } = locals;
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+    // 3. Validate source text is not empty
+    if (!body.source_text.trim()) {
+      return new Response(JSON.stringify({ error: "Source text cannot be empty" }), {
+        status: 400,
+      });
     }
 
-    // 3. Create generation record with mock data
+    // 4. Generate flashcards first to avoid creating unnecessary database records
+    let generationResult: GenerateFlashcardsResponseDto;
+    try {
+      generationResult = await GenerationService.generateFlashcards(body.source_text, "mock-model");
+    } catch (error) {
+      console.error("Failed to generate flashcards:", error);
+      return new Response(
+        JSON.stringify({
+          error: "Failed to generate flashcards",
+          details: error instanceof Error ? error.message : "Unknown error",
+        }),
+        { status: 500 },
+      );
+    }
+
+    // 5. Create generation record with null user_id
     const sourceTextHash = crypto.createHash("sha256").update(body.source_text).digest("hex");
+    const { supabase } = locals;
 
     const { data: generation, error: dbError } = await supabase
       .from("generations")
       .insert({
-        user_id: user.id,
+        user_id: null,
         model: "mock-model",
-        generated_count: 4, // Number of mock flashcards
+        generated_count: generationResult.generated_flashcards.length,
         source_text_hash: sourceTextHash,
-        source_text_length: body.source_text.length.toString(),
+        source_text_length: body.source_text.length,
         generation_duration: 0,
-        generated_unedited_count: 4, // Number of mock flashcards
+        generated_unedited_count: generationResult.generated_flashcards.length,
       })
       .select()
       .single();
 
     if (dbError) {
-      console.error("Database error:", dbError);
-      return new Response(JSON.stringify({ error: "Failed to create generation record" }), {
-        status: 500,
-      });
+      console.error("Failed to create generation record:", dbError);
+      return new Response(
+        JSON.stringify({ error: "Failed to create generation record", details: dbError }),
+        { status: 500 },
+      );
     }
 
-    // 4. Get mock flashcards
-    let generationResult: GenerateFlashcardsResponseDto;
-
-    try {
-      const result = await GenerationService.generateFlashcards(body.source_text, "mock-model");
-      generationResult = {
-        ...result,
+    // 6. Return complete response
+    return new Response(
+      JSON.stringify({
+        ...generationResult,
         generation_id: generation.id,
-      };
-    } catch (error) {
-      console.error("Error generating mock flashcards:", error);
-      return new Response(JSON.stringify({ error: "Failed to generate flashcards" }), {
-        status: 500,
-      });
-    }
-
-    return new Response(JSON.stringify(generationResult), { status: 200 });
+      }),
+      { status: 200 },
+    );
   } catch (error) {
-    console.error("Error processing request:", error);
-
+    console.error("Unexpected error:", error);
     if (error instanceof ZodError) {
       return new Response(
         JSON.stringify({
@@ -98,6 +108,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+    return new Response(
+      JSON.stringify({
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      }),
+      { status: 500 },
+    );
   }
 };

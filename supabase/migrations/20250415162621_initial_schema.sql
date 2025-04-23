@@ -47,7 +47,7 @@ create index flashcards_generation_id_idx on flashcards(generation_id);
 create index generation_error_logs_user_id_idx on generation_error_logs(user_id);
 
 -- Enable Row Level Security
-alter table generations enable row level security;
+alter table generations disable row level security;
 alter table flashcards enable row level security;
 alter table generation_error_logs enable row level security;
 
@@ -132,4 +132,4 @@ drop policy if exists "Users can update their own flashcards" on flashcards;
 drop policy if exists "Users can delete their own flashcards" on flashcards;
 
 drop policy if exists "Users can view their own error logs" on generation_error_logs;
-drop policy if exists "Users can insert their own error logs" on generation_error_logs; 
+drop policy if exists "Users can insert their own error logs" on generation_error_logs;
