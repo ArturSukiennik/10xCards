@@ -1,11 +1,20 @@
 import type { APIRoute } from "astro";
 import type { GenerateFlashcardsCommand, GenerateFlashcardsResponseDto } from "../../types";
-import { GenerationService } from "../../lib/services/generation.service";
 import { generateFlashcardsSchema } from "../../lib/validation/generation.schema";
 import { ZodError } from "zod";
 import crypto from "crypto";
+import { OpenRouterService } from "../../lib/services/openrouter.service";
 
 export const prerender = false;
+
+// Initialize OpenRouter service with default configuration
+const openRouterService = new OpenRouterService({
+  apiKey: import.meta.env.OPENROUTER_API_KEY || "",
+  defaultModel: "openai/gpt-4o-mini",
+  maxRetries: 3,
+  timeout: 30000,
+  baseUrl: "https://openrouter.ai/api/v1",
+});
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -44,10 +53,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
-    // 4. Generate flashcards first to avoid creating unnecessary database records
+    // 4. Generate flashcards using OpenRouter service
     let generationResult: GenerateFlashcardsResponseDto;
+    const startTime = Date.now();
     try {
-      generationResult = await GenerationService.generateFlashcards(body.source_text, "mock-model");
+      const flashcards = await openRouterService.generateFlashcards({
+        content: body.source_text,
+        numberOfCards: 4,
+        difficulty: "intermediate",
+        language: "en",
+      });
+
+      generationResult = {
+        generation_id: 0, // Will be set after database insertion
+        generated_flashcards: flashcards.map((card, index) => ({
+          id: `temp_${index + 1}`,
+          front: card.front,
+          back: card.back,
+        })),
+      };
     } catch (error) {
       console.error("Failed to generate flashcards:", error);
       return new Response(
@@ -58,8 +82,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
         { status: 500 },
       );
     }
+    const generationDuration = Date.now() - startTime;
 
-    // 5. Create generation record with null user_id
+    // 5. Create generation record
     const sourceTextHash = crypto.createHash("sha256").update(body.source_text).digest("hex");
     const { supabase } = locals;
 
@@ -67,11 +92,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .from("generations")
       .insert({
         user_id: null,
-        model: "mock-model",
+        model: body.model,
         generated_count: generationResult.generated_flashcards.length,
         source_text_hash: sourceTextHash,
         source_text_length: body.source_text.length,
-        generation_duration: 0,
+        generation_duration: generationDuration,
         generated_unedited_count: generationResult.generated_flashcards.length,
       })
       .select()

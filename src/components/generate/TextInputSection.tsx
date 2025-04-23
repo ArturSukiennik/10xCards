@@ -18,27 +18,27 @@ interface TextInputSectionProps {
 const MIN_TEXT_LENGTH = 1000;
 const MAX_TEXT_LENGTH = 10000;
 
-const AI_MODELS = [
-  { id: "gpt-4", label: "GPT-4 (Best Quality)" },
-  { id: "gpt-3.5-turbo", label: "GPT-3.5 Turbo (Faster)" },
-] as const;
+const AI_MODELS = [{ id: "openai/gpt-4-turbo", label: "GPT-4 Turbo" }] as const;
 
 export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionProps) {
   const [sourceText, setSourceText] = useState("");
   const [selectedModel, setSelectedModel] = useState<string>(AI_MODELS[0].id);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
-  const textLength = sourceText.length;
+  const textLength = sourceText.trim().length;
   const isTextValid = textLength >= MIN_TEXT_LENGTH && textLength <= MAX_TEXT_LENGTH;
 
   const validateText = () => {
     const errors: string[] = [];
+    const trimmedLength = sourceText.trim().length;
 
-    if (textLength < MIN_TEXT_LENGTH) {
-      errors.push(`Text must be at least ${MIN_TEXT_LENGTH} characters long`);
+    if (trimmedLength < MIN_TEXT_LENGTH) {
+      errors.push(
+        `Text must be at least ${MIN_TEXT_LENGTH} characters long (current: ${trimmedLength})`,
+      );
     }
-    if (textLength > MAX_TEXT_LENGTH) {
-      errors.push(`Text must not exceed ${MAX_TEXT_LENGTH} characters`);
+    if (trimmedLength > MAX_TEXT_LENGTH) {
+      errors.push(`Text must not exceed ${MAX_TEXT_LENGTH} characters (current: ${trimmedLength})`);
     }
 
     setValidationErrors(errors);
@@ -49,7 +49,7 @@ export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionP
     if (!validateText()) return;
 
     const command: GenerateFlashcardsCommand = {
-      source_text: sourceText,
+      source_text: sourceText.trim(),
       model: selectedModel,
     };
 
@@ -76,7 +76,7 @@ export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionP
         <textarea
           value={sourceText}
           onChange={(e) => setSourceText(e.target.value)}
-          placeholder="Paste your text here (minimum 1000 characters)"
+          placeholder="Paste your text here (minimum 100 characters)"
           className="min-h-[300px] w-full p-4 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
         />
 
