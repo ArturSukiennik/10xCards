@@ -99,7 +99,7 @@ export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionP
           <Button
             onClick={handleGenerate}
             disabled={!isTextValid || isGenerating}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
             size="lg"
           >
             {isGenerating ? "Generating..." : "Generate Flashcards"}

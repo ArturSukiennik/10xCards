@@ -1,5 +1,6 @@
 import type { FlashcardProposalViewModel } from "@/lib/hooks/useFlashcardGeneration";
 import { Button } from "@/components/ui/button";
+import { Check, X } from "lucide-react";
 
 interface FlashcardsListProps {
   flashcards: FlashcardProposalViewModel[];
@@ -19,11 +20,11 @@ export function FlashcardsList({
   const acceptedCount = flashcards.filter((f) => f.status === "accepted").length;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-semibold">Source Text</h2>
-          <span className="text-sm text-gray-500">({flashcards.length} flashcards)</span>
+          <h2 className="text-2xl font-semibold">Generated Flashcards</h2>
+          <span className="text-sm text-gray-500">({flashcards.length} cards)</span>
         </div>
         <div className="flex gap-4">
           <Button
@@ -37,49 +38,48 @@ export function FlashcardsList({
           <Button
             onClick={onSaveAccepted}
             disabled={isSaving || acceptedCount === 0}
-            className="min-w-[140px]"
+            className="min-w-[140px] bg-green-600 hover:bg-green-700"
           >
             Save Accepted ({acceptedCount})
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {flashcards.map((flashcard) => (
           <div
             key={flashcard.id}
-            className={`bg-white rounded-lg shadow p-6 ${
-              flashcard.status === "rejected" ? "opacity-60" : ""
-            }`}
+            className={`relative rounded-lg shadow-md hover:shadow-lg transition-shadow p-6
+              ${flashcard.status === "accepted" ? "bg-green-50" : "bg-white"}
+              ${flashcard.status === "rejected" ? "bg-white opacity-60" : ""}`}
           >
-            <div className="space-y-6">
+            <div className="absolute top-2 right-2 flex gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => onUpdateStatus(flashcard.id, "rejected")}
+                className="min-w-[32px] h-8 bg-red-500 hover:bg-red-600 p-0"
+              >
+                <X className="h-4 w-4 text-black" />
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => onUpdateStatus(flashcard.id, "accepted")}
+                className="min-w-[32px] h-8 bg-green-500 hover:bg-green-600 p-0"
+              >
+                <Check className="h-4 w-4 text-black" />
+              </Button>
+            </div>
+
+            <div className="space-y-4 mt-6">
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-2">
-                  Mock Question {flashcard.id}
-                </h3>
-                <p className="text-gray-900">{flashcard.front}</p>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Front</h3>
+                <p className="text-gray-900 min-h-[60px]">{flashcard.front}</p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Mock Answer</h3>
-                <p className="text-gray-900">{flashcard.back}</p>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant={flashcard.status === "rejected" ? "primary" : "secondary"}
-                  size="sm"
-                  onClick={() => onUpdateStatus(flashcard.id, "rejected")}
-                  className="min-w-[80px]"
-                >
-                  Reject
-                </Button>
-                <Button
-                  variant={flashcard.status === "accepted" ? "primary" : "secondary"}
-                  size="sm"
-                  onClick={() => onUpdateStatus(flashcard.id, "accepted")}
-                  className="min-w-[80px]"
-                >
-                  Accept
-                </Button>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Back</h3>
+                <p className="text-gray-900 min-h-[60px]">{flashcard.back}</p>
               </div>
             </div>
           </div>
