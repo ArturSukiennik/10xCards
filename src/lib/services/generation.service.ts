@@ -85,9 +85,9 @@ export async function generateFlashcards(
     // Generate flashcards using OpenRouter
     const flashcards = await service.generateFlashcards({
       content: sourceText,
-      numberOfCards: 4,
-      difficulty: "intermediate",
-      language: "en",
+      numberOfCards: 10,
+      difficulty: "basic",
+      language: "pl",
     });
 
     // Validate and map to DTO format

@@ -167,41 +167,40 @@ export class OpenRouterService {
     const startTime = Date.now();
     try {
       const validatedParams = flashcardsParamsSchema.parse(params);
-      const {
-        content,
-        numberOfCards,
-        difficulty = "intermediate",
-        language = "en",
-      } = validatedParams;
+      const { content, numberOfCards, difficulty = "basic", language = "pl" } = validatedParams;
 
       this.logger.debug("Generating flashcards", { numberOfCards, difficulty, language });
 
-      const systemMessage = `You are a flashcard generation assistant. Create ${numberOfCards} flashcards at ${difficulty} level in ${language} language from the provided content. Focus on key concepts and important details. Return the response as a JSON array where each item has 'front' and 'back' properties.`;
+      const systemMessage = `You are a flashcard generation assistant. Create ${numberOfCards} flashcards at ${difficulty} level in ${language} language from the provided content. Focus on key concepts and important details. Format your response as a valid JSON array of objects, where each object has 'front' and 'back' properties.`;
 
       const response = await this.generateCompletion({
         systemMessage,
         userMessage: content,
         responseFormat: {
           type: "json_object",
-          schema: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                front: { type: "string" },
-                back: { type: "string" },
-              },
-              required: ["front", "back"],
-            },
-          },
         },
         temperature: 0.7,
       });
 
       try {
-        const flashcards = JSON.parse(response.content) as Flashcard[];
+        const parsedResponse = JSON.parse(response.content);
+        const flashcards = parsedResponse.flashcards as Flashcard[];
+
         if (!Array.isArray(flashcards)) {
-          throw new Error("Response is not an array");
+          throw new Error("Response flashcards is not an array");
+        }
+
+        // Validate each flashcard has required properties
+        const validFlashcards = flashcards.every(
+          (card) =>
+            typeof card.front === "string" &&
+            typeof card.back === "string" &&
+            card.front.trim() !== "" &&
+            card.back.trim() !== "",
+        );
+
+        if (!validFlashcards) {
+          throw new Error("Invalid flashcard format in response");
         }
 
         const latency = Date.now() - startTime;
