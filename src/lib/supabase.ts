@@ -8,11 +8,54 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables");
 }
 
+// Validate URL format
+try {
+  new URL(supabaseUrl);
+} catch (error) {
+  throw new Error("Invalid Supabase URL format");
+}
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
+  },
+  global: {
+    headers: {
+      "x-application-name": "10xCards",
+    },
+    fetch: (url, options = {}) => {
+      const defaultOptions = {
+        ...options,
+        timeout: 30000,
+        headers: {
+          ...options.headers,
+          "Cache-Control": "no-cache",
+        },
+      };
+
+      return fetch(url, defaultOptions)
+        .then(async (response) => {
+          if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.message || `HTTP error! status: ${response.status}`);
+          }
+          return response;
+        })
+        .catch((error) => {
+          console.error("Supabase fetch error:", error);
+          throw error;
+        });
+    },
+  },
+  db: {
+    schema: "public",
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10,
+    },
   },
 });
 
