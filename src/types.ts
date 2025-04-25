@@ -208,3 +208,22 @@ export function mapToFlashcardDto(flashcard: Tables<"flashcards">): FlashcardDto
 export function mapToFlashcardDtoArray(flashcards: Tables<"flashcards">[]): FlashcardDto[] {
   return flashcards.map(mapToFlashcardDto);
 }
+
+export interface AuthUser {
+  id: string;
+  email: string;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface RegisterCredentials extends LoginCredentials {
+  password_confirmation: string;
+}
+
+export interface AuthError {
+  message: string;
+  code?: string;
+}

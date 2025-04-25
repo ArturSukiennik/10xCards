@@ -1,45 +1,32 @@
-import type { MiddlewareHandler, MiddlewareContext, MiddlewareNext } from '../types/astro';
-import { RateLimitError } from '../lib/errors';
+import type { MiddlewareHandler } from "../types/astro";
+import { supabase } from "@/lib/supabase";
 
-// Simple in-memory store for rate limiting
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+const rateLimits = new Map<string, { count: number; resetTime: number }>();
 
-const WINDOW_MS = 60 * 1000; // 1 minute
-const MAX_REQUESTS = 30; // 30 requests per minute
-
-export const createRateLimitMiddleware = (
-  maxRequests: number = MAX_REQUESTS,
-  windowMs: number = WINDOW_MS
-): MiddlewareHandler => {
-  return async (
-    { locals, request }: MiddlewareContext,
-    next: MiddlewareNext
-  ) => {
-    const userId = locals.user?.id;
-    if (!userId) {
-      throw new RateLimitError('User not authenticated');
-    }
-
+export const createRateLimitMiddleware = (limit: number, windowMs = 60000): MiddlewareHandler => {
+  return async ({ request }, next) => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const userId = session?.user?.id || request.headers.get("x-forwarded-for") || "anonymous";
     const now = Date.now();
-    const userRateLimit = rateLimitStore.get(userId);
 
-    if (!userRateLimit || now > userRateLimit.resetTime) {
-      // First request or window expired - create new entry
-      rateLimitStore.set(userId, {
-        count: 1,
-        resetTime: now + windowMs,
-      });
-    } else if (userRateLimit.count >= maxRequests) {
-      // Rate limit exceeded
-      const remainingTime = Math.ceil((userRateLimit.resetTime - now) / 1000);
-      throw new RateLimitError(
-        `Rate limit exceeded. Please try again in ${remainingTime} seconds`
-      );
+    const userLimit = rateLimits.get(userId);
+    if (!userLimit || now > userLimit.resetTime) {
+      rateLimits.set(userId, { count: 1, resetTime: now + windowMs });
     } else {
-      // Increment request count
-      userRateLimit.count++;
+      userLimit.count++;
+      if (userLimit.count > limit) {
+        return new Response(JSON.stringify({ error: "Too many requests" }), {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "Retry-After": String(Math.ceil((userLimit.resetTime - now) / 1000)),
+          },
+        });
+      }
     }
 
     return next();
   };
-}; 
+};

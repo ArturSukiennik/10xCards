@@ -2,21 +2,46 @@
 
 import * as React from "react";
 import { AuthForm } from "./AuthForm";
-import { Link } from "../../components/ui/link";
+import { Link } from "../ui/link";
+import { useAuthStore } from "@/lib/stores/authStore";
+import type { AuthError, LoginCredentials } from "@/types";
 
-export function LoginForm() {
-  const [error, setError] = React.useState<string>();
+interface LoginFormProps {
+  redirectTo?: string;
+}
+
+export function LoginForm({ redirectTo = "/generate" }: LoginFormProps) {
+  const [error, setError] = React.useState<AuthError>();
   const [isLoading, setIsLoading] = React.useState(false);
+  const setUser = useAuthStore((state) => state.setUser);
 
-  const handleSubmit = async (data: { email: string; password: string }) => {
+  const handleSubmit = async (data: LoginCredentials) => {
     setIsLoading(true);
     setError(undefined);
 
     try {
-      // Note: Backend implementation will be added later
-      console.log("Login attempt:", data);
+      const response = await fetch("/api/auth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result.error);
+        return;
+      }
+
+      setUser(result.user);
+      window.location.href = redirectTo;
     } catch {
-      setError("An error occurred during login. Please try again.");
+      setError({
+        message: "An error occurred during login. Please try again.",
+        code: "NETWORK_ERROR",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -28,7 +53,7 @@ export function LoginForm() {
         title="Login"
         buttonText="Sign In"
         onSubmit={handleSubmit}
-        error={error}
+        error={error?.message}
         isLoading={isLoading}
         extraFields={
           <div className="flex justify-between text-sm">

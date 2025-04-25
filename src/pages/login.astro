@@ -1,16 +1,23 @@
 ---
 import MainLayout from "@/layouts/MainLayout.astro";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { supabase } from "@/lib/supabase";
 
-// Server-side redirect will be implemented later
-const isAuthenticated = false;
-if (isAuthenticated) {
-  return Astro.redirect("/dashboard");
+// Get redirect URL from query params
+const { searchParams } = new URL(Astro.request.url);
+const from = searchParams.get("from") || "/generate";
+
+// Server-side redirect
+const {
+  data: { session },
+} = await supabase.auth.getSession();
+if (session) {
+  return Astro.redirect(from);
 }
 ---
 
 <MainLayout title="Login - 10xCards">
-  <main class="container max-w-screen-sm mx-auto px-4 py-8">
-    <LoginForm client:load />
+  <main class="container max-w-screen-sm mx-auto px-4 py-8" transition:animate="slide">
+    <LoginForm client:load redirectTo={from} />
   </main>
 </MainLayout>

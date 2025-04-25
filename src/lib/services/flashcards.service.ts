@@ -5,12 +5,50 @@ import {
   type CreateFlashcardSchema,
   type CreateFlashcardBatchSchema,
 } from "../validation/flashcards.validation";
-import type { FlashcardDto, CreateMultipleFlashcardsResponseDto } from "../../types";
+import type {
+  FlashcardDto,
+  CreateMultipleFlashcardsResponseDto,
+  FlashcardListResponseDto,
+} from "../../types";
 import { mapToFlashcardDto, mapToFlashcardDtoArray } from "../../types";
 import { ValidationError, GenerationNotFoundError } from "../errors";
 
 export class FlashcardsService {
   constructor(private readonly supabase: SupabaseClient) {}
+
+  async getFlashcards(
+    userId: string,
+    options: { page: number; limit: number },
+  ): Promise<FlashcardListResponseDto> {
+    const { page, limit } = options;
+    const offset = (page - 1) * limit;
+
+    const {
+      data: flashcards,
+      error,
+      count,
+    } = await this.supabase
+      .from("flashcards")
+      .select("*", { count: "exact" })
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      console.error("Failed to fetch flashcards:", error);
+      throw new Error("Failed to fetch flashcards");
+    }
+
+    return {
+      data: mapToFlashcardDtoArray(flashcards),
+      pagination: {
+        current_page: page,
+        total_pages: Math.ceil((count || 0) / limit),
+        total_items: count || 0,
+        limit,
+      },
+    };
+  }
 
   async createFlashcard(userId: string, dto: CreateFlashcardSchema): Promise<FlashcardDto> {
     const validationResult = createFlashcardSchema.safeParse(dto);
