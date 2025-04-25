@@ -53,7 +53,7 @@ ID: US-001
 Tytuł: Rejestracja konta
 Opis: Jako nowy użytkownik chcę się zarejestrować, aby mieć dostęp do własnych fiszek i móc korzystać z generowania fiszek przez AI.
 Kryteria akceptacji:
-- Formularz rejestracyjny zawiera pola na adres e-mail i hasło.
+- Formularz rejestracyjny zawiera pola na adres e-mail, hasło i potwierdzenie hasła.
 - Po poprawnym wypełnieniu formularza i weryfikacji danych konto jest aktywowane.
 - Użytkownik otrzymuje potwierdzenie pomyślnej rejestracji i zostaje zalogowany.
 
@@ -64,6 +64,7 @@ Kryteria akceptacji:
 - Po podaniu prawidłowych danych logowania użytkownik zostaje przekierowany do widoku generowania fiszek.
 - Błędne dane logowania wyświetlają komunikat o nieprawidłowych danych.
 - Dane dotyczące logowania przechowywane są w bezpieczny sposób.
+- Nie korzystamy z zewnętrznych serwisów logowania (np. Google, GitHub).
 
 ID: US-003
 Tytuł: Generowanie fiszek przy użyciu AI
@@ -122,6 +123,14 @@ Opis: Jako zalogowany użytkownik chcę mieć pewność, że moje fiszki nie są
 Kryteria akceptacji:
 - Tylko zalogowany użytkownik może wyświetlać, edytować i usuwać swoje fiszki.
 - Nie ma dostępu do fiszek innych użytkowników ani możliwości współdzielenia.
+
+ID: US-010
+Tytuł: Wylogowanie z aplikacji
+Opis: Jako zalogowany użytkownik chcę mieć możliwość bezpiecznego opuszczenia aplikacji poprzez wylogowanie z systemu.
+Kryteria akceptacji:
+  - Użytkownik może się wylogować z systemu poprzez przycisk w prawym górnym rogu w głównym @Layout.astro.
+  - Po wylogowaniu uzytkownik jest przekierowany do strony logowania aplikacji.
+  - Nie korzystamy z zewnętrznych serwisów logowania (np. Google, GitHub).
 
 ## 6. Metryki sukcesu
 1. Efektywność generowania fiszek:

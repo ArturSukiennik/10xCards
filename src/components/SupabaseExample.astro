@@ -2,45 +2,90 @@
 // Access Supabase client from Astro locals
 const { supabase } = Astro.locals;
 
-// Example: Fetch data from a table
-const { data: posts, error } = await supabase
-  .from('posts')
-  .select('*')
+// Example: Get current user session first
+const {
+  data: { session },
+} = await supabase.auth.getSession();
+
+// Example: Fetch data from tables
+const { data: flashcards, error: flashcardsError } = await supabase
+  .from("flashcards")
+  .select("*")
   .limit(5);
 
-// Example: Get current user session
-const { data: { session } } = await supabase.auth.getSession();
+// Test generations table access
+const { data: generations, error: generationsError } = await supabase
+  .from("generations")
+  .select("*")
+  .limit(5);
+
+console.log("Auth status:", session ? "Logged in" : "Not logged in");
+console.log("Generations error:", generationsError);
 ---
 
 <div class="p-4">
   <h2 class="text-2xl font-bold mb-4">Supabase Example</h2>
-  
+
   <!-- Authentication Status -->
   <div class="mb-6">
     <h3 class="text-xl mb-2">Authentication Status</h3>
-    {session ? (
-      <p class="text-green-600">Logged in as: {session.user.email}</p>
-    ) : (
-      <p class="text-yellow-600">Not logged in</p>
-    )}
+    {
+      session ? (
+        <p class="text-green-600">Logged in as: {session.user.email}</p>
+      ) : (
+        <p class="text-yellow-600">Not logged in</p>
+      )
+    }
   </div>
 
   <!-- Data Display -->
   <div>
     <h3 class="text-xl mb-2">Recent Posts</h3>
-    {error && <p class="text-red-500">Error: {error.message}</p>}
-    
-    {posts && posts.length > 0 ? (
-      <ul class="space-y-2">
-        {posts.map((post) => (
-          <li class="p-2 bg-gray-100 rounded">
-            <h4 class="font-semibold">{post.title}</h4>
-            <p class="text-sm text-gray-600">{post.content}</p>
-          </li>
-        ))}
-      </ul>
-    ) : (
-      <p class="text-gray-500">No posts found</p>
-    )}
+    {flashcardsError && <p class="text-red-500">Error: {flashcardsError.message}</p>}
+
+    {
+      flashcards && flashcards.length > 0 ? (
+        <ul class="space-y-2">
+          {flashcards.map((flashcard) => (
+            <li class="p-2 bg-gray-100 rounded">
+              <h4 class="font-semibold">{flashcard.front}</h4>
+              <p class="text-sm text-gray-600">{flashcard.back}</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="text-gray-500">No flashcards found</p>
+      )
+    }
   </div>
-</div> 
+
+  <!-- Generations Data -->
+  <div class="mt-6">
+    <h3 class="text-xl mb-2">Recent Generations</h3>
+    {
+      generationsError && (
+        <div class="text-red-500">
+          <p>Error accessing generations: {generationsError.message}</p>
+          <p>Error code: {generationsError.code}</p>
+          <p>Error details: {JSON.stringify(generationsError.details)}</p>
+        </div>
+      )
+    }
+
+    {
+      generations && generations.length > 0 ? (
+        <ul class="space-y-2">
+          {generations.map((gen) => (
+            <li class="p-2 bg-gray-100 rounded">
+              <p>Model: {gen.model}</p>
+              <p>Duration: {gen.generation_duration}ms</p>
+              <p>Count: {gen.generated_count}</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="text-gray-500">No generations found</p>
+      )
+    }
+  </div>
+</div>

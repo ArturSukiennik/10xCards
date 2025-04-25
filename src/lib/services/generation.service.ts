@@ -1,106 +1,113 @@
-import type { TemporaryFlashcardDto, GenerateFlashcardsResponseDto, AIFlashcardResponse } from '../../types';
-import OpenAI from 'openai';
+import type { TemporaryFlashcardDto, GenerateFlashcardsResponseDto } from "../../types";
+import { OpenRouterService } from "./openrouter.service";
+import type { OpenRouterConfig } from "./openrouter.interfaces";
 
 // Constants for validation
 const MAX_FRONT_LENGTH = 200;
 const MAX_BACK_LENGTH = 500;
 
-// Validate required environment variable
-if (!import.meta.env.OPENAI_API_KEY) {
-  throw new Error('OPENAI_API_KEY environment variable is not set');
-}
+// Default configuration
+const DEFAULT_CONFIG: OpenRouterConfig = {
+  apiKey: import.meta.env.OPENROUTER_API_KEY || "",
+  defaultModel: "openai/gpt-4o-mini",
+  maxRetries: 3,
+  timeout: 30000,
+  baseUrl: "https://openrouter.ai/api/v1",
+};
 
-const openai = new OpenAI({
-  apiKey: import.meta.env.OPENAI_API_KEY,
-});
+let openRouterService: OpenRouterService | null = null;
+let currentConfig: OpenRouterConfig = DEFAULT_CONFIG;
 
 /**
- * Service for handling flashcard generation using AI
+ * Ensures the OpenRouter service is initialized
  */
-export class GenerationService {
-  /**
-   * Validates a single flashcard's content length
-   * @throws Error if validation fails
-   */
-  private static validateFlashcardLength(front: string, back: string, index: number): void {
-    if (front.length > MAX_FRONT_LENGTH) {
-      throw new Error(`Flashcard ${index + 1} front side exceeds ${MAX_FRONT_LENGTH} characters`);
+function ensureInitialized() {
+  if (!openRouterService) {
+    if (!currentConfig.apiKey || currentConfig.apiKey === "") {
+      throw new Error(
+        "OpenRouter API key is not configured. Please set OPENROUTER_API_KEY environment variable in .env file.",
+      );
     }
-    if (back.length > MAX_BACK_LENGTH) {
-      throw new Error(`Flashcard ${index + 1} back side exceeds ${MAX_BACK_LENGTH} characters`);
-    }
-  }
-
-  /**
-   * Generates flashcards from the provided text using the specified model
-   * @param sourceText The text to generate flashcards from
-   * @param model The model to use for generation
-   * @returns Generated flashcards with generation ID
-   */
-  static async generateFlashcards(sourceText: string, model: string): Promise<GenerateFlashcardsResponseDto> {
     try {
-      const prompt = `
-        Please create educational flashcards from the following text. 
-        Each flashcard should have a question on the front and a concise answer on the back.
-        The questions should test understanding of key concepts and important details.
-        Keep the front (question) under ${MAX_FRONT_LENGTH} characters and the back (answer) under ${MAX_BACK_LENGTH} characters.
-        Format your response as a JSON array of objects with 'front' and 'back' properties.
-
-        Text to process:
-        ${sourceText}
-      `;
-
-      const response = await openai.chat.completions.create({
-        model: model,
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a helpful assistant that creates educational flashcards. Your responses should be in valid JSON format.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-        response_format: { type: 'json_object' }
-      });
-
-      const content = response.choices[0]?.message?.content;
-      if (!content) {
-        throw new Error('No content in AI response');
+      openRouterService = new OpenRouterService(currentConfig);
+      // Test if service is properly initialized
+      if (!openRouterService) {
+        throw new Error("Failed to initialize OpenRouter service");
       }
-
-      const parsedContent = JSON.parse(content) as AIFlashcardResponse;
-      if (!Array.isArray(parsedContent.flashcards)) {
-        throw new Error('Invalid response format from AI');
-      }
-
-      // Map and validate the response
-      const generatedFlashcards: TemporaryFlashcardDto[] = parsedContent.flashcards.map((card, index) => {
-        if (typeof card.front !== 'string' || typeof card.back !== 'string') {
-          throw new Error(`Invalid flashcard format at index ${index}`);
-        }
-        
-        // Validate content length
-        this.validateFlashcardLength(card.front, card.back, index);
-
-        return {
-          id: `temp_${index + 1}`,
-          front: card.front,
-          back: card.back
-        };
-      });
-
-      return {
-        generation_id: 0, // Will be set by the API endpoint
-        generated_flashcards: generatedFlashcards
-      };
-
     } catch (error) {
-      console.error('Error generating flashcards:', error);
+      console.error("Error initializing OpenRouter service:", error);
       throw error;
     }
   }
-} 
+  return openRouterService;
+}
+
+/**
+ * Initializes the OpenRouter service with the provided configuration
+ */
+export function initialize(config: OpenRouterConfig) {
+  currentConfig = config;
+  openRouterService = new OpenRouterService(currentConfig);
+}
+
+/**
+ * Updates the OpenRouter service configuration
+ */
+export function updateConfig(config: Partial<OpenRouterConfig>) {
+  currentConfig = { ...currentConfig, ...config };
+  openRouterService = new OpenRouterService(currentConfig);
+}
+
+/**
+ * Validates a single flashcard's content length
+ * @throws Error if validation fails
+ */
+function validateFlashcardLength(front: string, back: string, index: number): void {
+  if (front.length > MAX_FRONT_LENGTH) {
+    throw new Error(`Flashcard ${index + 1} front side exceeds ${MAX_FRONT_LENGTH} characters`);
+  }
+  if (back.length > MAX_BACK_LENGTH) {
+    throw new Error(`Flashcard ${index + 1} back side exceeds ${MAX_BACK_LENGTH} characters`);
+  }
+}
+
+/**
+ * Generates flashcards using OpenRouter AI
+ * @param sourceText The text to generate flashcards from
+ * @returns Generated flashcards with generation ID
+ */
+export async function generateFlashcards(
+  sourceText: string,
+): Promise<GenerateFlashcardsResponseDto> {
+  try {
+    const service = ensureInitialized();
+
+    // Generate flashcards using OpenRouter
+    const flashcards = await service.generateFlashcards({
+      content: sourceText,
+      numberOfCards: 10,
+      difficulty: "basic",
+      language: "pl",
+    });
+
+    // Validate and map to DTO format
+    const generatedFlashcards: TemporaryFlashcardDto[] = flashcards.map((card, index) => {
+      // Validate content length
+      validateFlashcardLength(card.front, card.back, index);
+
+      return {
+        id: `temp_${index + 1}`,
+        front: card.front,
+        back: card.back,
+      };
+    });
+
+    return {
+      generation_id: 0, // Will be set by the API endpoint
+      generated_flashcards: generatedFlashcards,
+    };
+  } catch (error) {
+    console.error("Error generating flashcards:", error);
+    throw error;
+  }
+}

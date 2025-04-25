@@ -1,30 +1,21 @@
-import type { MiddlewareHandler, MiddlewareContext, MiddlewareNext } from '../types/astro';
-import { AuthorizationError } from '../lib/errors';
+import type { MiddlewareHandler, MiddlewareContext, MiddlewareNext } from "../types/astro";
+
+// Mocked user for development
+const MOCK_USER = {
+  id: "mock-user-id-123",
+  email: "mock@example.com",
+  role: "authenticated",
+  aud: "authenticated",
+  app_metadata: {},
+  user_metadata: {},
+  created_at: new Date().toISOString(),
+};
 
 export const authMiddleware: MiddlewareHandler = async (
-  { locals, request }: MiddlewareContext,
-  next: MiddlewareNext
+  { locals }: MiddlewareContext,
+  next: MiddlewareNext,
 ) => {
-  const authHeader = request.headers.get('Authorization');
-
-  if (!authHeader?.startsWith('Bearer ')) {
-    throw new AuthorizationError('Missing or invalid authorization header');
-  }
-
-  try {
-    const { data: { user }, error } = await locals.supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (error || !user) {
-      throw new AuthorizationError('Invalid token');
-    }
-
-    // Add user to locals for use in routes
-    locals.user = user;
-    
-    return next();
-  } catch (error) {
-    throw new AuthorizationError('Authentication failed');
-  }
-}; 
+  // Skip real authentication and use mock user
+  locals.user = MOCK_USER;
+  return next();
+};
