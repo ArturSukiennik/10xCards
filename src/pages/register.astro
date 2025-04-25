@@ -1,0 +1,16 @@
+---
+import MainLayout from "@/layouts/MainLayout.astro";
+import { RegisterForm } from "@/components/auth/RegisterForm";
+
+// Server-side redirect will be implemented later
+const isAuthenticated = false;
+if (isAuthenticated) {
+  return Astro.redirect("/dashboard");
+}
+---
+
+<MainLayout title="Register - 10xCards">
+  <main class="container max-w-screen-sm mx-auto px-4 py-8">
+    <RegisterForm client:load />
+  </main>
+</MainLayout>

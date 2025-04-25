@@ -1,6 +1,13 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
 import { Button } from "../components/ui/button";
+export const prerender = true;
+
+if (Astro.request.url.includes("index")) {
+  return Astro.redirect("/login");
+}
+
+return Astro.redirect("/login");
 ---
 
 <MainLayout title="10xCards - AI-Powered Flashcards Generator">

@@ -1,81 +1,161 @@
-import type { HTMLAttributes, ReactNode } from "react";
+import * as React from "react";
+import * as LabelPrimitive from "@radix-ui/react-label";
+import { Slot } from "@radix-ui/react-slot";
+import type { ControllerProps, FieldPath, FieldValues } from "react-hook-form";
+import { Controller, FormProvider, useFormContext } from "react-hook-form";
 
-interface FormProps extends HTMLAttributes<HTMLFormElement> {
-  children: ReactNode;
-  onSubmit?: (e: React.FormEvent<HTMLFormElement>) => void;
+import { cn } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
+
+const Form = FormProvider;
+
+interface FormFieldContextValue<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+> {
+  name: TName;
 }
 
-export function Form({ children, className = "", onSubmit, ...props }: FormProps) {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    onSubmit?.(e);
+const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFieldContextValue);
+
+const FormField = <
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+>({
+  ...props
+}: ControllerProps<TFieldValues, TName>) => {
+  return (
+    <FormFieldContext.Provider value={{ name: props.name }}>
+      <Controller {...props} />
+    </FormFieldContext.Provider>
+  );
+};
+
+const useFormField = () => {
+  const fieldContext = React.useContext(FormFieldContext);
+  const itemContext = React.useContext(FormItemContext);
+  const { getFieldState, formState } = useFormContext();
+
+  const fieldState = getFieldState(fieldContext.name, formState);
+
+  if (!fieldContext) {
+    throw new Error("useFormField should be used within <FormField>");
+  }
+
+  const { id } = itemContext;
+
+  return {
+    id,
+    name: fieldContext.name,
+    formItemId: `${id}-form-item`,
+    formDescriptionId: `${id}-form-item-description`,
+    formMessageId: `${id}-form-item-message`,
+    ...fieldState,
   };
+};
+
+interface FormItemContextValue {
+  id: string;
+}
+
+const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue);
+
+const FormItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => {
+    const id = React.useId();
+
+    return (
+      <FormItemContext.Provider value={{ id }}>
+        <div ref={ref} className={cn("space-y-2", className)} {...props} />
+      </FormItemContext.Provider>
+    );
+  },
+);
+FormItem.displayName = "FormItem";
+
+const FormLabel = React.forwardRef<
+  React.ElementRef<typeof LabelPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
+>(({ className, ...props }, ref) => {
+  const { error, formItemId } = useFormField();
 
   return (
-    <form onSubmit={handleSubmit} className={`space-y-6 ${className}`} {...props}>
-      {children}
-    </form>
+    <Label
+      ref={ref}
+      className={cn(error && "text-destructive", className)}
+      htmlFor={formItemId}
+      {...props}
+    />
   );
-}
+});
+FormLabel.displayName = "FormLabel";
 
-interface FormGroupProps extends HTMLAttributes<HTMLDivElement> {
-  children: ReactNode;
-}
+const FormControl = React.forwardRef<
+  React.ElementRef<typeof Slot>,
+  React.ComponentPropsWithoutRef<typeof Slot>
+>(({ ...props }, ref) => {
+  const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
 
-export function FormGroup({ children, className = "", ...props }: FormGroupProps) {
   return (
-    <div className={`space-y-2 ${className}`} {...props}>
-      {children}
-    </div>
+    <Slot
+      ref={ref}
+      id={formItemId}
+      aria-describedby={!error ? `${formDescriptionId}` : `${formDescriptionId} ${formMessageId}`}
+      aria-invalid={!!error}
+      {...props}
+    />
   );
-}
+});
+FormControl.displayName = "FormControl";
 
-interface FormLabelProps extends HTMLAttributes<HTMLLabelElement> {
-  children: ReactNode;
-  required?: boolean;
-}
+const FormDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => {
+  const { formDescriptionId } = useFormField();
 
-export function FormLabel({ children, required, className = "", ...props }: FormLabelProps) {
   return (
-    <label className={`block text-sm font-medium text-gray-900 ${className}`} {...props}>
-      {children}
-      {required && <span className="ml-1 text-red-500">*</span>}
-    </label>
+    <p
+      ref={ref}
+      id={formDescriptionId}
+      className={cn("text-sm text-muted-foreground", className)}
+      {...props}
+    />
   );
-}
+});
+FormDescription.displayName = "FormDescription";
 
-interface FormHelperProps extends HTMLAttributes<HTMLParagraphElement> {
-  children: ReactNode;
-}
+const FormMessage = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, children, ...props }, ref) => {
+  const { error, formMessageId } = useFormField();
+  const body = error ? String(error?.message) : children;
 
-export function FormHelper({ children, className = "", ...props }: FormHelperProps) {
+  if (!body) {
+    return null;
+  }
+
   return (
-    <p className={`mt-1 text-sm text-gray-500 ${className}`} {...props}>
-      {children}
+    <p
+      ref={ref}
+      id={formMessageId}
+      className={cn("text-sm font-medium text-destructive", className)}
+      {...props}
+    >
+      {body}
     </p>
   );
-}
+});
+FormMessage.displayName = "FormMessage";
 
-interface FormErrorProps extends HTMLAttributes<HTMLParagraphElement> {
-  children: ReactNode;
-}
-
-export function FormError({ children, className = "", ...props }: FormErrorProps) {
-  return (
-    <p className={`mt-1 text-sm text-red-500 ${className}`} {...props}>
-      {children}
-    </p>
-  );
-}
-
-interface FormActionsProps extends HTMLAttributes<HTMLDivElement> {
-  children: ReactNode;
-}
-
-export function FormActions({ children, className = "", ...props }: FormActionsProps) {
-  return (
-    <div className={`flex items-center justify-end gap-3 mt-8 ${className}`} {...props}>
-      {children}
-    </div>
-  );
-}
+export {
+  useFormField,
+  Form,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+  FormField,
+};

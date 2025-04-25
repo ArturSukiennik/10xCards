@@ -1,0 +1,16 @@
+---
+import MainLayout from "@/layouts/MainLayout.astro";
+import { LoginForm } from "@/components/auth/LoginForm";
+
+// Server-side redirect will be implemented later
+const isAuthenticated = false;
+if (isAuthenticated) {
+  return Astro.redirect("/dashboard");
+}
+---
+
+<MainLayout title="Login - 10xCards">
+  <main class="container max-w-screen-sm mx-auto px-4 py-8">
+    <LoginForm client:load />
+  </main>
+</MainLayout>
