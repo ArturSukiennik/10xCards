@@ -2,7 +2,7 @@ import { defineMiddleware, sequence } from "astro:middleware";
 import { onRequest as supabaseMiddleware } from "./supabase";
 
 const PUBLIC_ROUTES = ["/login", "/register"];
-const PUBLIC_API_ROUTES = ["/api/auth", "/api/auth/session"];
+const PUBLIC_API_ROUTES = ["/api/auth/register", "/api/auth/login", "/api/auth/session"];
 const API_ROUTES = /^\/api\//;
 
 const authMiddleware = defineMiddleware(async ({ locals, request, redirect }, next) => {
@@ -52,48 +52,21 @@ const authMiddleware = defineMiddleware(async ({ locals, request, redirect }, ne
       session = null;
     }
 
-    // Handle API routes
-    if (API_ROUTES.test(pathname)) {
-      if (!session) {
-        console.error("API route accessed without valid session:", pathname);
-        return new Response(JSON.stringify({ error: "Unauthorized - No valid session" }), {
+    // If no session and not a public route, redirect to login
+    if (!session && !PUBLIC_ROUTES.includes(pathname)) {
+      if (API_ROUTES.test(pathname)) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401,
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         });
       }
-      // Add session user to locals for API routes
-      locals.user = session.user;
-      return next();
+      return redirect("/login");
     }
 
-    // Handle page routes
-    if (!session) {
-      // Only log redirect for non-public routes
-      if (!PUBLIC_ROUTES.includes(pathname)) {
-        console.log("Protected route accessed without session, redirecting to login:", pathname);
-      }
-      const searchParams = new URLSearchParams();
-      searchParams.set("from", pathname);
-      return redirect(`/login?${searchParams.toString()}`);
-    }
-
-    // Add session user to locals for page routes
-    locals.user = session.user;
     return next();
   } catch (error) {
     console.error("Middleware error:", error);
-    // On error, redirect to login for page routes, return 401 for API routes
-    if (API_ROUTES.test(new URL(request.url).pathname)) {
-      return new Response(JSON.stringify({ error: "Session error" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-    const searchParams = new URLSearchParams();
-    searchParams.set("from", new URL(request.url).pathname);
-    return redirect(`/login?${searchParams.toString()}`);
+    return next();
   }
 });
 

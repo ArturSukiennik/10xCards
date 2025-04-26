@@ -30,13 +30,14 @@ const baseAuthSchema = z.object({
 });
 
 export interface AuthFormProps {
-  onSubmit: (data: z.infer<typeof baseAuthSchema>) => Promise<void>;
+  onSubmit: (data: any) => Promise<void>;
   title: string;
   buttonText: string;
   error?: string;
   isLoading?: boolean;
   extraFields?: React.ReactNode;
-  schema?: z.ZodType<z.infer<typeof baseAuthSchema>>;
+  schema?: z.ZodType<any>;
+  defaultValues?: Record<string, any>;
 }
 
 export function AuthForm({
@@ -47,13 +48,14 @@ export function AuthForm({
   isLoading = false,
   extraFields,
   schema = baseAuthSchema,
+  defaultValues = {
+    email: "",
+    password: "",
+  },
 }: AuthFormProps) {
-  const form = useForm<z.infer<typeof schema>>({
+  const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues,
   });
 
   const handleSubmit = async (data: z.infer<typeof schema>) => {

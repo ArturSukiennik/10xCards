@@ -33,9 +33,27 @@ export function RegisterForm() {
     setError(undefined);
 
     try {
-      // Note: Backend implementation will be added later
-      console.log("Registration attempt:", data);
-    } catch (err) {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result.error?.message || "An error occurred during registration");
+        return;
+      }
+
+      // Redirect to login page after successful registration
+      window.location.href = "/login?registered=true";
+    } catch {
       setError("An error occurred during registration. Please try again.");
     } finally {
       setIsLoading(false);
@@ -51,6 +69,11 @@ export function RegisterForm() {
         error={error}
         isLoading={isLoading}
         schema={registerSchema}
+        defaultValues={{
+          email: "",
+          password: "",
+          confirmPassword: "",
+        }}
         extraFields={
           <>
             <FormField
