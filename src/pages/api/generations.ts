@@ -4,7 +4,6 @@ import { generateFlashcardsSchema } from "../../lib/validation/generation.schema
 import { ZodError } from "zod";
 import crypto from "crypto";
 import { OpenRouterService } from "../../lib/services/openrouter.service";
-import { supabaseAdmin } from "../../lib/supabase";
 
 export const prerender = false;
 
@@ -31,14 +30,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (!locals.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    // Check if admin client is available
-    if (!supabaseAdmin) {
-      return new Response(JSON.stringify({ error: "Admin client not available" }), {
-        status: 500,
         headers: { "Content-Type": "application/json" },
       });
     }
@@ -116,11 +107,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
     const generationDuration = Date.now() - startTime;
 
-    // 6. Create generation record using admin client
+    // 6. Create generation record using authenticated client from middleware
     const sourceTextHash = crypto.createHash("sha256").update(body.source_text).digest("hex");
 
     try {
-      const { data: generation, error: dbError } = await supabaseAdmin
+      const { data: generation, error: dbError } = await locals.supabase
         .from("generations")
         .insert({
           user_id: locals.user.id,
@@ -199,23 +190,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
         }),
         {
           status: 400,
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         },
       );
     }
 
     return new Response(
       JSON.stringify({
-        error: "Internal server error",
+        error: "An unexpected error occurred",
         details: error instanceof Error ? error.message : "Unknown error",
       }),
       {
         status: 500,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       },
     );
   }
