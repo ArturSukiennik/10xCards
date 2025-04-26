@@ -1,8 +1,10 @@
 import { createClient, type AuthError as SupabaseAuthError } from "@supabase/supabase-js";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import type { AuthError } from "@/types";
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables");
@@ -11,63 +13,61 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Validate URL format
 try {
   new URL(supabaseUrl);
-} catch (error) {
+} catch {
   throw new Error("Invalid Supabase URL format");
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-  },
-  global: {
-    headers: {
-      "x-application-name": "10xCards",
-    },
-    fetch: (url, options = {}) => {
-      const defaultOptions = {
-        ...options,
-        timeout: 30000,
+export const cookieOptions: CookieOptions = {
+  path: "/",
+  secure: import.meta.env.PROD,
+  httpOnly: true,
+  sameSite: "lax",
+};
+
+// Create admin client with service role key
+export const supabaseAdmin = supabaseServiceKey
+  ? createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+      global: {
         headers: {
-          ...options.headers,
-          "Cache-Control": "no-cache",
+          "x-application-name": "10xCards-admin",
         },
-      };
+      },
+    })
+  : null;
 
-      return fetch(url, defaultOptions)
-        .then(async (response) => {
-          if (!response.ok) {
-            const error = await response.json().catch(() => ({}));
-            throw new Error(error.message || `HTTP error! status: ${response.status}`);
-          }
-          return response;
-        })
-        .catch((error) => {
-          console.error("Supabase fetch error:", error);
-          throw error;
-        });
+// Create server client for SSR
+export const createSupabaseServer = (cookies: {
+  get: (name: string) => string | undefined;
+  set: (name: string, value: string, options?: CookieOptions) => void;
+}) =>
+  createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      get: (name: string) => cookies.get(name),
+      set: (name: string, value: string, options?: CookieOptions) => {
+        cookies.set(name, value, options);
+      },
+      remove: (name: string, options?: CookieOptions) => {
+        cookies.set(name, "", { ...options, maxAge: 0 });
+      },
     },
-  },
-  db: {
-    schema: "public",
-  },
-  realtime: {
-    params: {
-      eventsPerSecond: 10,
-    },
-  },
-});
+  });
 
-export const formatAuthError = (error: SupabaseAuthError | Error | unknown): AuthError => {
-  if (error && typeof error === "object" && "message" in error) {
+// Helper function to format auth errors
+export const formatAuthError = (error: unknown): AuthError => {
+  if (error instanceof Error) {
     return {
-      message: String(error.message),
-      code: "code" in error && error.code ? String(error.code) : undefined,
+      message: error.message,
+      code: "UNKNOWN_ERROR",
     };
   }
+
+  const supabaseError = error as SupabaseAuthError;
   return {
-    message: "An unexpected error occurred",
-    code: "UNKNOWN_ERROR",
+    message: supabaseError.message || "An unknown error occurred",
+    code: supabaseError.name || "UNKNOWN_ERROR",
   };
 };

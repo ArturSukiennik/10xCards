@@ -1,11 +1,11 @@
-import { defineMiddleware } from "astro:middleware";
-import { supabase } from "../lib/supabase";
+import { defineMiddleware, sequence } from "astro:middleware";
+import { onRequest as supabaseMiddleware } from "./supabase";
 
 const PUBLIC_ROUTES = ["/login", "/register"];
-const PUBLIC_API_ROUTES = ["/api/auth"];
+const PUBLIC_API_ROUTES = ["/api/auth", "/api/auth/session"];
 const API_ROUTES = /^\/api\//;
 
-export const onRequest = defineMiddleware(async ({ request, redirect }, next) => {
+const authMiddleware = defineMiddleware(async ({ locals, request, redirect }, next) => {
   try {
     const url = new URL(request.url);
     const { pathname } = url;
@@ -15,8 +15,15 @@ export const onRequest = defineMiddleware(async ({ request, redirect }, next) =>
       try {
         const {
           data: { session },
-        } = await supabase.auth.getSession();
-        if (session) {
+          error,
+        } = await locals.supabase.auth.getSession();
+
+        if (error) {
+          console.error("Error checking session for public route:", error);
+          return next();
+        }
+
+        if (session && PUBLIC_ROUTES.includes(pathname)) {
           console.log("Public route, user already logged in, redirecting to /generate");
           return redirect("/generate");
         }
@@ -29,12 +36,19 @@ export const onRequest = defineMiddleware(async ({ request, redirect }, next) =>
     // Get session
     let session;
     try {
-      const { data } = await supabase.auth.getSession();
-      session = data.session;
-      console.log("Session check result:", session ? "Session exists" : "No session");
+      const { data, error } = await locals.supabase.auth.getSession();
+      if (error) {
+        console.error("Session error:", error);
+        session = null;
+      } else {
+        session = data.session;
+        // Only log session check for non-public routes
+        if (!PUBLIC_ROUTES.includes(pathname)) {
+          console.log("Session check result:", session ? "Session exists" : "No session");
+        }
+      }
     } catch (error) {
       console.error("Error getting session:", error);
-      // Proceed as unauthenticated on error
       session = null;
     }
 
@@ -49,22 +63,38 @@ export const onRequest = defineMiddleware(async ({ request, redirect }, next) =>
           },
         });
       }
+      // Add session user to locals for API routes
+      locals.user = session.user;
       return next();
     }
 
     // Handle page routes
     if (!session) {
-      console.log("Protected route accessed without session, redirecting to login:", pathname);
+      // Only log redirect for non-public routes
+      if (!PUBLIC_ROUTES.includes(pathname)) {
+        console.log("Protected route accessed without session, redirecting to login:", pathname);
+      }
       const searchParams = new URLSearchParams();
       searchParams.set("from", pathname);
       return redirect(`/login?${searchParams.toString()}`);
     }
 
-    // User is authenticated, proceed
+    // Add session user to locals for page routes
+    locals.user = session.user;
     return next();
   } catch (error) {
     console.error("Middleware error:", error);
-    // Fallback to next() on unexpected errors to prevent complete site breakdown
-    return next();
+    // On error, redirect to login for page routes, return 401 for API routes
+    if (API_ROUTES.test(new URL(request.url).pathname)) {
+      return new Response(JSON.stringify({ error: "Session error" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const searchParams = new URLSearchParams();
+    searchParams.set("from", new URL(request.url).pathname);
+    return redirect(`/login?${searchParams.toString()}`);
   }
 });
+
+export const onRequest = sequence(supabaseMiddleware, authMiddleware);

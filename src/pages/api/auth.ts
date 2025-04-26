@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { APIRoute } from "astro";
-import { supabase, formatAuthError } from "@/lib/supabase";
+import { createSupabaseServer, formatAuthError } from "@/lib/supabase";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email format"),
@@ -13,10 +13,15 @@ const loginSchema = z.object({
     .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
 });
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const body = await request.json();
     const validatedData = loginSchema.parse(body);
+
+    const supabase = createSupabaseServer({
+      get: (name) => cookies.get(name)?.value,
+      set: (name, value, options) => cookies.set(name, value, options),
+    });
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email: validatedData.email,
@@ -53,7 +58,12 @@ export const POST: APIRoute = async ({ request }) => {
   }
 };
 
-export const DELETE: APIRoute = async () => {
+export const DELETE: APIRoute = async ({ cookies }) => {
+  const supabase = createSupabaseServer({
+    get: (name) => cookies.get(name)?.value,
+    set: (name, value, options) => cookies.set(name, value, options),
+  });
+
   const { error } = await supabase.auth.signOut();
 
   if (error) {

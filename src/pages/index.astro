@@ -1,8 +1,12 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
 import { Button } from "../components/ui/button";
-export const prerender = true;
 
+// Disable prerendering to allow access to request headers
+export const prerender = false;
+
+// Redirect to login if not authenticated
+const { cookies } = Astro;
 if (Astro.request.url.includes("index")) {
   return Astro.redirect("/login");
 }

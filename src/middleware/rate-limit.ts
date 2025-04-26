@@ -1,13 +1,12 @@
 import type { MiddlewareHandler } from "../types/astro";
-import { supabase } from "@/lib/supabase";
 
 const rateLimits = new Map<string, { count: number; resetTime: number }>();
 
 export const createRateLimitMiddleware = (limit: number, windowMs = 60000): MiddlewareHandler => {
-  return async ({ request }, next) => {
+  return async ({ request, locals }, next) => {
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await locals.supabase.auth.getSession();
     const userId = session?.user?.id || request.headers.get("x-forwarded-for") || "anonymous";
     const now = Date.now();
 

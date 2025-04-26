@@ -26,6 +26,7 @@ export function LoginForm({ redirectTo = "/generate" }: LoginFormProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
+        credentials: "include", // Important: include cookies in the request
       });
 
       const result = await response.json();
@@ -36,7 +37,12 @@ export function LoginForm({ redirectTo = "/generate" }: LoginFormProps) {
       }
 
       setUser(result.user);
-      window.location.href = redirectTo;
+
+      // Wait a moment for the session to be established
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Use window.location.replace for a clean redirect
+      window.location.replace(redirectTo);
     } catch {
       setError({
         message: "An error occurred during login. Please try again.",

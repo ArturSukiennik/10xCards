@@ -4,6 +4,7 @@ import { generateFlashcardsSchema } from "../../lib/validation/generation.schema
 import { ZodError } from "zod";
 import crypto from "crypto";
 import { OpenRouterService } from "../../lib/services/openrouter.service";
+import { supabaseAdmin } from "../../lib/supabase";
 
 export const prerender = false;
 
@@ -22,12 +23,36 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (!locals.supabase) {
       return new Response(JSON.stringify({ error: "Database client not available" }), {
         status: 500,
+        headers: { "Content-Type": "application/json" },
       });
     }
 
-    // 2. Parse and validate request body
+    // 2. Get user from locals (set by middleware)
+    if (!locals.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Check if admin client is available
+    if (!supabaseAdmin) {
+      return new Response(JSON.stringify({ error: "Admin client not available" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // 3. Parse and validate request body
     const rawBody: GenerateFlashcardsCommand = await request.json();
-    const validationResult = generateFlashcardsSchema.safeParse(rawBody);
+
+    // Set default model if not provided
+    const bodyWithDefaults = {
+      ...rawBody,
+      model: rawBody.model || "openai/gpt-4o-mini",
+    };
+
+    const validationResult = generateFlashcardsSchema.safeParse(bodyWithDefaults);
 
     if (!validationResult.success) {
       const errors = validationResult.error.errors.map((err) => ({
@@ -40,20 +65,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
           error: "Validation failed",
           details: errors,
         }),
-        { status: 400 },
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
       );
     }
 
     const body = validationResult.data;
 
-    // 3. Validate source text is not empty
+    // 4. Validate source text is not empty
     if (!body.source_text.trim()) {
       return new Response(JSON.stringify({ error: "Source text cannot be empty" }), {
         status: 400,
+        headers: { "Content-Type": "application/json" },
       });
     }
 
-    // 4. Generate flashcards using OpenRouter service
+    // 5. Generate flashcards using OpenRouter service
     let generationResult: GenerateFlashcardsResponseDto;
     const startTime = Date.now();
     try {
@@ -79,45 +108,84 @@ export const POST: APIRoute = async ({ request, locals }) => {
           error: "Failed to generate flashcards",
           details: error instanceof Error ? error.message : "Unknown error",
         }),
-        { status: 500 },
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
       );
     }
     const generationDuration = Date.now() - startTime;
 
-    // 5. Create generation record
+    // 6. Create generation record using admin client
     const sourceTextHash = crypto.createHash("sha256").update(body.source_text).digest("hex");
-    const { supabase } = locals;
 
-    const { data: generation, error: dbError } = await supabase
-      .from("generations")
-      .insert({
-        user_id: null,
-        model: body.model,
-        generated_count: generationResult.generated_flashcards.length,
-        source_text_hash: sourceTextHash,
-        source_text_length: body.source_text.length,
-        generation_duration: generationDuration,
-        generated_unedited_count: generationResult.generated_flashcards.length,
-      })
-      .select()
-      .single();
+    try {
+      const { data: generation, error: dbError } = await supabaseAdmin
+        .from("generations")
+        .insert({
+          user_id: locals.user.id,
+          model: body.model,
+          generated_count: generationResult.generated_flashcards.length,
+          source_text_hash: sourceTextHash,
+          source_text_length: body.source_text.length,
+          generation_duration: generationDuration,
+          generated_unedited_count: generationResult.generated_flashcards.length,
+          accepted_edited_count: 0,
+        })
+        .select()
+        .single();
 
-    if (dbError) {
-      console.error("Failed to create generation record:", dbError);
+      if (dbError) {
+        console.error("Database error details:", {
+          error: dbError,
+          code: dbError.code,
+          message: dbError.message,
+          details: dbError.details,
+          hint: dbError.hint,
+        });
+        throw new Error(`Database error: ${dbError.message}`);
+      }
+
+      if (!generation) {
+        console.error("No generation record returned after insert");
+        throw new Error("Failed to create generation record - no data returned");
+      }
+
+      // Log successful creation
+      console.log("Generation record created:", {
+        id: generation.id,
+        user_id: generation.user_id,
+        model: generation.model,
+      });
+
+      // Return complete response with generation ID
       return new Response(
-        JSON.stringify({ error: "Failed to create generation record", details: dbError }),
-        { status: 500 },
+        JSON.stringify({
+          ...generationResult,
+          generation_id: generation.id,
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    } catch (error) {
+      console.error("Database error:", error);
+      return new Response(
+        JSON.stringify({
+          error: "Failed to create generation record",
+          details: error instanceof Error ? error.message : "Unknown error",
+        }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
       );
     }
-
-    // 6. Return complete response
-    return new Response(
-      JSON.stringify({
-        ...generationResult,
-        generation_id: generation.id,
-      }),
-      { status: 200 },
-    );
   } catch (error) {
     console.error("Unexpected error:", error);
     if (error instanceof ZodError) {
@@ -129,7 +197,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
             message: err.message,
           })),
         }),
-        { status: 400 },
+        {
+          status: 400,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
       );
     }
 
@@ -138,7 +211,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
         error: "Internal server error",
         details: error instanceof Error ? error.message : "Unknown error",
       }),
-      { status: 500 },
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
     );
   }
 };
