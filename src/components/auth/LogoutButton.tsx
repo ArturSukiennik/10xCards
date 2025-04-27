@@ -3,15 +3,33 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
+import { useAuthStore } from "@/lib/stores/authStore";
 
 export function LogoutButton() {
   const [isLoading, setIsLoading] = React.useState(false);
+  const setUser = useAuthStore((state) => state.setUser);
 
   const handleLogout = async () => {
     setIsLoading(true);
     try {
-      // Note: Backend implementation will be added later
-      console.log("Logout attempt");
+      const response = await fetch("/api/auth", {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to logout");
+      }
+
+      // Clear user from store
+      setUser(null);
+
+      // Clear local storage
+      localStorage.clear();
+
+      // Redirect to login page
+      window.location.replace("/login");
     } catch (error) {
       console.error("Logout error:", error);
     } finally {

@@ -18,47 +18,46 @@ const authMiddleware = defineMiddleware(async ({ locals, request, redirect }, ne
     // Skip auth check for public routes and public API endpoints
     if (PUBLIC_ROUTES.includes(pathname) || PUBLIC_API_ROUTES.includes(pathname)) {
       try {
+        // Use getUser instead of getSession for secure verification
         const {
-          data: { session },
-          error,
-        } = await locals.supabase.auth.getSession();
+          data: { user },
+          error: userError,
+        } = await locals.supabase.auth.getUser();
 
-        if (error) {
-          console.error("Error checking session for public route:", error);
+        if (userError) {
+          console.error("Error checking user for public route:", userError);
           return next();
         }
 
-        if (session && PUBLIC_ROUTES.includes(pathname)) {
-          console.log("Public route, user already logged in, redirecting to /generate");
+        // If user is logged in and tries to access login/register page, redirect to generate
+        if (user && PUBLIC_ROUTES.includes(pathname)) {
           return redirect("/generate");
         }
       } catch (error) {
-        console.error("Error checking session for public route:", error);
+        console.error("Error checking user for public route:", error);
       }
       return next();
     }
 
-    // Get session
-    let session;
+    // Verify user authentication
+    let user = null;
     try {
-      const { data, error } = await locals.supabase.auth.getSession();
+      const { data, error } = await locals.supabase.auth.getUser();
       if (error) {
-        console.error("Session error:", error);
-        session = null;
+        console.error("User verification error:", error);
+        // Clear invalid session
+        await locals.supabase.auth.signOut();
       } else {
-        session = data.session;
-        // Only log session check for non-public routes
-        if (!PUBLIC_ROUTES.includes(pathname)) {
-          console.log("Session check result:", session ? "Session exists" : "No session");
-        }
+        user = data.user;
       }
     } catch (error) {
-      console.error("Error getting session:", error);
-      session = null;
+      console.error("Error getting user:", error);
+      // Clear potentially corrupted session
+      await locals.supabase.auth.signOut();
     }
 
-    // If no session and not a public route, redirect to login
-    if (!session && !PUBLIC_ROUTES.includes(pathname)) {
+    // If no authenticated user and not a public route, redirect to login
+    if (!user && !PUBLIC_ROUTES.includes(pathname)) {
       if (API_ROUTES.test(pathname)) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401,
@@ -68,10 +67,21 @@ const authMiddleware = defineMiddleware(async ({ locals, request, redirect }, ne
       return redirect("/login");
     }
 
+    // Add verified user to locals
+    if (user) {
+      locals.user = user;
+    }
+
     return next();
   } catch (error) {
     console.error("Middleware error:", error);
-    return next();
+    // On critical error, clear session and redirect to login
+    try {
+      await locals.supabase.auth.signOut();
+    } catch {
+      // Ignore signOut errors in critical error handling
+    }
+    return redirect("/login");
   }
 });
 

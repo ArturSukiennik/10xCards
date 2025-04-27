@@ -1,0 +1,39 @@
+import { ViewTransitions } from "astro:transitions";
+import "@/styles/globals.css";
+
+const { supabase } = Astro.locals;
+let isAuthenticated = false;
+
+try {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) {
+    // Clear any potentially invalid session
+    await supabase.auth.signOut();
+  }
+  isAuthenticated = !!user;
+} catch (error) {
+  console.error("Error verifying authentication:", error);
+  // Clear session on error
+  await supabase.auth.signOut();
+}
+
+// Force login page for unauthenticated users on protected routes
+const isPublicRoute = ["/login", "/register"].includes(Astro.url.pathname);
+if (!isAuthenticated && !isPublicRoute && !Astro.url.pathname.startsWith("/api/")) {
+  return Astro.redirect("/login");
+}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>10xCards</title>
+    <ViewTransitions />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
