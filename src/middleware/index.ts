@@ -2,7 +2,12 @@ import { defineMiddleware, sequence } from "astro:middleware";
 import { onRequest as supabaseMiddleware } from "./supabase";
 
 const PUBLIC_ROUTES = ["/login", "/register"];
-const PUBLIC_API_ROUTES = ["/api/auth/register", "/api/auth/login", "/api/auth/session"];
+const PUBLIC_API_ROUTES = [
+  "/api/auth",
+  "/api/auth/register",
+  "/api/auth/login",
+  "/api/auth/session",
+];
 const API_ROUTES = /^\/api\//;
 
 const authMiddleware = defineMiddleware(async ({ locals, request, redirect }, next) => {

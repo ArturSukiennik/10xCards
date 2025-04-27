@@ -32,7 +32,21 @@ export function LoginForm({ redirectTo = "/generate" }: LoginFormProps) {
       const result = await response.json();
 
       if (!response.ok) {
-        setError(result.error);
+        console.error("Login error:", result.error);
+        setError(
+          result.error || {
+            message: "An error occurred during login. Please try again.",
+            code: "UNKNOWN_ERROR",
+          },
+        );
+        return;
+      }
+
+      if (!result.user) {
+        setError({
+          message: "Invalid response from server",
+          code: "INVALID_RESPONSE",
+        });
         return;
       }
 
@@ -43,7 +57,8 @@ export function LoginForm({ redirectTo = "/generate" }: LoginFormProps) {
 
       // Use window.location.replace for a clean redirect
       window.location.replace(redirectTo);
-    } catch {
+    } catch (error) {
+      console.error("Login error:", error);
       setError({
         message: "An error occurred during login. Please try again.",
         code: "NETWORK_ERROR",
