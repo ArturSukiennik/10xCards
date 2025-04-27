@@ -1,84 +1,42 @@
 import { defineMiddleware, sequence } from "astro:middleware";
 import { onRequest as supabaseMiddleware } from "./supabase";
+import { createSupabaseServer } from "@/lib/supabase";
+import type { CookieOptions } from "@supabase/ssr";
 
-const PUBLIC_ROUTES = ["/login", "/register"];
-const PUBLIC_API_ROUTES = [
-  "/api/auth",
-  "/api/auth/register",
-  "/api/auth/login",
-  "/api/auth/session",
-];
-const API_ROUTES = /^\/api\//;
+const PUBLIC_ROUTES = ["/login", "/register", "/reset-password", "/"];
 
-const authMiddleware = defineMiddleware(async ({ locals, request, redirect }, next) => {
-  try {
-    const url = new URL(request.url);
-    const { pathname } = url;
+const authMiddleware = defineMiddleware(async (context, next) => {
+  const { cookies, url } = context;
 
-    // Skip auth check for public routes and public API endpoints
-    if (PUBLIC_ROUTES.includes(pathname) || PUBLIC_API_ROUTES.includes(pathname)) {
-      try {
-        // Use getUser instead of getSession for secure verification
-        const {
-          data: { user },
-          error: userError,
-        } = await locals.supabase.auth.getUser();
-
-        if (userError) {
-          return next();
-        }
-
-        // If user is logged in and tries to access login/register page, redirect to generate
-        if (user && PUBLIC_ROUTES.includes(pathname)) {
-          return redirect("/generate");
-        }
-      } catch {
-        // Ignore errors for public routes
-      }
-      return next();
-    }
-
-    // Verify user authentication
-    let user = null;
-    try {
-      const { data, error } = await locals.supabase.auth.getUser();
-      if (error) {
-        // Clear invalid session
-        await locals.supabase.auth.signOut();
-      } else {
-        user = data.user;
-      }
-    } catch {
-      // Clear potentially corrupted session
-      await locals.supabase.auth.signOut();
-    }
-
-    // If no authenticated user and not a public route, redirect to login
-    if (!user && !PUBLIC_ROUTES.includes(pathname)) {
-      if (API_ROUTES.test(pathname)) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-      return redirect("/login");
-    }
-
-    // Add verified user to locals
-    if (user) {
-      locals.user = user;
-    }
-
+  // Skip auth check for public routes and auth-related API endpoints
+  if (PUBLIC_ROUTES.includes(url.pathname) || url.pathname.startsWith("/api/auth")) {
     return next();
-  } catch {
-    // On critical error, clear session and redirect to login
-    try {
-      await locals.supabase.auth.signOut();
-    } catch {
-      // Ignore signOut errors in critical error handling
-    }
-    return redirect("/login");
   }
+
+  const supabase = createSupabaseServer({
+    get: (name: string) => cookies.get(name)?.value,
+    set: (name: string, value: string, options?: CookieOptions) =>
+      cookies.set(name, value, options),
+  });
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    if (url.pathname.startsWith("/api/")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    return context.redirect("/login");
+  }
+
+  // User is authenticated, proceed
+  const response = await next();
+  return response;
 });
 
 export const onRequest = sequence(supabaseMiddleware, authMiddleware);

@@ -7,8 +7,26 @@ interface AuthState {
   isAuthenticated: boolean;
 }
 
-export const useAuthStore = create<AuthState>()((set) => ({
-  user: null,
-  isAuthenticated: false,
-  setUser: (user: AuthUser | null) => set(() => ({ user, isAuthenticated: !!user })),
-}));
+export const useAuthStore = create<AuthState>()((set) => {
+  // Only add event listeners in browser environment
+  if (typeof window !== "undefined") {
+    // Listen for auth events
+    window.addEventListener("auth:login", ((event: CustomEvent<{ user: AuthUser }>) => {
+      set({ user: event.detail.user, isAuthenticated: true });
+    }) as EventListener);
+
+    window.addEventListener("auth:logout", (() => {
+      set({ user: null, isAuthenticated: false });
+    }) as EventListener);
+  }
+
+  return {
+    user: null,
+    isAuthenticated: false,
+    setUser: (user: AuthUser | null) =>
+      set(() => ({
+        user,
+        isAuthenticated: !!user,
+      })),
+  };
+});

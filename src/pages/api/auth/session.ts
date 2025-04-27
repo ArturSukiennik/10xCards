@@ -1,56 +1,58 @@
 import type { APIRoute } from "astro";
-import { supabase } from "@/lib/supabase";
+import { createSupabaseServer, formatAuthError } from "@/lib/supabase";
 
 export const prerender = false;
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ cookies }) => {
   try {
+    const supabase = createSupabaseServer({
+      get: (name) => cookies.get(name)?.value,
+      set: (name, value, options) => cookies.set(name, value, options),
+    });
+
     const {
-      data: { session },
+      data: { user },
       error,
-    } = await supabase.auth.getSession();
+    } = await supabase.auth.getUser();
 
     if (error) {
-      console.error("Session error:", error);
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
+      return new Response(JSON.stringify({ error: formatAuthError(error) }), {
+        status: error.status || 400,
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
     }
 
-    if (!session) {
-      return new Response(JSON.stringify({ session: null }), {
+    if (!user) {
+      return new Response(JSON.stringify({ user: null }), {
         status: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
     }
 
     return new Response(
       JSON.stringify({
-        session: {
-          user: {
-            id: session.user.id,
-            email: session.user.email,
-          },
-          expires_at: session.expires_at,
+        user: {
+          id: user.id,
+          email: user.email,
         },
       }),
       {
         status: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
     );
   } catch (error) {
-    console.error("Session check error:", error);
-    return new Response(
-      JSON.stringify({
-        error: "Failed to check session",
-        details: error instanceof Error ? error.message : "Unknown error",
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
+    return new Response(JSON.stringify({ error: formatAuthError(error) }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+    });
   }
 };

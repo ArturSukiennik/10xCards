@@ -1,5 +1,6 @@
 import { TextInputSection } from "./TextInputSection";
 import { FlashcardsList } from "./FlashcardsList";
+import { TopBar } from "./TopBar";
 import { useFlashcardGeneration } from "@/lib/hooks/useFlashcardGeneration";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { toast } from "sonner";
@@ -80,33 +81,36 @@ export function GenerateView() {
   };
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      {state.errors && (
-        <ErrorAlert
-          error={state.errors}
-          onRetry={
-            state.errors.isRetryable
-              ? () =>
-                  handleGenerateWithToast({
-                    source_text: state.sourceText,
-                    model: state.selectedModel,
-                  })
-              : undefined
-          }
-        />
-      )}
+    <div className="flex flex-col min-h-screen">
+      <TopBar />
+      <div className="container mx-auto py-8 space-y-8 flex-1">
+        {state.errors && (
+          <ErrorAlert
+            error={state.errors}
+            onRetry={
+              state.errors.isRetryable
+                ? () =>
+                    handleGenerateWithToast({
+                      source_text: state.sourceText,
+                      model: state.selectedModel,
+                    })
+                : undefined
+            }
+          />
+        )}
 
-      <TextInputSection onGenerate={handleGenerateWithToast} isGenerating={state.isGenerating} />
+        <TextInputSection onGenerate={handleGenerateWithToast} isGenerating={state.isGenerating} />
 
-      {state.flashcards.length > 0 && (
-        <FlashcardsList
-          flashcards={state.flashcards}
-          onSaveAll={handleSaveAllWithToast}
-          onSaveAccepted={handleSaveAcceptedWithToast}
-          isSaving={state.isSaving}
-          onUpdateStatus={updateFlashcardStatus}
-        />
-      )}
+        {state.flashcards.length > 0 && (
+          <FlashcardsList
+            flashcards={state.flashcards}
+            onSaveAll={handleSaveAllWithToast}
+            onSaveAccepted={handleSaveAcceptedWithToast}
+            isSaving={state.isSaving}
+            onUpdateStatus={updateFlashcardStatus}
+          />
+        )}
+      </div>
     </div>
   );
 }
