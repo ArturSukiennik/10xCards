@@ -85,7 +85,7 @@ export async function generateFlashcards(
     // Generate flashcards using OpenRouter
     const flashcards = await service.generateFlashcards({
       content: sourceText,
-      numberOfCards: 10,
+      numberOfCards: 8,
       difficulty: "basic",
       language: "pl",
     });

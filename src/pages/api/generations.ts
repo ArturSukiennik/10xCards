@@ -79,9 +79,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     try {
       const flashcards = await openRouterService.generateFlashcards({
         content: body.source_text,
-        numberOfCards: 4,
-        difficulty: "intermediate",
-        language: "en",
+        numberOfCards: 8,
+        difficulty: "basic",
+        language: "pl",
       });
 
       generationResult = {

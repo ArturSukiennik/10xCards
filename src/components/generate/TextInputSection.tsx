@@ -18,7 +18,7 @@ interface TextInputSectionProps {
 const MIN_TEXT_LENGTH = 1000;
 const MAX_TEXT_LENGTH = 10000;
 
-const AI_MODELS = [{ id: "openai/gpt-4-turbo", label: "GPT-4 Turbo" }] as const;
+const AI_MODELS = [{ id: "openai/gpt-4o-mini", label: "gpt-4o-mini" }] as const;
 
 export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionProps) {
   const [sourceText, setSourceText] = useState("");
