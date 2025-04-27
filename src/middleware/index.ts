@@ -25,7 +25,6 @@ const authMiddleware = defineMiddleware(async ({ locals, request, redirect }, ne
         } = await locals.supabase.auth.getUser();
 
         if (userError) {
-          console.error("Error checking user for public route:", userError);
           return next();
         }
 
@@ -33,8 +32,8 @@ const authMiddleware = defineMiddleware(async ({ locals, request, redirect }, ne
         if (user && PUBLIC_ROUTES.includes(pathname)) {
           return redirect("/generate");
         }
-      } catch (error) {
-        console.error("Error checking user for public route:", error);
+      } catch {
+        // Ignore errors for public routes
       }
       return next();
     }
@@ -44,14 +43,12 @@ const authMiddleware = defineMiddleware(async ({ locals, request, redirect }, ne
     try {
       const { data, error } = await locals.supabase.auth.getUser();
       if (error) {
-        console.error("User verification error:", error);
         // Clear invalid session
         await locals.supabase.auth.signOut();
       } else {
         user = data.user;
       }
-    } catch (error) {
-      console.error("Error getting user:", error);
+    } catch {
       // Clear potentially corrupted session
       await locals.supabase.auth.signOut();
     }
@@ -73,8 +70,7 @@ const authMiddleware = defineMiddleware(async ({ locals, request, redirect }, ne
     }
 
     return next();
-  } catch (error) {
-    console.error("Middleware error:", error);
+  } catch {
     // On critical error, clear session and redirect to login
     try {
       await locals.supabase.auth.signOut();

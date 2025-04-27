@@ -36,21 +36,27 @@ export class DefaultOpenRouterLogger implements OpenRouterLogger {
 
   private totalLatency = 0;
 
-  info(message: string, metadata?: Record<string, unknown>): void {
-    console.info(`[OpenRouter] ${message}`, metadata ?? "");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  info(_message: string, _metadata?: Record<string, unknown>): void {
+    // Disable info logs
   }
 
-  error(message: string, error: Error, metadata?: Record<string, unknown>): void {
-    console.error(`[OpenRouter] ${message}`, error, metadata ?? "");
+  error(message: string, error: Error): void {
+    // Only log critical errors
+    if (error.name !== "AbortError" && !message.includes("retry")) {
+      console.error(`[OpenRouter] Critical error: ${error.message}`);
+    }
     this.metrics.errorCount++;
   }
 
-  warn(message: string, metadata?: Record<string, unknown>): void {
-    console.warn(`[OpenRouter] ${message}`, metadata ?? "");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  warn(_message: string, _metadata?: Record<string, unknown>): void {
+    // Disable warning logs
   }
 
-  debug(message: string, metadata?: Record<string, unknown>): void {
-    console.debug(`[OpenRouter] ${message}`, metadata ?? "");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  debug(_message: string, _metadata?: Record<string, unknown>): void {
+    // Disable debug logs
   }
 
   trackRequest(latencyMs: number): void {

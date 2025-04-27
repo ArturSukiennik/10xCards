@@ -17,20 +17,17 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   context.locals.supabase = supabase;
 
-  // Get session
+  // Get authenticated user
   try {
     const {
-      data: { session },
+      data: { user },
       error,
-    } = await supabase.auth.getSession();
-
-    if (error) {
-      console.error("Error getting session in middleware:", error);
-    } else if (session) {
-      context.locals.user = session.user;
+    } = await supabase.auth.getUser();
+    if (!error && user) {
+      context.locals.user = user;
     }
-  } catch (error) {
-    console.error("Error in session check:", error);
+  } catch {
+    // Ignore auth errors in middleware
   }
 
   const response = await next();
@@ -45,8 +42,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
         }
       });
     }
-  } catch (error) {
-    console.error("Error handling cookies:", error);
+  } catch {
+    // Ignore cookie handling errors
   }
 
   return response;

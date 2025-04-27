@@ -93,7 +93,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
         })),
       };
     } catch (error) {
-      console.error("Failed to generate flashcards:", error);
       return new Response(
         JSON.stringify({
           error: "Failed to generate flashcards",
@@ -127,27 +126,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
         .single();
 
       if (dbError) {
-        console.error("Database error details:", {
-          error: dbError,
-          code: dbError.code,
-          message: dbError.message,
-          details: dbError.details,
-          hint: dbError.hint,
-        });
         throw new Error(`Database error: ${dbError.message}`);
       }
 
       if (!generation) {
-        console.error("No generation record returned after insert");
         throw new Error("Failed to create generation record - no data returned");
       }
-
-      // Log successful creation
-      console.log("Generation record created:", {
-        id: generation.id,
-        user_id: generation.user_id,
-        model: generation.model,
-      });
 
       // Return complete response with generation ID
       return new Response(
@@ -163,7 +147,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
         },
       );
     } catch (error) {
-      console.error("Database error:", error);
       return new Response(
         JSON.stringify({
           error: "Failed to create generation record",
@@ -178,7 +161,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
   } catch (error) {
-    console.error("Unexpected error:", error);
     if (error instanceof ZodError) {
       return new Response(
         JSON.stringify({

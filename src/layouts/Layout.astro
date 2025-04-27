@@ -11,8 +11,7 @@ try {
     await supabase.auth.signOut();
   }
   isAuthenticated = !!user;
-} catch (error) {
-  console.error("Error verifying authentication:", error);
+} catch {
   // Clear session on error
   await supabase.auth.signOut();
 }
