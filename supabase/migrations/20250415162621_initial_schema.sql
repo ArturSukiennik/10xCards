@@ -122,14 +122,14 @@ create trigger update_flashcards_updated_at
     execute function update_updated_at_column();
 
 -- Drop all policies
-drop policy if exists "Users can view their own generations" on generations;
-drop policy if exists "Users can insert their own generations" on generations;
-drop policy if exists "Users can update their own generations" on generations;
+--drop policy if exists "Users can view their own generations" on generations;
+--drop policy if exists "Users can insert their own generations" on generations;
+--drop policy if exists "Users can update their own generations" on generations;
 
-drop policy if exists "Users can view their own flashcards" on flashcards;
-drop policy if exists "Users can insert their own flashcards" on flashcards;
-drop policy if exists "Users can update their own flashcards" on flashcards;
-drop policy if exists "Users can delete their own flashcards" on flashcards;
+--drop policy if exists "Users can view their own flashcards" on flashcards;
+--drop policy if exists "Users can insert their own flashcards" on flashcards;
+--drop policy if exists "Users can update their own flashcards" on flashcards;
+--drop policy if exists "Users can delete their own flashcards" on flashcards;
 
-drop policy if exists "Users can view their own error logs" on generation_error_logs;
-drop policy if exists "Users can insert their own error logs" on generation_error_logs;
+--drop policy if exists "Users can view their own error logs" on generation_error_logs;
+--drop policy if exists "Users can insert their own error logs" on generation_error_logs;
