@@ -39,7 +39,6 @@ const {
         ? JSON.parse(userDataElement.textContent || "null")
         : null;
 
-      // Initialize auth store with server-side user data
       if (initialUser) {
         const loginEvent = new CustomEvent("auth:login", {
           detail: { user: initialUser },
@@ -47,7 +46,6 @@ const {
         window.dispatchEvent(loginEvent);
       }
 
-      // Handle auth state changes
       document.addEventListener("astro:page-load", () => {
         const currentPath = window.location.pathname;
         const isAuthPage = ["/login", "/register", "/reset-password"].includes(currentPath);
@@ -57,6 +55,19 @@ const {
           window.location.href = "/login";
         } else if (hasAuthToken && isAuthPage) {
           window.location.href = "/generate";
+        }
+
+        const userDataElement = document.getElementById("user-data");
+        const userData = userDataElement
+          ? JSON.parse(userDataElement.textContent || "null")
+          : null;
+
+        if (userData) {
+          console.log("Reinitializing auth store after page transition:", userData);
+          const loginEvent = new CustomEvent("auth:login", {
+            detail: { user: userData },
+          });
+          window.dispatchEvent(loginEvent);
         }
       });
     </script>

@@ -22,5 +22,5 @@ if (!user) {
 ---
 
 <MainLayout title="Generate Flashcards - 10xCards">
-  <GenerateView client:load />
+  <GenerateView client:load initialUser={{ id: user.id, email: user.email }} />
 </MainLayout>
