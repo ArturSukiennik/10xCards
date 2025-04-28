@@ -1,10 +1,17 @@
 "use client";
 
 import * as React from "react";
+import * as z from "zod";
 import { AuthForm } from "./AuthForm";
 import { Link } from "../ui/link";
 import { useAuthStore } from "@/lib/stores/authStore";
 import type { AuthError, LoginCredentials } from "@/types";
+
+// Schemat logowania - tylko podstawowa walidacja
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+});
 
 interface LoginFormProps {
   redirectTo?: string;
@@ -33,12 +40,11 @@ export function LoginForm({ redirectTo = "/generate" }: LoginFormProps) {
 
       if (!response.ok) {
         console.error("Login error:", result.error);
-        setError(
-          result.error || {
-            message: "An error occurred during login. Please try again.",
-            code: "UNKNOWN_ERROR",
-          },
-        );
+        // Używamy standardowego komunikatu dla niepoprawnych danych logowania
+        setError({
+          message: "Wrong credentials",
+          code: "INVALID_CREDENTIALS",
+        });
         return;
       }
 
@@ -76,6 +82,7 @@ export function LoginForm({ redirectTo = "/generate" }: LoginFormProps) {
         onSubmit={handleSubmit}
         error={error?.message}
         isLoading={isLoading}
+        schema={loginSchema}
         extraFields={
           <div className="flex justify-between text-sm">
             <Link href="/register" className="text-primary hover:underline">
