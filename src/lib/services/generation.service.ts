@@ -46,6 +46,11 @@ function ensureInitialized() {
  * Initializes the OpenRouter service with the provided configuration
  */
 export function initialize(config: OpenRouterConfig) {
+  if (!config.apiKey || config.apiKey === "") {
+    throw new Error(
+      "OpenRouter API key is not configured. Please set OPENROUTER_API_KEY environment variable in .env file.",
+    );
+  }
   currentConfig = config;
   openRouterService = new OpenRouterService(currentConfig);
 }
