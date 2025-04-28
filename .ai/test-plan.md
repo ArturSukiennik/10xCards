@@ -1,215 +1,305 @@
-# Plan Testów dla Projektu 10xCards
+# Plan Testów dla Aplikacji 10xCards
 
-## 1. Wprowadzenie i Cele Testowania
+## 1. Wprowadzenie i cele testowania
 
-Celem testowania jest zapewnienie wysokiej jakości aplikacji 10xCards, która umożliwia automatyczne generowanie fiszek przy użyciu AI. Plan testów koncentruje się na weryfikacji kluczowych funkcjonalności, wydajności oraz doświadczenia użytkownika.
+Celem niniejszego planu testów jest zapewnienie wysokiej jakości i niezawodności aplikacji 10xCards, która umożliwia automatyczne generowanie fiszek przy użyciu sztucznej inteligencji. Plan definiuje kompleksowe podejście do testowania wszystkich komponentów aplikacji, z uwzględnieniem specyfiki stosu technologicznego oraz architektury systemu.
 
-### Główne Cele:
-- Weryfikacja poprawności generowania fiszek przez AI
-- Zapewnienie stabilności i wydajności aplikacji
-- Walidacja integracji z zewnętrznymi serwisami (Supabase, OpenRouter.ai)
-- Potwierdzenie zgodności z wymaganiami UX/UI
+### Główne cele testowania:
+- Weryfikacja poprawności działania generowania fiszek przy użyciu AI
+- Zapewnienie niezawodności operacji CRUD dla fiszek
+- Testowanie mechanizmów autentykacji i autoryzacji
+- Walidacja responsywności i dostępności interfejsu użytkownika
+- Weryfikacja integracji z zewnętrznymi usługami (Supabase, OpenRouter.ai)
+- Zapewnienie wydajności i skalowalności aplikacji
 
-## 2. Zakres Testów
+## 2. Zakres testów
 
-### Komponenty Podlegające Testowaniu:
-- Frontend (Astro + React)
-- Integracja z backendem (Supabase)
-- Integracja z AI (OpenRouter.ai)
-- System autentykacji
-- Zarządzanie fiszkami
-- Interfejs użytkownika
+### Komponenty objęte testami:
+- Frontend: Komponenty Astro i React, interfejs użytkownika, interakcje z użytkownikiem
+- Backend: Endpointy API, middleware, autentykacja
+- Integracje: Komunikacja z Supabase i OpenRouter.ai
+- Baza danych: Operacje CRUD, relacje między tabelami
+- Bezpieczeństwo: Mechanizmy autentykacji, autoryzacja, ochrona danych
 
-### Poza Zakresem:
-- Testy wewnętrznej infrastruktury Supabase
-- Testy wewnętrznych mechanizmów OpenRouter.ai
+### Komponenty wyłączone z testów:
+- Infrastruktura DigitalOcean (testowane osobno w ramach CI/CD)
+- Wewnętrzne implementacje modeli AI w OpenRouter.ai
 
-## 3. Typy Testów
+## 3. Typy testów
 
-### 3.1 Testy Jednostkowe
-- Komponenty React
-- Funkcje pomocnicze
-- Transformacje danych
-- Walidatory
+### 3.1. Testy jednostkowe
+- **Zakres**: Funkcje pomocnicze, walidatory, mapery, usługi
+- **Narzędzia**: Vitest
+- **Lokalizacja testów**: `/tests/unit`
 
-### 3.2 Testy Integracyjne
-- Przepływ danych między komponentami
-- Integracja z Supabase
-- Integracja z OpenRouter.ai
-- Przepływ autentykacji
+#### Kluczowe obszary testów jednostkowych:
+- Walidacja schematów Zod (`/src/lib/validation`)
+- Funkcje mapujące z typów bazy danych do DTO
+- Usługi OpenRouter i inne serwisy
+- Store'y i hooki React
 
-### 3.3 Testy E2E
-- Proces rejestracji i logowania
-- Generowanie fiszek
-- Zarządzanie kolekcjami fiszek
-- Eksport/import danych
+### 3.2. Testy integracyjne
+- **Zakres**: Komunikacja między komponentami, komunikacja z API
+- **Narzędzia**: Vitest z MSW (Mock Service Worker)
+- **Lokalizacja testów**: `/tests/integration`
 
-### 3.4 Testy Wydajnościowe
-- Czas odpowiedzi API
+#### Kluczowe obszary testów integracyjnych:
+- Integracja z Supabase (uwierzytelnianie, operacje bazodanowe)
+- Komunikacja między komponentami React
+- Przepływ danych między frontendem a endpointami API
+
+### 3.3. Testy API
+- **Zakres**: Wszystkie endpointy API aplikacji
+- **Narzędzia**: Supertest, Postman
+- **Lokalizacja testów**: `/tests/api`
+
+#### Kluczowe endpointy do testowania:
+- `/api/generations.ts` - generowanie fiszek AI
+- `/api/flashcards.ts` - zarządzanie fiszkami
+- `/api/auth.ts` - autentykacja użytkowników
+
+### 3.4. Testy E2E (End-to-End)
+- **Zakres**: Pełne przepływy użytkownika, scenariusze biznesowe
+- **Narzędzia**: Playwright
+- **Lokalizacja testów**: `/tests/e2e`
+
+#### Kluczowe scenariusze E2E:
+- Rejestracja i logowanie użytkownika
+- Generowanie fiszek z tekstu
+- Edycja i zapisywanie wygenerowanych fiszek
+- Przeglądanie zapisanych fiszek
+
+### 3.5. Testy komponentów UI
+- **Zakres**: Komponenty React i Astro
+- **Narzędzia**: Testing Library, Storybook
+- **Lokalizacja testów**: `/tests/components`
+
+#### Kluczowe komponenty do testowania:
+- GenerateView.tsx
+- FlashcardsList.tsx
+- FlashcardItem.tsx
+- TextInputSection.tsx
+- Komponenty UI z biblioteki Shadcn/ui
+
+### 3.6. Testy wydajnościowe
+- **Zakres**: Wydajność frontendowa i backendowa
+- **Narzędzia**: Lighthouse, k6
+- **Lokalizacja testów**: `/tests/performance`
+
+#### Kluczowe obszary testów wydajnościowych:
+- Czas ładowania aplikacji
 - Wydajność generowania fiszek
-- Optymalizacja ładowania strony
-- Zużycie zasobów przeglądarki
+- Wydajność zapisu i pobierania fiszek
 
-### 3.5 Testy Bezpieczeństwa
-- Autoryzacja i autentykacja
-- Zabezpieczenie endpointów API
-- Walidacja danych wejściowych
-- Ochrona kluczy API
+### 3.7. Testy dostępności
+- **Zakres**: Zgodność z WCAG 2.1
+- **Narzędzia**: axe-core, Lighthouse
+- **Lokalizacja testów**: `/tests/accessibility`
 
-## 4. Scenariusze Testowe
+## 4. Scenariusze testowe dla kluczowych funkcjonalności
 
-### 4.1 Autentykacja
-1. Rejestracja nowego użytkownika
-2. Logowanie istniejącego użytkownika
-3. Resetowanie hasła
-4. Weryfikacja email
-5. Wylogowanie
+### 4.1. Generowanie fiszek z tekstu
+1. **Scenariusz**: Generowanie fiszek dla krótkiego tekstu
+   - Wprowadzenie tekstu źródłowego (< 500 znaków)
+   - Wybór modelu AI
+   - Weryfikacja wygenerowanych fiszek
 
-### 4.2 Generowanie Fiszek
-1. Generowanie fiszek z tekstu
-2. Edycja wygenerowanych fiszek
-3. Zapisywanie fiszek do kolekcji
-4. Eksport fiszek
-5. Import fiszek
+2. **Scenariusz**: Generowanie fiszek dla długiego tekstu
+   - Wprowadzenie długiego tekstu (> 2000 znaków)
+   - Weryfikacja czasu odpowiedzi i jakości wygenerowanych fiszek
 
-### 4.3 Zarządzanie Kolekcjami
-1. Tworzenie nowej kolekcji
-2. Edycja kolekcji
-3. Usuwanie kolekcji
-4. Udostępnianie kolekcji
-5. Organizacja fiszek w kolekcjach
+3. **Scenariusz**: Obsługa błędów generowania
+   - Symulacja niedostępności API OpenRouter
+   - Weryfikacja obsługi błędów i komunikatów dla użytkownika
 
-### 4.4 Interfejs Użytkownika
-1. Responsywność
-2. Dostępność (WCAG)
-3. Spójność wizualna
-4. Obsługa błędów
-5. Komunikaty systemowe
+### 4.2. Zarządzanie fiszkami
+1. **Scenariusz**: Zapisywanie wszystkich wygenerowanych fiszek
+   - Generowanie fiszek
+   - Zapisanie wszystkich bez edycji
+   - Weryfikacja zapisanych danych w bazie
 
-## 5. Środowisko Testowe
+2. **Scenariusz**: Zapisywanie tylko zaakceptowanych fiszek
+   - Generowanie fiszek
+   - Akceptacja wybranych fiszek
+   - Zapisanie tylko zaakceptowanych fiszek
+   - Weryfikacja zapisanych danych w bazie
 
-### 5.1 Środowiska
-- Developerskie (local)
-- Staging
-- Produkcyjne
+3. **Scenariusz**: Edycja wygenerowanych fiszek przed zapisem
+   - Generowanie fiszek
+   - Edycja frontu/tyłu wybranych fiszek
+   - Zapisanie edytowanych fiszek
+   - Weryfikacja zmian w bazie danych
 
-### 5.2 Wymagania
-- Node.js v18+
-- Przeglądarka: Chrome, Firefox, Safari, Edge
-- Dostęp do Supabase
-- Dostęp do OpenRouter.ai
-- Konfiguracja zmiennych środowiskowych
+### 4.3. Autentykacja użytkowników
+1. **Scenariusz**: Rejestracja nowego użytkownika
+   - Wypełnienie formularza rejestracji
+   - Weryfikacja utworzenia konta i przekierowania
+   - Sprawdzenie danych w bazie Supabase
 
-## 6. Narzędzia do Testowania
+2. **Scenariusz**: Logowanie użytkownika
+   - Wypełnienie formularza logowania
+   - Weryfikacja dostępu do zabezpieczonych stron
+   - Weryfikacja tokenów sesji
 
-### 6.1 Testy Jednostkowe i Integracyjne
-- Vitest
-- React Testing Library
-- MSW (Mock Service Worker)
+3. **Scenariusz**: Resetowanie hasła
+   - Żądanie resetowania hasła
+   - Weryfikacja wysłania e-maila
+   - Testowanie linku resetowania hasła
 
-### 6.2 Testy E2E
-- Playwright
-- Cypress
+## 5. Środowisko testowe
 
-### 6.3 Testy Wydajnościowe
-- Lighthouse
-- WebPageTest
-- Chrome DevTools Performance
+### 5.1. Środowisko lokalne (development)
+- **Konfiguracja**: Lokalna instancja Supabase, mocki dla OpenRouter.ai
+- **Cel**: Szybkie iteracje, testy jednostkowe i integracyjne
 
-### 6.4 Testy Bezpieczeństwa
-- OWASP ZAP
-- SonarQube
+### 5.2. Środowisko testowe (staging)
+- **Konfiguracja**: Testowa instancja Supabase, testowe konto OpenRouter.ai
+- **Cel**: Testy integracyjne, E2E, wydajnościowe
 
-## 7. Harmonogram Testów
+### 5.3. Środowisko produkcyjne
+- **Konfiguracja**: Produkcyjna instancja Supabase, produkcyjne konto OpenRouter.ai
+- **Cel**: Testy smoke, monitoring
 
-### 7.1 Fazy Testowania
-1. Testy jednostkowe (ciągłe)
-2. Testy integracyjne (po każdym sprincie)
-3. Testy E2E (przed każdym wydaniem)
-4. Testy wydajnościowe (raz w tygodniu)
-5. Testy bezpieczeństwa (raz w miesiącu)
+## 6. Narzędzia do testowania
 
-### 7.2 Cykl Testowy
-- Planowanie testów: 1 dzień
-- Wykonanie testów: 2-3 dni
-- Raportowanie i analiza: 1 dzień
-- Retesty po poprawkach: 1-2 dni
+### 6.1. Narzędzia testowania frontend
+- **Vitest**: Testy jednostkowe i integracyjne dla komponentów React
+- **Testing Library**: Testowanie komponentów UI
+- **Playwright**: Testy E2E
+- **Storybook**: Izolowane testowanie komponentów UI
+- **Lighthouse**: Wydajność, dostępność, SEO
 
-## 8. Kryteria Akceptacji
+### 6.2. Narzędzia testowania backend
+- **Vitest**: Testy jednostkowe dla logiki backendowej
+- **MSW (Mock Service Worker)**: Mockowanie API
+- **Supertest**: Testowanie endpointów API
+- **k6**: Testy wydajnościowe i obciążeniowe
 
-### 8.1 Kryteria Ilościowe
-- Pokrycie testami jednostkowymi: min. 80%
-- Wszystkie testy E2E przechodzą
-- Czas odpowiedzi API < 500ms
-- Lighthouse score > 90
+### 6.3. Narzędzia testowania dostępności
+- **axe-core**: Automatyczne testy dostępności
+- **WAVE**: Weryfikacja dostępności
 
-### 8.2 Kryteria Jakościowe
-- Brak krytycznych błędów
-- Spójne działanie we wszystkich przeglądarkach
-- Pozytywna ocena UX
-- Zgodność z wymaganiami biznesowymi
+### 6.4. CI/CD
+- **GitHub Actions**: Automatyzacja testów
+- **Docker**: Konteneryzacja środowiska testowego
 
-## 9. Role i Odpowiedzialności
+## 7. Harmonogram testów
 
-### 9.1 QA Team
-- Planowanie i wykonywanie testów
+### 7.1. Testowanie podczas rozwoju
+- Testy jednostkowe przed każdym commitem
+- Testy integracyjne przed każdym pull requestem
+- Testy komponentów UI podczas implementacji nowych funkcji
+
+### 7.2. Testowanie przed wydaniem
+- Pełne testy integracyjne
+- Testy E2E dla kluczowych przepływów
+- Testy wydajnościowe
+- Testy dostępności
+
+### 7.3. Testowanie regresji
+- Po każdej większej zmianie
+- Automatyczne testy nocne na środowisku staging
+
+## 8. Kryteria akceptacji testów
+
+### 8.1. Ogólne kryteria akceptacji
+- 90% pokrycia kodu testami jednostkowymi
+- 100% zdanych testów jednostkowych i integracyjnych
+- Wszystkie krytyczne ścieżki E2E muszą być zdane
+- Brak krytycznych błędów dostępności (poziom A WCAG 2.1)
+- Wydajność frontendowa: Lighthouse Performance Score >= 90
+
+### 8.2. Kryteria akceptacji dla generowania fiszek
+- Generowanie fiszek w czasie < 10 sekund
+- Co najmniej 90% generowanych fiszek jest poprawnych merytorycznie
+- Obsługa wszystkich przypadków błędów z odpowiednimi komunikatami
+
+### 8.3. Kryteria akceptacji dla autentykacji
+- Bezpieczne przechowywanie danych użytkownika
+- Poprawne zarządzanie sesją
+- Odpowiednia walidacja danych wejściowych
+
+## 9. Role i odpowiedzialności w procesie testowania
+
+### 9.1. Programiści
+- Tworzenie i utrzymanie testów jednostkowych
+- Rozwiązywanie błędów znalezionych podczas testowania
+- Pisanie testów komponentów UI
+
+### 9.2. Testerzy
+- Projektowanie przypadków testowych
+- Wykonywanie testów manualnych
+- Utrzymanie i wykonywanie testów automatycznych
 - Raportowanie błędów
-- Weryfikacja poprawek
-- Aktualizacja dokumentacji testowej
 
-### 9.2 Developers
-- Testy jednostkowe
-- Code review
-- Poprawki błędów
-- Wsparcie w testach integracyjnych
+### 9.3. DevOps
+- Konfiguracja i utrzymanie środowisk testowych
+- Integracja testów z pipeline'ami CI/CD
+- Monitoring wydajności i stabilności
 
-### 9.3 DevOps
-- Konfiguracja środowisk
-- Monitoring
-- CI/CD pipeline
-- Wsparcie w testach wydajnościowych
+## 10. Procedury raportowania błędów
 
-## 10. Procedury Raportowania Błędów
+### 10.1. System śledzenia błędów
+- GitHub Issues jako główny system śledzenia błędów
+- Kategorie błędów: krytyczny, wysoki, średni, niski
 
-### 10.1 Klasyfikacja Błędów
-- Krytyczne: blokują główne funkcjonalności
-- Wysokie: znaczący wpływ na UX
-- Średnie: problemy funkcjonalne
-- Niskie: drobne błędy UI
+### 10.2. Format raportowania błędów
+- Tytuł opisujący problem
+- Środowisko, w którym wystąpił błąd
+- Kroki do odtworzenia
+- Oczekiwane vs. faktyczne zachowanie
+- Zrzuty ekranu/logi (jeśli dostępne)
+- Priorytet i sugerowana waga błędu
 
-### 10.2 Format Zgłoszenia
-- Tytuł
-- Priorytet
-- Środowisko
-- Kroki reprodukcji
-- Oczekiwany rezultat
-- Aktualny rezultat
-- Załączniki (screenshoty, logi)
+### 10.3. Proces obsługi błędów
+- Triaging nowych błędów (weryfikacja, kategoryzacja)
+- Przypisanie do odpowiedzialnych osób
+- Śledzenie statusu naprawy
+- Weryfikacja rozwiązania
 
-### 10.3 Proces Obsługi
-1. Zgłoszenie błędu
-2. Triaging
-3. Przypisanie
-4. Naprawa
-5. Weryfikacja
-6. Zamknięcie
+## 11. Zarządzanie ryzykiem
 
-## 11. Raportowanie i Metryki
+### 11.1. Identyfikacja ryzyka
+- Opóźnienia w integracji z OpenRouter.ai
+- Problemy z wydajnością przy dużej liczbie użytkowników
+- Problemy z dostępnością usług zewnętrznych
 
-### 11.1 Raporty Dzienne
-- Liczba wykonanych testów
-- Znalezione błędy
-- Status poprawek
-- Blokery
+### 11.2. Strategie minimalizacji ryzyka
+- Tworzenie mocków dla zewnętrznych usług
+- Testy wydajnościowe wcześnie w cyklu rozwoju
+- Regularne audyty bezpieczeństwa
+- Plany awaryjne dla kluczowych zależności
 
-### 11.2 Raporty Tygodniowe
-- Postęp testów
-- Trendy w błędach
-- Metryki wydajności
-- Rekomendacje
+## 12. Strategia testów bezpieczeństwa
 
-### 11.3 Kluczowe Metryki
-- Pokrycie testami
+### 12.1. Obszary testów bezpieczeństwa
+- Autentykacja i autoryzacja
+- Walidacja danych wejściowych
+- Ochrona przed atakami XSS i CSRF
+- Bezpieczne przechowywanie danych
+
+### 12.2. Metodologie testów bezpieczeństwa
+- Automatyczne skanowanie kodu źródłowego
+- Testy penetracyjne
+- Audyty bezpieczeństwa
+- Weryfikacja zgodności z OWASP Top 10
+
+## 13. Metryki i raportowanie
+
+### 13.1. Kluczowe metryki
+- Pokrycie kodu testami
+- Liczba znalezionych/rozwiązanych błędów
 - Czas wykonania testów
-- Liczba błędów per komponent
-- Mean Time To Repair (MTTR)
+- Stabilność testów automatycznych
+- Wydajność aplikacji w czasie
+
+### 13.2. Raportowanie
+- Automatyczne raporty po każdym uruchomieniu testów
+- Tygodniowe podsumowanie statusu testów
+- Raporty po wydaniu
+
+## 14. Podsumowanie
+
+Niniejszy plan testów stanowi kompleksowe podejście do zapewnienia jakości aplikacji 10xCards. Dzięki zastosowaniu różnorodnych typów testów i narzędzi, będziemy w stanie zapewnić wysoką jakość produktu, jego niezawodność oraz satysfakcję użytkowników końcowych.
+
+Regularna aktualizacja planu testów będzie kluczowa dla utrzymania jego aktualności wraz z rozwojem aplikacji i pojawianiem się nowych funkcji i technologii.
