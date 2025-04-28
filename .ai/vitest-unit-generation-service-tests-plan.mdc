@@ -1,0 +1,257 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Plan Testów Jednostkowych dla generation.service.ts
+
+## 1. Testy Inicjalizacji i Konfiguracji
+
+### 1.1. Inicjalizacja Serwisu
+```typescript
+describe('Generation Service - Initialization', () => {
+  test('should initialize with default config when valid API key is provided', () => {
+    // Arrange
+    const validConfig = {
+      apiKey: 'test-key',
+      defaultModel: 'openai/gpt-4o-mini',
+      maxRetries: 3,
+      timeout: 30000,
+      baseUrl: 'https://openrouter.ai/api/v1'
+    };
+
+    // Act & Assert
+    expect(() => initialize(validConfig)).not.toThrow();
+  });
+
+  test('should throw error when initializing without API key', () => {
+    // Arrange
+    const invalidConfig = {
+      apiKey: '',
+      defaultModel: 'openai/gpt-4o-mini',
+      maxRetries: 3,
+      timeout: 30000,
+      baseUrl: 'https://openrouter.ai/api/v1'
+    };
+
+    // Act & Assert
+    expect(() => initialize(invalidConfig)).toThrow('OpenRouter API key is not configured');
+  });
+});
+```
+
+### 1.2. Aktualizacja Konfiguracji
+```typescript
+describe('Generation Service - Configuration Updates', () => {
+  test('should update configuration partially', () => {
+    // Arrange
+    const initialConfig = {
+      apiKey: 'test-key',
+      defaultModel: 'openai/gpt-4o-mini',
+      maxRetries: 3,
+      timeout: 30000,
+      baseUrl: 'https://openrouter.ai/api/v1'
+    };
+    initialize(initialConfig);
+
+    // Act
+    updateConfig({ maxRetries: 5 });
+
+    // Assert
+    // Verify that service was reinitialized with new config
+    // This will require exposing current config for testing or checking service behavior
+  });
+});
+```
+
+## 2. Testy Walidacji Fiszek
+
+### 2.1. Walidacja Długości Treści
+```typescript
+describe('Generation Service - Flashcard Validation', () => {
+  test('should validate flashcard within length limits', () => {
+    // Arrange
+    const validFront = 'A'.repeat(200);
+    const validBack = 'B'.repeat(500);
+
+    // Act & Assert
+    expect(() => validateFlashcardLength(validFront, validBack, 0)).not.toThrow();
+  });
+
+  test('should throw error when front side exceeds limit', () => {
+    // Arrange
+    const invalidFront = 'A'.repeat(201);
+    const validBack = 'B'.repeat(500);
+
+    // Act & Assert
+    expect(() => validateFlashcardLength(invalidFront, validBack, 0))
+      .toThrow('Flashcard 1 front side exceeds 200 characters');
+  });
+
+  test('should throw error when back side exceeds limit', () => {
+    // Arrange
+    const validFront = 'A'.repeat(200);
+    const invalidBack = 'B'.repeat(501);
+
+    // Act & Assert
+    expect(() => validateFlashcardLength(validFront, invalidBack, 0))
+      .toThrow('Flashcard 1 back side exceeds 500 characters');
+  });
+});
+```
+
+## 3. Testy Generowania Fiszek
+
+### 3.1. Sukces Generowania
+```typescript
+describe('Generation Service - Flashcard Generation', () => {
+  test('should successfully generate flashcards from source text', async () => {
+    // Arrange
+    const sourceText = 'Sample text for flashcard generation';
+    const mockOpenRouterResponse = [
+      { front: 'Question 1', back: 'Answer 1' },
+      { front: 'Question 2', back: 'Answer 2' }
+    ];
+
+    // Mock OpenRouter service
+    vi.spyOn(OpenRouterService.prototype, 'generateFlashcards')
+      .mockResolvedValue(mockOpenRouterResponse);
+
+    // Act
+    const result = await generateFlashcards(sourceText);
+
+    // Assert
+    expect(result.generated_flashcards).toHaveLength(2);
+    expect(result.generated_flashcards[0]).toMatchObject({
+      id: expect.stringMatching(/^temp_\d+$/),
+      front: 'Question 1',
+      back: 'Answer 1'
+    });
+  });
+
+  test('should handle empty source text', async () => {
+    // Arrange
+    const sourceText = '';
+
+    // Act & Assert
+    await expect(generateFlashcards(sourceText))
+      .rejects
+      .toThrow('Source text cannot be empty');
+  });
+});
+```
+
+### 3.2. Obsługa Błędów
+```typescript
+describe('Generation Service - Error Handling', () => {
+  test('should handle OpenRouter service errors', async () => {
+    // Arrange
+    const sourceText = 'Sample text';
+    const mockError = new Error('OpenRouter API error');
+
+    // Mock OpenRouter service to throw error
+    vi.spyOn(OpenRouterService.prototype, 'generateFlashcards')
+      .mockRejectedValue(mockError);
+
+    // Act & Assert
+    await expect(generateFlashcards(sourceText))
+      .rejects
+      .toThrow('OpenRouter API error');
+  });
+
+  test('should handle network timeouts', async () => {
+    // Arrange
+    const sourceText = 'Sample text';
+    const mockTimeoutError = new Error('Request timeout');
+
+    // Mock OpenRouter service to simulate timeout
+    vi.spyOn(OpenRouterService.prototype, 'generateFlashcards')
+      .mockRejectedValue(mockTimeoutError);
+
+    // Act & Assert
+    await expect(generateFlashcards(sourceText))
+      .rejects
+      .toThrow('Request timeout');
+  });
+});
+```
+
+## 4. Testy Integracji z OpenRouter
+
+### 4.1. Konfiguracja Wywołań API
+```typescript
+describe('Generation Service - OpenRouter Integration', () => {
+  test('should call OpenRouter with correct parameters', async () => {
+    // Arrange
+    const sourceText = 'Sample text';
+    const openRouterSpy = vi.spyOn(OpenRouterService.prototype, 'generateFlashcards');
+
+    // Act
+    await generateFlashcards(sourceText);
+
+    // Assert
+    expect(openRouterSpy).toHaveBeenCalledWith({
+      content: sourceText,
+      numberOfCards: 8,
+      difficulty: 'basic',
+      language: 'pl'
+    });
+  });
+});
+```
+
+## 5. Pokrycie Testami
+
+Testy powinny zapewnić pokrycie kodu na poziomie minimum 90%, zgodnie z wymaganiami projektu. Szczególną uwagę należy zwrócić na:
+
+- Wszystkie ścieżki wykonania w funkcji `generateFlashcards`
+- Walidację danych wejściowych
+- Obsługę błędów i wyjątków
+- Transformację danych wyjściowych do formatu DTO
+
+## 6. Mocki i Stuby
+
+### Wymagane Mocki:
+- OpenRouterService
+- Konfiguracja środowiska (import.meta.env)
+- Logi konsoli (console.error)
+
+### Przykład Konfiguracji Mocków:
+```typescript
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.mock('./openrouter.service');
+  vi.spyOn(console, 'error').mockImplementation(() => {});
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+```
+
+## 7. Dobre Praktyki
+
+1. Każdy test powinien być niezależny
+2. Używać meaningfull nazw testów opisujących testowany przypadek
+3. Stosować wzorzec AAA (Arrange-Act-Assert)
+4. Mockować zewnętrzne zależności
+5. Testować edge cases i warunki brzegowe
+6. Weryfikować obsługę błędów
+7. Unikać współdzielenia stanu między testami
+
+## 8. Uwagi Implementacyjne
+
+1. Należy zaimplementować helper do resetowania stanu serwisu między testami
+2. Rozważyć dodanie testów dla różnych modeli OpenAI
+3. Dodać testy wydajnościowe dla operacji walidacji
+4. Zaimplementować testy dla różnych formatów odpowiedzi z API
+5. Dodać testy dla różnych konfiguracji językowych
+
+## 9. Następne Kroki
+
+1. Implementacja testów według powyższego planu
+2. Weryfikacja pokrycia kodu
+3. Code review implementacji
+4. Integracja z CI/CD
+5. Monitoring jakości testów
+
