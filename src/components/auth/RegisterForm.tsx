@@ -84,7 +84,7 @@ export function RegisterForm() {
                   <FormControl>
                     <Input type="password" placeholder="Confirm your password" {...field} />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-red-500" />
                 </FormItem>
               )}
             />

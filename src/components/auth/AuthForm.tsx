@@ -73,7 +73,7 @@ export function AuthForm({
       </CardHeader>
       <CardContent>
         {error && (
-          <Alert variant="destructive" className="mb-4">
+          <Alert variant="destructive" className="mb-4 bg-red-500 text-white border-red-500">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -88,7 +88,7 @@ export function AuthForm({
                   <FormControl>
                     <Input type="email" placeholder="Enter your email" {...field} />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-red-500" />
                 </FormItem>
               )}
             />
@@ -101,12 +101,16 @@ export function AuthForm({
                   <FormControl>
                     <Input type="password" placeholder="Enter your password" {...field} />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-red-500" />
                 </FormItem>
               )}
             />
             {extraFields}
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="w-full bg-green-500 hover:bg-green-600 text-white focus:ring-green-500"
+              disabled={isLoading}
+            >
               {isLoading ? "Loading..." : buttonText}
             </Button>
           </form>
