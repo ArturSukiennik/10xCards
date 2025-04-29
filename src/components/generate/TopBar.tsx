@@ -12,10 +12,9 @@ export function TopBar() {
 
   return (
     <div className="flex justify-between items-center p-4 border-b bg-white">
-      <div className="text-sm text-gray-600 font-medium">
-        {user?.email ? `Logged in as: ${user.email}` : "Not logged in"}
-      </div>
-      <div>
+      <div className="font-bold text-lg">10xCards</div>
+      <div className="flex items-center gap-4">
+        <div className="text-sm text-gray-600">{user?.email}</div>
         <LogoutButton />
       </div>
     </div>
