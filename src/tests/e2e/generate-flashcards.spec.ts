@@ -1,8 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { GenerateViewPage } from "./pages/GenerateView.page";
+import { AuthUtils } from "./utils/auth";
 
 test.describe("Flashcard Generation", () => {
   let generateView: GenerateViewPage;
+  let authUtils: AuthUtils;
 
   // Przykładowy tekst w języku polskim (około 2000 znaków)
   const samplePolishText = `
@@ -31,9 +33,35 @@ test.describe("Flashcard Generation", () => {
     a prawdziwie suwerenne państwo demokratyczne zaczęło się kształtować dopiero po 1989 roku.
   `;
 
-  test.beforeEach(async ({ page }) => {
+  // Upewnij się, że użytkownik jest zalogowany przed wszystkimi testami
+  test.beforeAll(async ({ browser }) => {
+    // Stwórz nową stronę dla logowania
+    const page = await browser.newPage();
+    authUtils = new AuthUtils(page);
+
+    // Zaloguj użytkownika testowego
+    await authUtils.loginTestUser();
+
+    // Zamknij stronę logowania
+    await page.close();
+  });
+
+  test.beforeEach(async ({ page, context }) => {
+    // Przekaż ciasteczka z sesji logowania do nowej strony
+    const cookies = await context.cookies();
+    await context.addCookies(cookies);
+
+    // Inicjalizacja strony generowania fiszek
     generateView = new GenerateViewPage(page);
     await generateView.goto();
+
+    // Dodatkowe sprawdzenie czy użytkownik jest zalogowany
+    authUtils = new AuthUtils(page);
+    const isLoggedIn = await authUtils.isLoggedIn();
+
+    if (!isLoggedIn) {
+      throw new Error("Test user is not logged in. Please check authentication setup.");
+    }
   });
 
   test("should successfully generate flashcards from Polish text", async () => {

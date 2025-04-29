@@ -11,10 +11,12 @@ export function TopBar() {
   }, [user]);
 
   return (
-    <div className="flex justify-between items-center p-4 border-b bg-white">
+    <div data-test-id="top-bar" className="flex justify-between items-center p-4 border-b bg-white">
       <div className="font-bold text-lg">10xCards</div>
       <div className="flex items-center gap-4">
-        <div className="text-sm text-gray-600">{user?.email}</div>
+        <div data-test-id="user-email" className="text-sm text-gray-600">
+          {user?.email}
+        </div>
         <LogoutButton />
       </div>
     </div>

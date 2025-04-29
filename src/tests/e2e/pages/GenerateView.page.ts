@@ -1,6 +1,7 @@
 import { type Page } from "@playwright/test";
 import { TextInputSectionPage } from "./TextInputSection.page";
 import { FlashcardsListPage } from "./FlashcardsList.page";
+import { TEST_CONFIG } from "../config";
 
 export class GenerateViewPage {
   readonly page: Page;
@@ -17,7 +18,7 @@ export class GenerateViewPage {
    * Navigates to the generate view page
    */
   async goto(): Promise<void> {
-    await this.page.goto("/generate");
+    await this.page.goto(`${TEST_CONFIG.baseUrl}/generate`);
   }
 
   /**

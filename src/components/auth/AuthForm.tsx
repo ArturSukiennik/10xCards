@@ -62,33 +62,48 @@ export function AuthForm({
     try {
       await onSubmit(data);
     } catch {
-      // Error is handled by the parent component
+      // Error handling is done by the parent component
     }
   };
 
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">{title}</CardTitle>
+        <CardTitle data-test-id="auth-form-title" className="text-2xl font-bold text-center">
+          {title}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {error && (
-          <Alert variant="destructive" className="mb-4 bg-red-500 text-white border-red-500">
+          <Alert
+            data-test-id="auth-form-error"
+            variant="destructive"
+            className="mb-4 bg-red-500 text-white border-red-500"
+          >
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form
+            data-test-id="auth-form"
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-4"
+          >
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel data-test-id="email-label">Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="Enter your email" {...field} />
+                    <Input
+                      data-test-id="email-input"
+                      type="email"
+                      placeholder="Enter your email"
+                      {...field}
+                    />
                   </FormControl>
-                  <FormMessage className="text-red-500" />
+                  <FormMessage data-test-id="email-error" className="text-red-500" />
                 </FormItem>
               )}
             />
@@ -97,16 +112,22 @@ export function AuthForm({
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel data-test-id="password-label">Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Enter your password" {...field} />
+                    <Input
+                      data-test-id="password-input"
+                      type="password"
+                      placeholder="Enter your password"
+                      {...field}
+                    />
                   </FormControl>
-                  <FormMessage className="text-red-500" />
+                  <FormMessage data-test-id="password-error" className="text-red-500" />
                 </FormItem>
               )}
             />
             {extraFields}
             <Button
+              data-test-id="login-button"
               type="submit"
               className="w-full bg-green-500 hover:bg-green-600 text-white focus:ring-green-500"
               disabled={isLoading}
