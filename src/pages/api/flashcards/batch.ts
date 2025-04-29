@@ -28,10 +28,7 @@ export const POST: APIRoute = async ({ request, locals }: MiddlewareContext) => 
     const flashcardsService = new FlashcardsService(locals.supabase);
     const body = await request.json();
 
-    console.log("Request body:", body);
-
     const result = await flashcardsService.createFlashcards(locals.user.id, body);
-    console.log("Created flashcards:", result);
 
     return new Response(JSON.stringify(result), {
       status: 201,
