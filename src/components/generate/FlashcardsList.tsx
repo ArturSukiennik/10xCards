@@ -23,11 +23,16 @@ export function FlashcardsList({
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-semibold">Generated Flashcards</h2>
-          <span className="text-sm text-gray-500">({flashcards.length} cards)</span>
+          <h2 data-test-id="flashcards-list-title" className="text-2xl font-semibold">
+            Generated Flashcards
+          </h2>
+          <span data-test-id="flashcards-count" className="text-sm text-gray-500">
+            ({flashcards.length} cards)
+          </span>
         </div>
         <div className="flex gap-4">
           <Button
+            data-test-id="save-all-button"
             variant="secondary"
             onClick={onSaveAll}
             disabled={isSaving || flashcards.length === 0}
@@ -36,6 +41,7 @@ export function FlashcardsList({
             Save All
           </Button>
           <Button
+            data-test-id="save-accepted-button"
             onClick={onSaveAccepted}
             disabled={isSaving || acceptedCount === 0}
             className="min-w-[140px] bg-green-600 hover:bg-green-700"
@@ -45,16 +51,21 @@ export function FlashcardsList({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        data-test-id="flashcards-grid"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
         {flashcards.map((flashcard) => (
           <div
             key={flashcard.id}
+            data-test-id={`flashcard-item-${flashcard.id}`}
             className={`relative rounded-lg shadow-md hover:shadow-lg transition-shadow p-6
               ${flashcard.status === "accepted" ? "bg-green-50" : "bg-white"}
               ${flashcard.status === "rejected" ? "bg-white opacity-60" : ""}`}
           >
             <div className="absolute top-2 right-2 flex gap-2">
               <Button
+                data-test-id={`reject-button-${flashcard.id}`}
                 variant="secondary"
                 size="sm"
                 onClick={() => onUpdateStatus(flashcard.id, "rejected")}
@@ -63,6 +74,7 @@ export function FlashcardsList({
                 <X className="h-4 w-4 text-black" />
               </Button>
               <Button
+                data-test-id={`accept-button-${flashcard.id}`}
                 variant="secondary"
                 size="sm"
                 onClick={() => onUpdateStatus(flashcard.id, "accepted")}

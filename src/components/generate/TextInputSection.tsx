@@ -74,6 +74,7 @@ export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionP
         </div>
 
         <textarea
+          data-test-id="source-text-input"
           value={sourceText}
           onChange={(e) => setSourceText(e.target.value)}
           placeholder="Paste your text here (minimum 100 characters)"
@@ -84,7 +85,7 @@ export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionP
 
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <Select value={selectedModel} onValueChange={setSelectedModel}>
-            <SelectTrigger className="w-full sm:w-[250px]">
+            <SelectTrigger data-test-id="model-select" className="w-full sm:w-[250px]">
               <SelectValue placeholder="Select AI Model" />
             </SelectTrigger>
             <SelectContent>
@@ -97,6 +98,7 @@ export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionP
           </Select>
 
           <Button
+            data-test-id="generate-flashcards-button"
             onClick={handleGenerate}
             disabled={!isTextValid || isGenerating}
             className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
