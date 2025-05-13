@@ -1,19 +1,24 @@
 import { defineMiddleware } from "astro:middleware";
 import { createSupabaseServer, cookieOptions } from "../lib/supabase";
+import { createMockSupabaseServer } from "../../tests/e2e/mocks/supabase.mock";
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  const supabase = createSupabaseServer({
-    get: (name) => {
-      const cookie = context.cookies.get(name);
-      return cookie?.value;
-    },
-    set: (name, value, options) => {
-      context.cookies.set(name, value, {
-        ...cookieOptions,
-        ...options,
-      });
-    },
-  });
+  // W trybie testowym używamy mocka
+  const supabase =
+    import.meta.env.MODE === "test"
+      ? createMockSupabaseServer()
+      : createSupabaseServer({
+          get: (name) => {
+            const cookie = context.cookies.get(name);
+            return cookie?.value;
+          },
+          set: (name, value, options) => {
+            context.cookies.set(name, value, {
+              ...cookieOptions,
+              ...options,
+            });
+          },
+        });
 
   context.locals.supabase = supabase;
 

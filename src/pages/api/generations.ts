@@ -4,17 +4,21 @@ import { generateFlashcardsSchema } from "../../lib/validation/generation.schema
 import { ZodError } from "zod";
 import crypto from "crypto";
 import { OpenRouterService } from "../../lib/services/openrouter.service";
+import { MockOpenRouterService } from "../../../tests/e2e/mocks/openrouter.service.mock";
 
 export const prerender = false;
 
 // Initialize OpenRouter service with default configuration
-const openRouterService = new OpenRouterService({
-  apiKey: import.meta.env.OPENROUTER_API_KEY || "",
-  defaultModel: "openai/gpt-4o-mini",
-  maxRetries: 3,
-  timeout: 30000,
-  baseUrl: "https://openrouter.ai/api/v1",
-});
+const openRouterService =
+  import.meta.env.MODE === "test"
+    ? new MockOpenRouterService()
+    : new OpenRouterService({
+        apiKey: import.meta.env.OPENROUTER_API_KEY || "",
+        defaultModel: "openai/gpt-4o-mini",
+        maxRetries: 3,
+        timeout: 30000,
+        baseUrl: "https://openrouter.ai/api/v1",
+      });
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -93,6 +97,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         })),
       };
     } catch (error) {
+      console.error("Error generating flashcards:", error);
       return new Response(
         JSON.stringify({
           error: "Failed to generate flashcards",
@@ -126,6 +131,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         .single();
 
       if (dbError) {
+        console.error("Database error:", dbError);
         throw new Error(`Database error: ${dbError.message}`);
       }
 
@@ -147,6 +153,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         },
       );
     } catch (error) {
+      console.error("Error saving to database:", error);
       return new Response(
         JSON.stringify({
           error: "Failed to create generation record",
@@ -161,6 +168,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
   } catch (error) {
+    console.error("Unexpected error:", error);
     if (error instanceof ZodError) {
       return new Response(
         JSON.stringify({

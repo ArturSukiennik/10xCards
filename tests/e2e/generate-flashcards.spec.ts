@@ -7,7 +7,7 @@ test.describe("Flashcard Generation", () => {
   let generateView: GenerateViewPage;
   let authUtils: AuthUtils;
 
-  // Przykładowy tekst w języku polskim (około 2000 znaków)
+  // Przykładowy tekst w języku polskim (ponad 2000 znaków)
   const samplePolishText = `
     Historia Polski jest niezwykle bogata i fascynująca. Państwo polskie powstało ponad tysiąc lat temu,
     a jego początki sięgają czasów Mieszka I z dynastii Piastów. To właśnie on w 966 roku przyjął chrzest,
@@ -32,6 +32,15 @@ test.describe("Flashcard Generation", () => {
     był czasem odbudowy państwowości i rozwoju gospodarczego, przerwany jednak przez wybuch II wojny
     światowej w 1939 roku. Po wojnie Polska znalazła się w strefie wpływów Związku Radzieckiego,
     a prawdziwie suwerenne państwo demokratyczne zaczęło się kształtować dopiero po 1989 roku.
+
+    Współczesna Polska jest członkiem Unii Europejskiej i NATO, aktywnie uczestnicząc w życiu międzynarodowym.
+    Kraj przeszedł znaczącą transformację gospodarczą i społeczną, stając się jednym z najważniejszych
+    państw w regionie Europy Środkowo-Wschodniej. Polska kultura, sztuka i nauka nadal się rozwijają,
+    a polscy artyści, naukowcy i sportowcy odnoszą sukcesy na arenie międzynarodowej.
+
+    Historia Polski pokazuje, że naród polski zawsze potrafił przetrwać nawet najtrudniejsze momenty,
+    zachowując swoją tożsamość i kulturę. Ta resilience i determinacja są widoczne również dzisiaj,
+    gdy Polska stawia czoła nowym wyzwaniom XXI wieku.
   `;
 
   test.beforeEach(async ({ page, context }) => {
@@ -92,14 +101,15 @@ test.describe("Flashcard Generation", () => {
 
     await generateView.textInputSection.enterSourceText(shortText);
 
-    // Próba wygenerowania fiszek z za krótkim tekstem
+    // Sprawdź czy przycisk generowania jest wyłączony
     const button = generateView.textInputSection.generateButton;
     expect(await button.isDisabled()).toBe(true);
 
-    const state = await generateView.getCurrentState();
-    expect(state.validationErrors).toContain(
-      expect.stringContaining("must be at least 1000 characters"),
-    );
+    // Sprawdź czy licznik znaków pokazuje błąd
+    const characterCount = await generateView.page.locator('[data-test-id="character-count"]');
+    const characterCountText = await characterCount.textContent();
+    expect(characterCountText).toContain("26/10000 characters");
+    expect(await characterCount.evaluate((el) => el.classList.contains("text-red-600"))).toBe(true);
   });
 
   test("should handle saving accepted flashcards", async () => {

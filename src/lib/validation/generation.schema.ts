@@ -9,7 +9,10 @@ export const generateFlashcardsSchema = z.object({
       required_error: "Source text is required",
       invalid_type_error: "Source text must be a string",
     })
-    .min(1000, "Source text must be at least 100 characters long to generate meaningful flashcards")
+    .min(
+      1000,
+      "Source text must be at least 1000 characters long to generate meaningful flashcards",
+    )
     .max(10000, "Source text must not exceed 10000 characters"),
 
   model: z.string({
