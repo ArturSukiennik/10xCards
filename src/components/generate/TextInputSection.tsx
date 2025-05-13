@@ -68,7 +68,10 @@ export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionP
       <div className="space-y-4">
         <div className="flex flex-col space-y-2">
           <h2 className="text-xl font-semibold">Enter Your Text</h2>
-          <span className={`text-sm ${isTextValid ? "text-green-600" : "text-red-600"}`}>
+          <span
+            data-test-id="character-count"
+            className={`text-sm ${isTextValid ? "text-green-600" : "text-red-600"}`}
+          >
             {textLength}/{MAX_TEXT_LENGTH} characters
           </span>
         </div>
@@ -81,7 +84,11 @@ export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionP
           className="min-h-[300px] w-full p-4 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
         />
 
-        {validationErrors.length > 0 && <ValidationError errors={validationErrors} />}
+        {validationErrors.length > 0 && (
+          <div data-test-id="validation-error">
+            <ValidationError errors={validationErrors} />
+          </div>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <Select value={selectedModel} onValueChange={setSelectedModel}>
@@ -98,7 +105,7 @@ export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionP
           </Select>
 
           <Button
-            data-test-id="generate-flashcards-button"
+            data-test-id="generate-button"
             onClick={handleGenerate}
             disabled={!isTextValid || isGenerating}
             className="w-full sm:w-auto bg-green-600 hover:bg-green-700"

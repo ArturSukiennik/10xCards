@@ -1,6 +1,6 @@
-import type { FlashcardProposalViewModel } from "@/lib/hooks/useFlashcardGeneration";
 import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
+import type { FlashcardProposalViewModel } from "@/lib/hooks/useFlashcardGeneration";
 
 interface FlashcardsListProps {
   flashcards: FlashcardProposalViewModel[];
@@ -58,14 +58,14 @@ export function FlashcardsList({
         {flashcards.map((flashcard) => (
           <div
             key={flashcard.id}
-            data-test-id={`flashcard-item-${flashcard.id}`}
+            data-test-id={`flashcard-item${flashcard.status === "accepted" ? "-accepted" : ""}`}
             className={`relative rounded-lg shadow-md hover:shadow-lg transition-shadow p-6
               ${flashcard.status === "accepted" ? "bg-green-50" : "bg-white"}
               ${flashcard.status === "rejected" ? "bg-white opacity-60" : ""}`}
           >
             <div className="absolute top-2 right-2 flex gap-2">
               <Button
-                data-test-id={`reject-button-${flashcard.id}`}
+                data-test-id={`flashcard-${flashcard.id}-reject`}
                 variant="secondary"
                 size="sm"
                 onClick={() => onUpdateStatus(flashcard.id, "rejected")}
@@ -74,7 +74,7 @@ export function FlashcardsList({
                 <X className="h-4 w-4 text-black" />
               </Button>
               <Button
-                data-test-id={`accept-button-${flashcard.id}`}
+                data-test-id={`flashcard-${flashcard.id}-accept`}
                 variant="secondary"
                 size="sm"
                 onClick={() => onUpdateStatus(flashcard.id, "accepted")}
@@ -87,11 +87,21 @@ export function FlashcardsList({
             <div className="space-y-4 mt-6">
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-2">Front</h3>
-                <p className="text-gray-900 min-h-[60px]">{flashcard.front}</p>
+                <p
+                  data-test-id={`flashcard-${flashcard.id}-front`}
+                  className="text-gray-900 min-h-[60px]"
+                >
+                  {flashcard.front}
+                </p>
               </div>
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-2">Back</h3>
-                <p className="text-gray-900 min-h-[60px]">{flashcard.back}</p>
+                <p
+                  data-test-id={`flashcard-${flashcard.id}-back`}
+                  className="text-gray-900 min-h-[60px]"
+                >
+                  {flashcard.back}
+                </p>
               </div>
             </div>
           </div>

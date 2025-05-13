@@ -7,7 +7,7 @@ import { useAuthStore } from "@/lib/stores/authStore";
 
 export function LogoutButton() {
   const [isLoading, setIsLoading] = React.useState(false);
-  const setUser = useAuthStore((state) => state.setUser);
+  const clearUser = useAuthStore((state) => state.clearUser);
 
   const handleLogout = async () => {
     setIsLoading(true);
@@ -18,18 +18,11 @@ export function LogoutButton() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to logout");
+        throw new Error("Logout failed");
       }
 
-      // Clear user from store
-      setUser(null);
-
-      // Clear local storage
-      localStorage.clear();
-
-      // Redirect to login page
-      window.location.replace("/login");
+      clearUser();
+      window.location.href = "/login";
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
@@ -39,14 +32,13 @@ export function LogoutButton() {
 
   return (
     <Button
-      variant="secondary"
+      data-test-id="logout-button"
+      variant="ghost"
       size="sm"
       onClick={handleLogout}
-      disabled={isLoading}
-      className="gap-2"
+      className="text-gray-600 hover:text-gray-900"
     >
-      <LogOut className="h-4 w-4" />
-      {isLoading ? "Logging out..." : "Logout"}
+      Logout
     </Button>
   );
 }

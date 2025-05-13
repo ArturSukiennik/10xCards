@@ -76,7 +76,7 @@ export function AuthForm({
       <CardContent>
         {error && (
           <Alert
-            data-test-id="auth-form-error"
+            data-test-id="error-message"
             variant="destructive"
             className="mb-4 bg-red-500 text-white border-red-500"
           >
@@ -85,7 +85,7 @@ export function AuthForm({
         )}
         <Form {...form}>
           <form
-            data-test-id="auth-form"
+            data-test-id="login-form"
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-4"
           >
@@ -94,7 +94,7 @@ export function AuthForm({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel data-test-id="email-label">Email</FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
                       data-test-id="email-input"
@@ -103,7 +103,7 @@ export function AuthForm({
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage data-test-id="email-error" className="text-red-500" />
+                  <FormMessage className="text-red-500" />
                 </FormItem>
               )}
             />
@@ -112,7 +112,7 @@ export function AuthForm({
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel data-test-id="password-label">Password</FormLabel>
+                  <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input
                       data-test-id="password-input"
@@ -121,7 +121,7 @@ export function AuthForm({
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage data-test-id="password-error" className="text-red-500" />
+                  <FormMessage className="text-red-500" />
                 </FormItem>
               )}
             />
