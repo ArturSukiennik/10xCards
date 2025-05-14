@@ -4,6 +4,7 @@ import type { AuthUser } from "@/types";
 interface AuthState {
   user: AuthUser | null;
   setUser: (user: AuthUser | null) => void;
+  clearUser: () => void;
   isAuthenticated: boolean;
 }
 
@@ -28,5 +29,6 @@ export const useAuthStore = create<AuthState>()((set) => {
         user,
         isAuthenticated: !!user,
       })),
+    clearUser: () => set(() => ({ user: null, isAuthenticated: false })),
   };
 });

@@ -111,7 +111,13 @@ export const DELETE: APIRoute = async ({ cookies }) => {
   }
 
   // Clear all Supabase-related cookies
-  const supabaseCookies = ["sb-access-token", "sb-refresh-token"];
+  const supabaseCookies = [
+    "sb-access-token",
+    "sb-refresh-token",
+    "sb-auth-token",
+    "supabase-auth-token",
+  ];
+
   supabaseCookies.forEach((name) => {
     cookies.delete(name, {
       path: "/",

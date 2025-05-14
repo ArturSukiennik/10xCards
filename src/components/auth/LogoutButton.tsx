@@ -2,12 +2,11 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
 import { useAuthStore } from "@/lib/stores/authStore";
 
 export function LogoutButton() {
   const [isLoading, setIsLoading] = React.useState(false);
-  const clearUser = useAuthStore((state) => state.clearUser);
+  const setUser = useAuthStore((state) => state.setUser);
 
   const handleLogout = async () => {
     setIsLoading(true);
@@ -21,7 +20,19 @@ export function LogoutButton() {
         throw new Error("Logout failed");
       }
 
-      clearUser();
+      // Clear auth store state
+      setUser(null);
+
+      // Dispatch logout event
+      window.dispatchEvent(new CustomEvent("auth:logout"));
+
+      // Clear local storage
+      localStorage.clear();
+
+      // Clear session storage
+      sessionStorage.clear();
+
+      // Redirect to login page
       window.location.href = "/login";
     } catch (error) {
       console.error("Logout error:", error);
@@ -33,12 +44,13 @@ export function LogoutButton() {
   return (
     <Button
       data-test-id="logout-button"
-      variant="ghost"
+      variant="secondary"
       size="sm"
       onClick={handleLogout}
+      disabled={isLoading}
       className="text-gray-600 hover:text-gray-900"
     >
-      Logout
+      {isLoading ? "Logging out..." : "Logout"}
     </Button>
   );
 }
