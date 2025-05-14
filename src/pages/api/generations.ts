@@ -10,7 +10,7 @@ export const prerender = false;
 
 // Initialize OpenRouter service with default configuration
 const openRouterService =
-  import.meta.env.MODE === "test"
+  import.meta.env.MODE === "test" && !import.meta.env.USE_REAL_OPENROUTER
     ? new MockOpenRouterService()
     : new OpenRouterService({
         apiKey: import.meta.env.OPENROUTER_API_KEY || "",

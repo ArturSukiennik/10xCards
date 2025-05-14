@@ -10,6 +10,8 @@ const requiredEnvVars = [
   "SUPABASE_TEST_USER_PASSWORD",
   "SUPABASE_URL",
   "SUPABASE_ANON_KEY",
+  "OPENROUTER_API_KEY",
+  "USE_REAL_OPENROUTER",
 ];
 
 for (const envVar of requiredEnvVars) {
