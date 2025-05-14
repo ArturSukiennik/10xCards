@@ -26,7 +26,7 @@ export class AuthUtils {
       });
 
       // Wait for the login form with increased timeout
-      const loginForm = await this.page.waitForSelector('[data-test-id="auth-form"]', {
+      const loginForm = await this.page.waitForSelector('[data-test-id="login-form"]', {
         state: "visible",
         timeout: 30000,
       });
@@ -102,7 +102,7 @@ export class AuthUtils {
       });
 
       // Check if login form is not present
-      const loginForm = await this.page.locator('[data-test-id="auth-form"]').count();
+      const loginForm = await this.page.locator('[data-test-id="login-form"]').count();
       return loginForm === 0;
     } catch (error) {
       console.error("Login check failed:", error);
