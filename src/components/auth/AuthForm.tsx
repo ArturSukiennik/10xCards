@@ -20,13 +20,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 // Base schema for auth forms
 const baseAuthSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number")
-    .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
+  password: z.string().min(1, "Password is required"),
 });
 
 export interface AuthFormProps {
@@ -67,7 +61,7 @@ export function AuthForm({
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto" data-test-id="auth-form">
       <CardHeader>
         <CardTitle data-test-id="auth-form-title" className="text-2xl font-bold text-center">
           {title}
@@ -85,7 +79,7 @@ export function AuthForm({
         )}
         <Form {...form}>
           <form
-            data-test-id="login-form"
+            data-test-id="auth-form"
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-4"
           >

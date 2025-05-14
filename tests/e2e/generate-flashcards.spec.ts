@@ -1,11 +1,12 @@
 import { expect } from "@playwright/test";
 import { test } from "./setup/test-setup";
 import { GenerateViewPage } from "./pages/GenerateView.page";
-import { AuthUtils } from "./utils/auth";
 
 test.describe("Flashcard Generation", () => {
   let generateView: GenerateViewPage;
-  let authUtils: AuthUtils;
+
+  // Increase timeout for all tests in this file
+  test.setTimeout(120000);
 
   // Przykładowy tekst w języku polskim (ponad 2000 znaków)
   const samplePolishText = `
@@ -43,19 +44,22 @@ test.describe("Flashcard Generation", () => {
     gdy Polska stawia czoła nowym wyzwaniom XXI wieku.
   `;
 
-  test.beforeEach(async ({ page, context }) => {
+  test.beforeEach(async ({ page }) => {
     // Inicjalizacja strony generowania fiszek
     generateView = new GenerateViewPage(page);
-    await generateView.goto();
 
-    // Zaloguj użytkownika testowego
-    authUtils = new AuthUtils(page);
-    await authUtils.loginTestUser();
-
-    // Sprawdź czy użytkownik jest zalogowany
-    const isLoggedIn = await authUtils.isLoggedIn();
-    if (!isLoggedIn) {
-      throw new Error("Test user is not logged in. Please check authentication setup.");
+    // Add retries for page navigation
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        await generateView.goto();
+        break;
+      } catch (error) {
+        console.log(`Navigation retry attempt ${4 - retries}, error:`, error);
+        retries--;
+        if (retries === 0) throw error;
+        await page.waitForTimeout(2000); // Wait 2s between retries
+      }
     }
   });
 

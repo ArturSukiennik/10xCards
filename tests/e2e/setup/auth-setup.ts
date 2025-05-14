@@ -1,12 +1,19 @@
 import { test as base } from "@playwright/test";
-import { chromium } from "@playwright/test";
 import { AuthUtils } from "../utils/auth";
 
-// Eksportujemy test z obsługą stanu logowania
-export const test = base.extend({
+// Rozszerzamy typ testu o stan logowania
+interface AuthFixtures {
+  storageState: {
+    cookies: any[];
+    origins: any[];
+  };
+}
+
+// Tworzymy nowy test z obsługą stanu logowania
+export const test = base.extend<AuthFixtures>({
   storageState: async ({}, use) => {
     // Tworzymy nowy kontekst i stronę
-    const browser = await chromium.launch();
+    const browser = await base.browser();
     const context = await browser.newContext();
     const page = await context.newPage();
 
@@ -27,9 +34,8 @@ export const test = base.extend({
       // Używamy ciasteczek w testach
       await use({ cookies, origins: [] });
     } finally {
-      // Zamykamy kontekst i przeglądarkę
+      // Zamykamy kontekst
       await context.close();
-      await browser.close();
     }
   },
 });
