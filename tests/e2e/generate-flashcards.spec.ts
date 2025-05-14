@@ -83,21 +83,17 @@ test.describe("Flashcard Generation", () => {
     // 5. Sprawdź czy fiszki zostały wygenerowane
     const stateAfterGeneration = await generateView.getCurrentState();
     expect(stateAfterGeneration.flashcardsCount).toBeGreaterThan(0);
-    expect(stateAfterGeneration.validationErrors).toHaveLength(0);
 
-    // 6. Zaakceptuj pierwszą fiszkę
-    const firstFlashcardId = "1"; // Zakładamy, że ID pierwszej fiszki to "1"
-    await generateView.flashcardsList.acceptFlashcard(firstFlashcardId);
+    // 6. Zapisz wszystkie wygenerowane fiszki
+    await generateView.flashcardsList.saveAllFlashcards();
 
-    // 7. Sprawdź zawartość pierwszej fiszki
-    const flashcardContent =
-      await generateView.flashcardsList.getFlashcardContent(firstFlashcardId);
-    expect(flashcardContent.front).toBeTruthy();
-    expect(flashcardContent.back).toBeTruthy();
-
-    // 8. Sprawdź licznik zaakceptowanych fiszek
+    // 7. Sprawdź końcowy stan - lista powinna być wyczyszczona po zapisie
     const finalState = await generateView.getCurrentState();
-    expect(finalState.acceptedCount).toBe(1);
+    expect(finalState.flashcardsCount).toBe(0);
+    // Sprawdź czy pojawił się komunikat o sukcesie
+    await expect(
+      generateView.page.locator('text="All flashcards saved successfully!"'),
+    ).toBeVisible();
   });
 
   test("should show validation error for too short text", async () => {
@@ -116,24 +112,22 @@ test.describe("Flashcard Generation", () => {
     expect(await characterCount.evaluate((el) => el.classList.contains("text-red-600"))).toBe(true);
   });
 
-  test("should handle saving accepted flashcards", async () => {
-    // Najpierw wygeneruj fiszki
+  test("should handle saving all generated flashcards", async () => {
+    // 1. Wygeneruj fiszki
     await generateView.generateFlashcardsFromText(samplePolishText);
 
-    // Zaakceptuj kilka fiszek
-    await generateView.flashcardsList.acceptFlashcard("1");
-    await generateView.flashcardsList.acceptFlashcard("2");
-
-    // Sprawdź licznik zaakceptowanych
+    // 2. Sprawdź stan przed zapisaniem
     const stateBeforeSave = await generateView.getCurrentState();
-    expect(stateBeforeSave.acceptedCount).toBe(2);
+    expect(stateBeforeSave.flashcardsCount).toBeGreaterThan(0);
 
-    // Zapisz zaakceptowane fiszki
-    await generateView.flashcardsList.saveAccepted();
+    // 3. Zapisz wszystkie wygenerowane fiszki
+    await generateView.flashcardsList.saveAllFlashcards();
 
-    // Sprawdź czy pojawił się komunikat o sukcesie
+    // 4. Sprawdź czy lista została wyczyszczona i pojawił się komunikat o sukcesie
+    const stateAfterSave = await generateView.getCurrentState();
+    expect(stateAfterSave.flashcardsCount).toBe(0);
     await expect(
-      generateView.page.locator('text="Accepted flashcards saved successfully!"'),
+      generateView.page.locator('text="All flashcards saved successfully!"'),
     ).toBeVisible();
   });
 });

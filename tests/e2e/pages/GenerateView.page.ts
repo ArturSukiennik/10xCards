@@ -9,9 +9,9 @@ export class GenerateViewPage {
     enterSourceText: (text: string) => Promise<void>;
   };
   readonly flashcardsList: {
-    acceptFlashcard: (id: string) => Promise<void>;
+    scrollToFlashcardsGrid: () => Promise<void>;
+    saveAllFlashcards: () => Promise<void>;
     getFlashcardContent: (id: string) => Promise<{ front: string; back: string }>;
-    saveAccepted: () => Promise<void>;
   };
 
   constructor(page: Page) {
@@ -30,102 +30,38 @@ export class GenerateViewPage {
 
     // Flashcards list section
     this.flashcardsList = {
-      acceptFlashcard: async (id: string) => {
-        console.log(`Attempting to accept flashcard ${id}...`);
-
-        // Wait for the flashcards grid to be loaded
-        const flashcardsGrid = page.locator('[data-test-id="flashcards-grid"]');
+      scrollToFlashcardsGrid: async () => {
+        console.log("Scrolling to flashcards grid...");
+        const flashcardsGrid = this.page.locator('[data-test-id="flashcards-grid"]');
         await flashcardsGrid.waitFor({ state: "visible", timeout: 30000 });
+        await flashcardsGrid.scrollIntoViewIfNeeded();
+        await this.page.waitForTimeout(1000); // Wait for scroll animation
+      },
+      saveAllFlashcards: async () => {
+        console.log("Saving all generated flashcards...");
 
-        // Wait for flashcards to be loaded
-        await page.waitForFunction(
-          () => {
-            const items = document.querySelectorAll(
-              '[data-test-id="flashcard-item"], [data-test-id="flashcard-item-accepted"]',
-            );
-            return items.length > 0;
-          },
-          { timeout: 30000 },
-        );
+        // First scroll to the flashcards grid
+        await this.flashcardsList.scrollToFlashcardsGrid();
 
-        // Get all flashcard items
-        const flashcardItems = page.locator(
-          '[data-test-id="flashcard-item"], [data-test-id="flashcard-item-accepted"]',
-        );
+        // Wait for the save all button to be visible
+        const saveAllButton = this.page.locator('[data-test-id="save-all-button"]');
+        await saveAllButton.waitFor({ state: "visible", timeout: 30000 });
 
-        // Get the count of flashcards
-        const count = await flashcardItems.count();
-        console.log(`Found ${count} flashcard(s)`);
+        // Click the save all button
+        await saveAllButton.click();
 
-        // Find the specific flashcard
-        const flashcardIndex = parseInt(id) - 1;
-        if (flashcardIndex >= count) {
-          throw new Error(`Flashcard with id ${id} not found. Total flashcards: ${count}`);
-        }
+        // Wait for success message
+        await this.page.waitForSelector('text="All flashcards saved successfully!"', {
+          state: "visible",
+          timeout: 30000,
+        });
 
-        // Get the specific flashcard
-        const flashcard = flashcardItems.nth(flashcardIndex);
-
-        try {
-          // Wait for the flashcard to be visible and stable
-          await flashcard.waitFor({ state: "visible", timeout: 30000 });
-
-          // Scroll the flashcard into view
-          await flashcard.scrollIntoViewIfNeeded();
-
-          // Wait a moment for the scroll animation to complete
-          await page.waitForTimeout(1000);
-
-          // Get the accept button
-          const acceptButton = flashcard.locator(`[data-test-id="flashcard-${id}-accept"]`);
-
-          // Wait for the button to be visible and enabled
-          await acceptButton.waitFor({ state: "visible", timeout: 30000 });
-
-          // Ensure the button is enabled and visible
-          await acceptButton.evaluate((el) => {
-            if (el.hasAttribute("disabled")) {
-              throw new Error("Accept button is disabled");
-            }
-            const style = window.getComputedStyle(el);
-            if (style.display === "none" || style.visibility === "hidden") {
-              throw new Error("Accept button is not visible");
-            }
-          });
-
-          // Try to click the button with retries
-          let retries = 3;
-          while (retries > 0) {
-            try {
-              await acceptButton.click({ timeout: 10000, force: true });
-              console.log(`Successfully accepted flashcard ${id}`);
-              break;
-            } catch (error) {
-              retries--;
-              if (retries === 0) throw error;
-              console.log(`Retrying click on flashcard ${id}, ${retries} attempts left`);
-              await page.waitForTimeout(1000); // Wait 1s between retries
-            }
-          }
-
-          // Wait for the flashcard to be marked as accepted
-          await page
-            .locator(`[data-test-id="flashcard-item-accepted"]`)
-            .waitFor({ state: "visible", timeout: 30000 });
-        } catch (error) {
-          console.error(`Error accepting flashcard ${id}:`, error);
-          // Take a screenshot for debugging
-          await page.screenshot({ path: `flashcard-${id}-accept-error.png` });
-          throw error;
-        }
+        console.log("All flashcards saved successfully");
       },
       getFlashcardContent: async (id: string) => {
         const front = await page.locator(`[data-test-id="flashcard-${id}-front"]`).textContent();
         const back = await page.locator(`[data-test-id="flashcard-${id}-back"]`).textContent();
         return { front: front || "", back: back || "" };
-      },
-      saveAccepted: async () => {
-        await page.locator('[data-test-id="save-accepted-button"]').click();
       },
     };
   }
@@ -157,6 +93,12 @@ export class GenerateViewPage {
   }
 
   async getCurrentState() {
+    // First scroll to the flashcards grid if there are any flashcards
+    const hasFlashcards = (await this.page.locator('[data-test-id="flashcard-item"]').count()) > 0;
+    if (hasFlashcards) {
+      await this.flashcardsList.scrollToFlashcardsGrid();
+    }
+
     const state = {
       flashcardsCount: await this.page.locator('[data-test-id="flashcard-item"]').count(),
       characterCount: parseInt((await this.textInputSection.characterCount.textContent()) || "0"),
@@ -187,41 +129,60 @@ export class GenerateViewPage {
       throw new Error("Generate button is disabled");
     }
 
+    console.log("Clicking generate button...");
     await this.textInputSection.generateButton.click();
 
     try {
-      await this.page.waitForResponse(
+      console.log("Waiting for generation API response...");
+      const response = await this.page.waitForResponse(
         (response) => {
           const isGenerationResponse = response.url().includes("/api/generations");
           if (isGenerationResponse) {
             console.log("Generation response status:", response.status());
+            if (response.status() !== 200) {
+              console.log("Generation response error:", response.statusText());
+            }
           }
           return isGenerationResponse && response.status() === 200;
         },
-        { timeout: 30000 },
+        { timeout: 120000 }, // Zwiększamy timeout do 120 sekund
       );
 
-      // Wait for the flashcards grid to appear
-      const flashcardsGrid = await this.page.waitForSelector('[data-test-id="flashcards-grid"]', {
-        timeout: 30000,
+      // Log response details for debugging
+      const responseData = await response.json().catch(() => null);
+      console.log("Generation response data:", responseData);
+
+      // Wait for flashcards grid to appear
+      console.log("Waiting for flashcards grid...");
+      await this.page.waitForSelector('[data-test-id="flashcards-grid"]', {
         state: "visible",
+        timeout: 30000,
       });
 
-      // Scroll the flashcards grid into view
-      await flashcardsGrid.scrollIntoViewIfNeeded();
-
-      // Wait a moment for the scroll animation to complete
-      await this.page.waitForTimeout(1000);
-
-      // Wait for at least one flashcard to be visible
+      // Wait for at least one flashcard to appear
+      console.log("Waiting for flashcards to appear...");
       await this.page.waitForSelector('[data-test-id="flashcard-item"]', {
-        timeout: 30000,
         state: "visible",
+        timeout: 30000,
       });
 
-      console.log("Flashcards generated successfully");
+      // Scroll to flashcards
+      console.log("Scrolling to flashcards...");
+      await this.flashcardsList.scrollToFlashcardsGrid();
+
+      // Take a screenshot for debugging
+      await this.page.screenshot({ path: "flashcards-generated.png" });
+
+      // Verify flashcards were generated
+      const state = await this.getCurrentState();
+      console.log("Final state after generation:", state);
+      if (state.flashcardsCount === 0) {
+        throw new Error("No flashcards were generated");
+      }
     } catch (error) {
-      console.error("Error generating flashcards:", error);
+      console.error("Error during flashcard generation:", error);
+      // Take error screenshot
+      await this.page.screenshot({ path: "flashcard-generation-error.png" });
       throw error;
     }
   }

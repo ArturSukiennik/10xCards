@@ -13,7 +13,7 @@ create table "generations" (
     "accepted_edited_count" integer,
     "source_text_hash" varchar(64) not null,
     "generation_duration" integer not null,
-    "source_text_length" text not null check (char_length(source_text_length) between 1000 and 10000),
+    "source_text_length" integer not null check (source_text_length between 1000 and 10000),
     "created_at" timestamptz not null default current_timestamp,
     "updated_at" timestamptz not null default current_timestamp
 );

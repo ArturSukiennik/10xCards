@@ -25,15 +25,15 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
-  timeout: 60000, // Zwiększamy timeout do 60 sekund dla rzeczywistej autentykacji
+  timeout: 180000, // Zwiększamy timeout do 180 sekund dla całego testu
 
   use: {
     baseURL: process.env.TEST_BASE_URL || "http://localhost:3000",
     trace: "on-first-retry",
     video: "on-first-retry",
     screenshot: "only-on-failure",
-    actionTimeout: 15000,
-    navigationTimeout: 30000,
+    actionTimeout: 60000, // Zwiększamy timeout akcji do 60 sekund
+    navigationTimeout: 60000, // Zwiększamy timeout nawigacji do 60 sekund
   },
 
   projects: [

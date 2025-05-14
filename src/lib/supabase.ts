@@ -6,6 +6,12 @@ const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 const supabaseServiceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 
+console.log("Supabase configuration:", {
+  url: supabaseUrl,
+  hasAnonKey: !!supabaseAnonKey,
+  hasServiceKey: !!supabaseServiceKey,
+});
+
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables");
 }
@@ -43,18 +49,26 @@ export const supabaseAdmin = supabaseServiceKey
 export const createSupabaseServer = (cookies: {
   get: (name: string) => string | undefined;
   set: (name: string, value: string, options?: CookieOptions) => void;
-}) =>
-  createServerClient(supabaseUrl, supabaseAnonKey, {
+}) => {
+  console.log("Creating Supabase server client with URL:", supabaseUrl);
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
-      get: (name: string) => cookies.get(name),
+      get: (name: string) => {
+        const value = cookies.get(name);
+        console.log("Reading cookie:", name, "value:", value ? "exists" : "undefined");
+        return value;
+      },
       set: (name: string, value: string, options?: CookieOptions) => {
+        console.log("Setting cookie:", name, "options:", options);
         cookies.set(name, value, options);
       },
       remove: (name: string, options?: CookieOptions) => {
+        console.log("Removing cookie:", name);
         cookies.set(name, "", { ...options, maxAge: 0 });
       },
     },
   });
+};
 
 // Helper function to format auth errors
 export const formatAuthError = (error: unknown): AuthError => {

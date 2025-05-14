@@ -17,12 +17,25 @@ export class AuthUtils {
     }
 
     console.log("Starting login process...");
+    console.log("Using credentials:", { email, password });
 
     try {
       // Go to login page and wait for it to be fully loaded
       await this.page.goto(`${baseUrl}/login`, {
         waitUntil: "networkidle",
         timeout: 60000,
+      });
+
+      // Enable request logging
+      await this.page.route("**/api/auth", async (route) => {
+        const request = route.request();
+        console.log("Auth request:", {
+          url: request.url(),
+          method: request.method(),
+          headers: request.headers(),
+          body: request.postData(),
+        });
+        await route.continue();
       });
 
       // Wait for the login form with increased timeout
@@ -55,31 +68,26 @@ export class AuthUtils {
 
       console.log("Submitting login form...");
 
-      // Click the button and wait for navigation
-      await loginButton.click();
-
-      // Wait for either successful navigation or error message
-      await Promise.race([
-        this.page.waitForURL("**/generate", { timeout: 30000 }),
-        this.page.waitForSelector('[data-test-id="error-message"]', { timeout: 30000 }),
+      // Click the button and wait for navigation or error
+      await Promise.all([
+        loginButton.click(),
+        Promise.race([
+          this.page.waitForURL("**/generate", { timeout: 30000 }),
+          this.page.waitForSelector('[data-test-id="error-message"]', { timeout: 30000 }),
+        ]),
       ]);
 
-      // Check if there's an error message
-      const errorMessage = await this.page
-        .locator('[data-test-id="error-message"]')
-        .textContent()
-        .catch(() => null);
-
-      if (errorMessage) {
-        throw new Error(`Login failed: ${errorMessage}`);
+      // Check if we got an error message
+      const errorMessage = await this.page.locator('[data-test-id="error-message"]');
+      if (await errorMessage.isVisible()) {
+        const error = await errorMessage.textContent();
+        throw new Error(`Login failed: ${error}`);
       }
 
-      // Check if login was successful
-      console.log("Checking if user is logged in...");
-      const isLoggedIn = await this.isLoggedIn();
-
-      if (!isLoggedIn) {
-        throw new Error("Login failed: User is not logged in after successful form submission");
+      // Verify we're on the generate page
+      const currentUrl = this.page.url();
+      if (!currentUrl.includes("/generate")) {
+        throw new Error(`Login failed: Unexpected redirect to ${currentUrl}`);
       }
 
       console.log("Login successful!");
