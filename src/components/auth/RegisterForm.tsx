@@ -28,7 +28,11 @@ export function RegisterForm() {
   const [error, setError] = React.useState<string>();
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const handleSubmit = async (data: z.infer<typeof registerSchema>) => {
+  const handleSubmit = async (data: {
+    email: string;
+    password: string;
+    confirmPassword: string;
+  }) => {
     setIsLoading(true);
     setError(undefined);
 
@@ -65,7 +69,13 @@ export function RegisterForm() {
       <AuthForm
         title="Create an Account"
         buttonText="Sign Up"
-        onSubmit={handleSubmit}
+        onSubmit={async (data) => {
+          await handleSubmit({
+            email: data.email,
+            password: data.password,
+            confirmPassword: data.password,
+          });
+        }}
         error={error}
         isLoading={isLoading}
         schema={registerSchema}

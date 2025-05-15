@@ -1,19 +1,19 @@
-import type { MiddlewareHandler } from "astro";
+import { defineMiddleware } from "astro:middleware";
 import { createSupabaseServer } from "@/lib/supabase";
-import type { CookieOptions } from "astro";
+import type { SerializeOptions } from "cookie";
 
-export const authMiddleware: MiddlewareHandler = async (context) => {
+export const authMiddleware = defineMiddleware(async (context, next) => {
   const { cookies, url, redirect } = context;
 
   // Skip auth check for public routes
   const publicRoutes = ["/login", "/register", "/reset-password", "/"];
   if (publicRoutes.includes(url.pathname)) {
-    return;
+    return next();
   }
 
   const supabase = createSupabaseServer({
     get: (name: string) => cookies.get(name)?.value,
-    set: (name: string, value: string, options?: CookieOptions) =>
+    set: (name: string, value: string, options?: SerializeOptions) =>
       cookies.set(name, value, options),
   });
 
@@ -25,4 +25,6 @@ export const authMiddleware: MiddlewareHandler = async (context) => {
   if (error || !user) {
     return redirect("/login");
   }
-};
+
+  return next();
+});
