@@ -3,7 +3,6 @@ import { FlashcardsService } from "../../lib/services/flashcards.service";
 import { ValidationError, RateLimitError } from "../../lib/errors";
 import { createRateLimitMiddleware } from "../../middleware/rate-limit";
 import type { MiddlewareContext } from "../../types/astro";
-import { supabase } from "@/lib/supabase";
 
 export const prerender = false;
 
@@ -13,19 +12,20 @@ const rateLimit = createRateLimitMiddleware(60); // 60 requests per minute for s
 // GET /api/flashcards
 export const GET: APIRoute = async ({ request, locals }: MiddlewareContext) => {
   try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session?.user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
+    if (!locals.supabase) {
+      return new Response(JSON.stringify({ error: "Database connection not available" }), {
+        status: 500,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    if (!locals.supabase) {
-      return new Response(JSON.stringify({ error: "Database connection not available" }), {
-        status: 500,
+    const {
+      data: { session },
+    } = await locals.supabase.auth.getSession();
+
+    if (!session?.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
         headers: { "Content-Type": "application/json" },
       });
     }
@@ -69,9 +69,17 @@ export const GET: APIRoute = async ({ request, locals }: MiddlewareContext) => {
 // POST /api/flashcards
 export const POST: APIRoute = async ({ request, locals }: MiddlewareContext) => {
   try {
+    if (!locals.supabase) {
+      return new Response(JSON.stringify({ error: "Database connection not available" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await locals.supabase.auth.getSession();
+
     if (!session?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -81,13 +89,6 @@ export const POST: APIRoute = async ({ request, locals }: MiddlewareContext) => 
 
     // Apply rate limit middleware
     await rateLimit({ request, locals }, () => Promise.resolve(new Response()));
-
-    if (!locals.supabase) {
-      return new Response(JSON.stringify({ error: "Database connection not available" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
 
     const flashcardsService = new FlashcardsService(locals.supabase);
     const body = await request.json();
