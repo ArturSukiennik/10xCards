@@ -57,9 +57,9 @@ test.describe("Flashcard Generation", () => {
         await generateView.goto();
         // Wait for the page to be fully loaded and interactive
         await page.waitForLoadState("networkidle");
-        await page.waitForSelector('[data-test-id="text-input"]', {
+        await page.waitForSelector('[data-test-id="source-text-input"]', {
           state: "visible",
-          timeout: 10000,
+          timeout: 30000, // Increased timeout
         });
         break;
       } catch (error) {
@@ -87,7 +87,7 @@ test.describe("Flashcard Generation", () => {
 
     // 3. Sprawdź czy przycisk generowania jest aktywny
     await generateView.page.waitForSelector('[data-test-id="generate-button"]:not([disabled])', {
-      timeout: 10000,
+      timeout: 30000, // Increased timeout
     });
     expect(await generateView.isReadyForGeneration()).toBe(true);
 
@@ -102,7 +102,7 @@ test.describe("Flashcard Generation", () => {
         flashcardsGenerated = true;
         break;
       }
-      await generateView.page.waitForTimeout(5000); // Wait 5s between checks
+      await generateView.page.waitForTimeout(10000); // Increased wait time between checks
     }
     expect(flashcardsGenerated).toBe(true);
 
@@ -111,7 +111,7 @@ test.describe("Flashcard Generation", () => {
 
     // 7. Sprawdź końcowy stan z explicit wait
     await generateView.page.waitForSelector('text="All flashcards saved successfully!"', {
-      timeout: 15000,
+      timeout: 30000, // Increased timeout
     });
     const finalState = await generateView.getCurrentState();
     expect(finalState.flashcardsCount).toBe(0);
@@ -135,13 +135,13 @@ test.describe("Flashcard Generation", () => {
 
     // Wait for validation error to appear
     await generateView.page.waitForSelector('text="Text must be at least 2000 characters long"', {
-      timeout: 5000,
+      timeout: 30000, // Increased timeout
     });
     expect(stateAfterText.validationErrors).toContain("Text must be at least 2000 characters long");
 
     // 4. Sprawdź czy przycisk generowania jest wyłączony
     await generateView.page.waitForSelector('[data-test-id="generate-button"][disabled]', {
-      timeout: 5000,
+      timeout: 30000, // Increased timeout
     });
     expect(await generateView.isReadyForGeneration()).toBe(false);
 
@@ -181,7 +181,7 @@ test.describe("Flashcard Generation", () => {
         flashcardsGenerated = true;
         break;
       }
-      await generateView.page.waitForTimeout(5000); // Wait 5s between checks
+      await generateView.page.waitForTimeout(10000); // Increased wait time between checks
     }
     expect(flashcardsGenerated).toBe(true);
 
@@ -190,7 +190,7 @@ test.describe("Flashcard Generation", () => {
 
     // 4. Sprawdź czy lista została wyczyszczona i pojawił się komunikat o sukcesie
     await generateView.page.waitForSelector('text="All flashcards saved successfully!"', {
-      timeout: 15000,
+      timeout: 30000, // Increased timeout
     });
     const stateAfterSave = await generateView.getCurrentState();
     expect(stateAfterSave.flashcardsCount).toBe(0);

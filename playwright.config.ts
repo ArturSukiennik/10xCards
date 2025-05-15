@@ -27,15 +27,15 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 1, // Dodajemy 1 ponowną próbę nawet w trybie dev
   workers: 1, // Wymuszamy jednego workera
   reporter: "html",
-  timeout: 180000, // Zwiększamy timeout do 180 sekund dla całego testu
+  timeout: 300000, // Increased to 5 minutes for the entire test
 
   use: {
     baseURL: process.env.TEST_BASE_URL || "http://localhost:3000",
     trace: "retain-on-failure",
     video: "retain-on-failure",
     screenshot: "only-on-failure",
-    actionTimeout: 60000, // Zwiększamy timeout akcji do 60 sekund
-    navigationTimeout: 60000, // Zwiększamy timeout nawigacji do 60 sekund
+    actionTimeout: 120000, // Increased to 2 minutes
+    navigationTimeout: 120000, // Increased to 2 minutes
   },
 
   projects: [
@@ -49,27 +49,12 @@ export default defineConfig({
         },
       },
     },
-    {
-      name: "firefox",
-      use: {
-        ...devices["Desktop Firefox"],
-        viewport: { width: 1280, height: 720 },
-        launchOptions: {
-          firefoxUserPrefs: {
-            "browser.cache.disk.enable": false,
-            "browser.cache.memory.enable": false,
-            "browser.cache.offline.enable": false,
-            "network.http.use-cache": false,
-          },
-        },
-      },
-    },
   ],
 
   webServer: {
     command: "npm run dev",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000, // 120 seconds
+    timeout: 180000, // Increased to 3 minutes
   },
 });

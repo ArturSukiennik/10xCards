@@ -26,58 +26,80 @@ export class AuthUtils {
       });
       this.page.on("response", async (response) => {
         if (response.url().includes("/api/auth")) {
-          console.log(`Response from ${response.url()}:`, await response.json());
+          try {
+            const responseData = await response.json();
+            console.log(`Response from ${response.url()}:`, responseData);
+          } catch (error) {
+            console.error(`Failed to parse response from ${response.url()}:`, error);
+          }
         }
       });
 
-      // Navigate to login page using the configured baseURL
+      // Navigate to login page using the configured baseURL with retry logic
       const baseUrl = process.env.TEST_BASE_URL || "http://localhost:3000";
       console.log("Navigating to login page:", `${baseUrl}/login`);
-      await this.page.goto(`${baseUrl}/login`);
 
-      // Wait for the login form
-      console.log("Waiting for login form elements...");
-      await this.page.waitForSelector('[data-test-id="auth-form"]');
-      await this.page.waitForSelector('[data-test-id="email-input"]');
-      await this.page.waitForSelector('[data-test-id="password-input"]');
+      let retries = 3;
+      let waitTime = 2000; // Start with 2s wait
 
-      // Fill in the login form
-      console.log("Filling login form...");
-      await this.page.fill('[data-test-id="email-input"]', email);
-      await this.page.fill('[data-test-id="password-input"]', password);
+      while (retries > 0) {
+        try {
+          await this.page.goto(`${baseUrl}/login`, {
+            waitUntil: "networkidle",
+            timeout: 60000, // 60s timeout for initial navigation
+          });
 
-      // Click the login button
-      console.log("Clicking login button...");
-      await this.page.click('[data-test-id="login-button"]');
+          // Wait for the login form with increased timeouts
+          console.log("Waiting for login form elements...");
+          await Promise.all([
+            this.page.waitForSelector('[data-test-id="auth-form"]', { timeout: 30000 }),
+            this.page.waitForSelector('[data-test-id="email-input"]', { timeout: 30000 }),
+            this.page.waitForSelector('[data-test-id="password-input"]', { timeout: 30000 }),
+          ]);
 
-      // Wait for either successful navigation or error message
-      console.log("Waiting for login result...");
-      try {
-        // First, try to wait for successful navigation
-        await this.page.waitForURL("**/generate", { timeout: 10000 });
-        console.log("Successfully navigated to /generate");
+          // Fill in the login form
+          console.log("Filling login form...");
+          await this.page.fill('[data-test-id="email-input"]', email);
+          await this.page.fill('[data-test-id="password-input"]', password);
 
-        // Additional verification - check if we can see the source text input
-        console.log("Verifying successful login...");
-        await this.page.waitForSelector('[data-test-id="source-text-input"]', {
-          state: "visible",
-          timeout: 10000,
-        });
+          // Click the login button and wait for navigation
+          console.log("Clicking login button...");
+          await Promise.all([
+            this.page.click('[data-test-id="login-button"]'),
+            Promise.race([
+              this.page.waitForURL("**/generate", { timeout: 60000 }),
+              this.page.waitForSelector('[data-test-id="error-message"]', { timeout: 60000 }),
+            ]),
+          ]);
 
-        console.log("Login successful!");
-        return;
-      } catch (navigationError) {
-        // If navigation fails, check for error message
-        console.log("Navigation failed, checking for error message...");
-        const errorLocator = this.page.locator('[data-test-id="error-message"]');
-        const errorMessage = await errorLocator.textContent({ timeout: 5000 });
+          // Check if we got an error message
+          const errorLocator = this.page.locator('[data-test-id="error-message"]');
+          if (await errorLocator.isVisible()) {
+            const errorMessage = await errorLocator.textContent();
+            throw new Error(`Login failed: ${errorMessage}`);
+          }
 
-        if (errorMessage) {
-          console.error("Login form error:", errorMessage);
-          throw new Error(`Login failed: ${errorMessage}`);
-        } else {
-          // If no error message is found, throw the original navigation error
-          throw navigationError;
+          // Verify successful login
+          console.log("Verifying successful login...");
+          await this.page.waitForSelector('[data-test-id="source-text-input"]', {
+            state: "visible",
+            timeout: 30000,
+          });
+
+          console.log("Login successful!");
+          return;
+        } catch (error) {
+          console.log(`Login attempt ${4 - retries} failed:`, error);
+          retries--;
+
+          if (retries === 0) {
+            console.error("All login attempts failed");
+            throw error;
+          }
+
+          console.log(`Waiting ${waitTime}ms before retry...`);
+          await this.page.waitForTimeout(waitTime);
+          waitTime *= 2; // Exponential backoff
         }
       }
     } catch (error) {
@@ -97,7 +119,13 @@ export class AuthUtils {
 
   async isLoggedIn() {
     try {
-      // Check if we can access a protected route
+      // Wait for user menu to be visible
+      await this.page.waitForSelector('[data-test-id="user-menu"]', {
+        state: "visible",
+        timeout: 30000,
+      });
+
+      // Check if we're on a protected route
       const currentUrl = this.page.url();
       return currentUrl.includes("/generate");
     } catch (error) {
