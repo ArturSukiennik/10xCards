@@ -16,7 +16,7 @@ interface StorageState {
 
 // Eksportujemy test z obsługą stanu logowania
 export const test = base.extend({
-  storageState: async (_fixture, use) => {
+  storageState: async (_fixture, callback) => {
     // Tworzymy nowy kontekst i stronę
     const browser = await chromium.launch();
     const context = await browser.newContext({
@@ -39,7 +39,7 @@ export const test = base.extend({
       const cookies = await context.cookies();
 
       // Używamy ciasteczek w testach
-      await use({ cookies, origins: [] } as StorageState);
+      await callback({ cookies, origins: [] } as StorageState);
     } finally {
       // Zamykamy kontekst i przeglądarkę
       await context.close();

@@ -68,22 +68,15 @@ export function Toast({
 // Progress Bar Component
 interface ProgressBarProps extends HTMLAttributes<HTMLDivElement> {
   progress: number;
-  color?: string;
 }
 
-export function ProgressBar({
-  progress,
-  color = "#FF385C",
-  className = "",
-  ...props
-}: ProgressBarProps) {
+export function ProgressBar({ progress, className = "", ...props }: ProgressBarProps) {
   return (
     <div className={`h-1 w-full bg-gray-200 rounded-full overflow-hidden ${className}`} {...props}>
       <div
-        className="h-full transition-all duration-300 ease-in-out"
+        className="h-full transition-all duration-300 ease-in-out bg-primary"
         style={{
           width: `${Math.min(Math.max(progress, 0), 100)}%`,
-          backgroundColor: color,
         }}
       />
     </div>

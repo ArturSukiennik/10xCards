@@ -1,12 +1,29 @@
 {
   "extends": ["plugin:astro/recommended"],
   "rules": {
-    "linebreak-style": "off"
+    "linebreak-style": "off",
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "@typescript-eslint/no-unused-expressions": "warn",
+    "@typescript-eslint/no-empty-function": "warn"
   },
+  "ignorePatterns": [
+    "playwright-report/**/*",
+    "dist/**/*",
+    "node_modules/**/*",
+    ".astro/**/*"
+  ],
   "overrides": [
     {
       "files": ["*.astro"],
       "parser": "astro-eslint-parser"
+    },
+    {
+      "files": ["tests/**/*", "src/tests/**/*", "**/*.test.*", "**/*.spec.*"],
+      "rules": {
+        "no-console": "off",
+        "@typescript-eslint/no-unused-expressions": "off",
+        "@typescript-eslint/no-empty-function": "off"
+      }
     }
   ]
 }

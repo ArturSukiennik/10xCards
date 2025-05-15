@@ -1,5 +1,4 @@
-import { type Page } from "@playwright/test";
-import { TEST_CONFIG } from "../config";
+import type { Page } from "@playwright/test";
 
 export class AuthUtils {
   constructor(private page: Page) {}

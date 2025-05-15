@@ -15,7 +15,7 @@ interface AuthFixtures {
 
 // Tworzymy nowy test z obsługą stanu logowania
 export const test = base.extend<AuthFixtures>({
-  storageState: async ({ browser }, use) => {
+  storageState: async ({ browser }, callback) => {
     let context: BrowserContext | undefined;
 
     try {
@@ -51,7 +51,7 @@ export const test = base.extend<AuthFixtures>({
       const cookies = await context.cookies();
 
       // Używamy ciasteczek w testach
-      await use({ cookies, origins: [] });
+      await callback({ cookies, origins: [] });
     } finally {
       // Zamykamy kontekst
       await context?.close();
