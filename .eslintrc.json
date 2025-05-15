@@ -24,13 +24,7 @@
   ],
   "overrides": [
     {
-      "files": [
-        "tests/**/*",
-        "src/tests/**/*",
-        "**/*.test.*",
-        "**/*.spec.*",
-        "**/*.e2e.*"
-      ],
+      "files": ["tests/**/*", "src/tests/**/*", "**/*.test.*", "**/*.spec.*", "**/*.e2e.*"],
       "rules": {
         "no-console": "off",
         "@typescript-eslint/no-unused-expressions": "off",

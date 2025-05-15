@@ -2,10 +2,12 @@
 
 import * as React from "react";
 import * as z from "zod";
-import { AuthForm } from "./AuthForm";
 import { Link } from "@/components/ui/link";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const registerSchema = z
   .object({
@@ -24,15 +26,22 @@ const registerSchema = z
     path: ["confirmPassword"],
   });
 
+type RegisterFormData = z.infer<typeof registerSchema>;
+
 export function RegisterForm() {
   const [error, setError] = React.useState<string>();
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const handleSubmit = async (data: {
-    email: string;
-    password: string;
-    confirmPassword: string;
-  }) => {
+  const form = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const handleSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     setError(undefined);
 
@@ -66,46 +75,79 @@ export function RegisterForm() {
 
   return (
     <div className="space-y-4">
-      <AuthForm
-        title="Create an Account"
-        buttonText="Sign Up"
-        onSubmit={async (data) => {
-          await handleSubmit({
-            email: data.email,
-            password: data.password,
-            confirmPassword: data.password,
-          });
-        }}
-        error={error}
-        isLoading={isLoading}
-        schema={registerSchema}
-        defaultValues={{
-          email: "",
-          password: "",
-          confirmPassword: "",
-        }}
-        extraFields={
-          <>
-            <FormField
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="Confirm your password" {...field} />
-                  </FormControl>
-                  <FormMessage className="text-red-500" />
-                </FormItem>
-              )}
-            />
-            <div className="text-sm text-center">
-              <Link href="/login" className="text-primary hover:underline">
-                Already have an account?
-              </Link>
-            </div>
-          </>
-        }
-      />
+      {error && (
+        <Alert variant="destructive" className="mb-4 bg-red-500 text-white border-red-500">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input
+                  data-test-id="email-input"
+                  type="email"
+                  placeholder="Enter your email"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage className="text-red-500" />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input
+                  data-test-id="password-input"
+                  type="password"
+                  placeholder="Enter your password"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage className="text-red-500" />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Confirm Password</FormLabel>
+              <FormControl>
+                <Input
+                  data-test-id="confirm-password-input"
+                  type="password"
+                  placeholder="Confirm your password"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage className="text-red-500" />
+            </FormItem>
+          )}
+        />
+        <div className="text-sm text-center">
+          <Link href="/login" className="text-primary hover:underline">
+            Already have an account?
+          </Link>
+        </div>
+        <button
+          type="submit"
+          className="w-full bg-green-500 hover:bg-green-600 text-white focus:ring-green-500 h-10 px-4 py-2 rounded-md"
+          disabled={isLoading}
+        >
+          {isLoading ? "Loading..." : "Sign Up"}
+        </button>
+      </form>
     </div>
   );
 }

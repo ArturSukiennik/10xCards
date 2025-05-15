@@ -17,23 +17,22 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-// Base schema for auth forms
 const baseAuthSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(1, "Password is required"),
 });
 
-type BaseAuthSchemaType = z.infer<typeof baseAuthSchema>;
+type BaseAuthSchema = z.infer<typeof baseAuthSchema>;
 
 export interface AuthFormProps {
-  onSubmit: (data: BaseAuthSchemaType) => Promise<void>;
+  onSubmit: (data: BaseAuthSchema) => Promise<void>;
   title: string;
   buttonText: string;
   error?: string;
   isLoading?: boolean;
   extraFields?: React.ReactNode;
-  schema?: typeof baseAuthSchema;
-  defaultValues?: Partial<BaseAuthSchemaType>;
+  schema?: z.ZodType<BaseAuthSchema>;
+  defaultValues?: Partial<BaseAuthSchema>;
 }
 
 export function AuthForm({
@@ -49,12 +48,12 @@ export function AuthForm({
     password: "",
   },
 }: AuthFormProps) {
-  const form = useForm<BaseAuthSchemaType>({
+  const form = useForm<BaseAuthSchema>({
     resolver: zodResolver(schema),
     defaultValues,
   });
 
-  const handleSubmit = async (data: BaseAuthSchemaType) => {
+  const handleSubmit = async (data: BaseAuthSchema) => {
     try {
       await onSubmit(data);
     } catch {
