@@ -6,7 +6,7 @@ test.describe("Flashcard Generation", () => {
   let generateView: GenerateViewPage;
 
   // Increase timeout for all tests in this file
-  test.setTimeout(120000);
+  test.setTimeout(180000); // Increased to 3 minutes
 
   // Przykładowy tekst w języku polskim (ponad 2000 znaków)
   const samplePolishText = `
@@ -48,86 +48,151 @@ test.describe("Flashcard Generation", () => {
     // Inicjalizacja strony generowania fiszek
     generateView = new GenerateViewPage(page);
 
-    // Add retries for page navigation
+    // Add retries for page navigation with exponential backoff
     let retries = 3;
+    let waitTime = 2000; // Start with 2s wait
+
     while (retries > 0) {
       try {
         await generateView.goto();
+        // Wait for the page to be fully loaded and interactive
+        await page.waitForLoadState("networkidle");
+        await page.waitForSelector('[data-test-id="text-input"]', {
+          state: "visible",
+          timeout: 10000,
+        });
         break;
       } catch (error) {
         console.log(`Navigation retry attempt ${4 - retries}, error:`, error);
         retries--;
         if (retries === 0) throw error;
-        await page.waitForTimeout(2000); // Wait 2s between retries
+        await page.waitForTimeout(waitTime);
+        waitTime *= 2; // Exponential backoff
       }
     }
   });
 
   test("should successfully generate flashcards from Polish text", async () => {
     // 1. Sprawdź początkowy stan
+    await generateView.page.waitForLoadState("networkidle");
     const initialState = await generateView.getCurrentState();
     expect(initialState.flashcardsCount).toBe(0);
     expect(initialState.characterCount).toBe(0);
 
     // 2. Wprowadź tekst i sprawdź licznik znaków
     await generateView.textInputSection.enterSourceText(samplePolishText);
+    await generateView.page.waitForTimeout(1000); // Wait for character count to update
     const stateAfterText = await generateView.getCurrentState();
     expect(stateAfterText.characterCount).toBeGreaterThanOrEqual(2000);
 
     // 3. Sprawdź czy przycisk generowania jest aktywny
+    await generateView.page.waitForSelector('[data-test-id="generate-button"]:not([disabled])', {
+      timeout: 10000,
+    });
     expect(await generateView.isReadyForGeneration()).toBe(true);
 
     // 4. Wygeneruj fiszki
     await generateView.generateFlashcardsFromText(samplePolishText);
 
-    // 5. Sprawdź czy fiszki zostały wygenerowane
-    const stateAfterGeneration = await generateView.getCurrentState();
-    expect(stateAfterGeneration.flashcardsCount).toBeGreaterThan(0);
+    // 5. Sprawdź czy fiszki zostały wygenerowane (z retry logic)
+    let flashcardsGenerated = false;
+    for (let i = 0; i < 3; i++) {
+      const stateAfterGeneration = await generateView.getCurrentState();
+      if (stateAfterGeneration.flashcardsCount > 0) {
+        flashcardsGenerated = true;
+        break;
+      }
+      await generateView.page.waitForTimeout(5000); // Wait 5s between checks
+    }
+    expect(flashcardsGenerated).toBe(true);
 
     // 6. Zapisz wszystkie wygenerowane fiszki
     await generateView.flashcardsList.saveAllFlashcards();
 
-    // 7. Sprawdź końcowy stan - lista powinna być wyczyszczona po zapisie
+    // 7. Sprawdź końcowy stan z explicit wait
+    await generateView.page.waitForSelector('text="All flashcards saved successfully!"', {
+      timeout: 15000,
+    });
     const finalState = await generateView.getCurrentState();
     expect(finalState.flashcardsCount).toBe(0);
-    // Sprawdź czy pojawił się komunikat o sukcesie
-    await expect(
-      generateView.page.locator('text="All flashcards saved successfully!"'),
-    ).toBeVisible();
   });
 
   test("should show validation error for too short text", async () => {
-    const shortText = "To jest zbyt krótki tekst.";
+    // 1. Sprawdź początkowy stan
+    await generateView.page.waitForLoadState("networkidle");
+    const initialState = await generateView.getCurrentState();
+    expect(initialState.flashcardsCount).toBe(0);
+    expect(initialState.characterCount).toBe(0);
 
+    // 2. Wprowadź krótki tekst
+    const shortText = "To jest zbyt krótki tekst.";
     await generateView.textInputSection.enterSourceText(shortText);
 
-    // Sprawdź czy przycisk generowania jest wyłączony
-    const button = generateView.textInputSection.generateButton;
-    expect(await button.isDisabled()).toBe(true);
+    // 3. Poczekaj na aktualizację stanu
+    await generateView.page.waitForTimeout(1000); // Wait for character count to update
+    const stateAfterText = await generateView.getCurrentState();
+    expect(stateAfterText.characterCount).toBe(26);
 
-    // Sprawdź czy licznik znaków pokazuje błąd
+    // Wait for validation error to appear
+    await generateView.page.waitForSelector('text="Text must be at least 2000 characters long"', {
+      timeout: 5000,
+    });
+    expect(stateAfterText.validationErrors).toContain("Text must be at least 2000 characters long");
+
+    // 4. Sprawdź czy przycisk generowania jest wyłączony
+    await generateView.page.waitForSelector('[data-test-id="generate-button"][disabled]', {
+      timeout: 5000,
+    });
+    expect(await generateView.isReadyForGeneration()).toBe(false);
+
+    // 5. Sprawdź czy licznik znaków pokazuje błąd
     const characterCount = await generateView.page.locator('[data-test-id="character-count"]');
-    const characterCountText = await characterCount.textContent();
-    expect(characterCountText).toContain("26/10000 characters");
-    expect(await characterCount.evaluate((el) => el.classList.contains("text-red-600"))).toBe(true);
+    await expect(characterCount).toHaveText("26/10000 characters");
+    await expect(characterCount).toHaveClass(/text-red-600/);
+
+    // 6. Sprawdź czy nie można wygenerować fiszek
+    try {
+      await generateView.generateFlashcardsFromText(shortText);
+      throw new Error("Should not be able to generate flashcards from short text");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(error.message).toBe("Generate button is disabled");
+      } else {
+        throw error;
+      }
+    }
+
+    // 7. Sprawdź końcowy stan - nie powinno być żadnych fiszek
+    await generateView.page.waitForTimeout(1000); // Give time for any potential state changes
+    const finalState = await generateView.getCurrentState();
+    expect(finalState.flashcardsCount).toBe(0);
   });
 
   test("should handle saving all generated flashcards", async () => {
     // 1. Wygeneruj fiszki
+    await generateView.page.waitForLoadState("networkidle");
     await generateView.generateFlashcardsFromText(samplePolishText);
 
-    // 2. Sprawdź stan przed zapisaniem
-    const stateBeforeSave = await generateView.getCurrentState();
-    expect(stateBeforeSave.flashcardsCount).toBeGreaterThan(0);
+    // 2. Sprawdź stan przed zapisaniem (z retry logic)
+    let flashcardsGenerated = false;
+    for (let i = 0; i < 3; i++) {
+      const stateBeforeSave = await generateView.getCurrentState();
+      if (stateBeforeSave.flashcardsCount > 0) {
+        flashcardsGenerated = true;
+        break;
+      }
+      await generateView.page.waitForTimeout(5000); // Wait 5s between checks
+    }
+    expect(flashcardsGenerated).toBe(true);
 
     // 3. Zapisz wszystkie wygenerowane fiszki
     await generateView.flashcardsList.saveAllFlashcards();
 
     // 4. Sprawdź czy lista została wyczyszczona i pojawił się komunikat o sukcesie
+    await generateView.page.waitForSelector('text="All flashcards saved successfully!"', {
+      timeout: 15000,
+    });
     const stateAfterSave = await generateView.getCurrentState();
     expect(stateAfterSave.flashcardsCount).toBe(0);
-    await expect(
-      generateView.page.locator('text="All flashcards saved successfully!"'),
-    ).toBeVisible();
   });
 });

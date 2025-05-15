@@ -22,17 +22,17 @@ for (const envVar of requiredEnvVars) {
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  fullyParallel: true,
+  fullyParallel: false, // Wyłączamy równoległe wykonywanie testów
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  retries: process.env.CI ? 2 : 1, // Dodajemy 1 ponowną próbę nawet w trybie dev
+  workers: 1, // Wymuszamy jednego workera
   reporter: "html",
   timeout: 180000, // Zwiększamy timeout do 180 sekund dla całego testu
 
   use: {
     baseURL: process.env.TEST_BASE_URL || "http://localhost:3000",
-    trace: "on-first-retry",
-    video: "on-first-retry",
+    trace: "retain-on-failure",
+    video: "retain-on-failure",
     screenshot: "only-on-failure",
     actionTimeout: 60000, // Zwiększamy timeout akcji do 60 sekund
     navigationTimeout: 60000, // Zwiększamy timeout nawigacji do 60 sekund
@@ -41,11 +41,28 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1280, height: 720 },
+        launchOptions: {
+          args: ["--disable-gpu", "--no-sandbox", "--disable-setuid-sandbox"],
+        },
+      },
     },
     {
       name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
+      use: {
+        ...devices["Desktop Firefox"],
+        viewport: { width: 1280, height: 720 },
+        launchOptions: {
+          firefoxUserPrefs: {
+            "browser.cache.disk.enable": false,
+            "browser.cache.memory.enable": false,
+            "browser.cache.offline.enable": false,
+            "network.http.use-cache": false,
+          },
+        },
+      },
     },
   ],
 

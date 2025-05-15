@@ -67,6 +67,23 @@ export const createSupabaseServer = (cookies: {
         cookies.set(name, "", { ...options, maxAge: 0 });
       },
     },
+    auth: {
+      flowType: "pkce",
+      detectSessionInUrl: true,
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+    global: {
+      headers: {
+        "x-application-name": "10xCards",
+      },
+      fetch: (url, options) => {
+        return fetch(url, {
+          ...options,
+          signal: AbortSignal.timeout(30000), // 30 second timeout
+        });
+      },
+    },
   });
 };
 

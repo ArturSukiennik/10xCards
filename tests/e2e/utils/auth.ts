@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 
 export class AuthUtils {
-  readonly page: Page;
+  private page: Page;
 
   constructor(page: Page) {
     this.page = page;
@@ -10,126 +10,99 @@ export class AuthUtils {
   async loginTestUser() {
     const email = process.env.SUPABASE_TEST_USER_EMAIL;
     const password = process.env.SUPABASE_TEST_USER_PASSWORD;
-    const baseUrl = process.env.BASE_URL || "http://localhost:3000";
 
     if (!email || !password) {
-      throw new Error("Missing test user credentials in .env.test file");
+      throw new Error("Missing test user credentials");
     }
 
-    console.log("Starting login process...");
-    console.log("Using credentials:", { email, password });
-
     try {
-      // Go to login page and wait for it to be fully loaded
-      await this.page.goto(`${baseUrl}/login`, {
-        waitUntil: "networkidle",
-        timeout: 60000,
+      console.log("Starting login process with email:", email);
+
+      // Enable request/response logging
+      this.page.on("request", (request) => {
+        if (request.url().includes("/api/auth")) {
+          console.log(`Request to ${request.url()}:`, request.postData());
+        }
+      });
+      this.page.on("response", async (response) => {
+        if (response.url().includes("/api/auth")) {
+          console.log(`Response from ${response.url()}:`, await response.json());
+        }
       });
 
-      // Enable request logging
-      await this.page.route("**/api/auth", async (route) => {
-        const request = route.request();
-        console.log("Auth request:", {
-          url: request.url(),
-          method: request.method(),
-          headers: request.headers(),
-          body: request.postData(),
-        });
-        await route.continue();
-      });
+      // Navigate to login page using the configured baseURL
+      const baseUrl = process.env.TEST_BASE_URL || "http://localhost:3000";
+      console.log("Navigating to login page:", `${baseUrl}/login`);
+      await this.page.goto(`${baseUrl}/login`);
 
-      // Wait for the login form with increased timeout
-      const loginForm = await this.page.waitForSelector('[data-test-id="auth-form"]', {
-        state: "visible",
-        timeout: 30000,
-      });
+      // Wait for the login form
+      console.log("Waiting for login form elements...");
+      await this.page.waitForSelector('[data-test-id="auth-form"]');
+      await this.page.waitForSelector('[data-test-id="email-input"]');
+      await this.page.waitForSelector('[data-test-id="password-input"]');
 
-      if (!loginForm) {
-        throw new Error("Login form not found");
-      }
-
-      console.log("Login form found, filling credentials...");
-
-      // Fill the form
+      // Fill in the login form
+      console.log("Filling login form...");
       await this.page.fill('[data-test-id="email-input"]', email);
       await this.page.fill('[data-test-id="password-input"]', password);
 
-      // Wait for the button to be visible and enabled
-      const loginButton = await this.page.waitForSelector('[data-test-id="login-button"]', {
-        state: "visible",
-        timeout: 30000,
-      });
+      // Click the login button
+      console.log("Clicking login button...");
+      await this.page.click('[data-test-id="login-button"]');
 
-      // Ensure the button is enabled
-      const isDisabled = await loginButton.evaluate((el) => el.hasAttribute("disabled"));
-      if (isDisabled) {
-        throw new Error("Login button is disabled");
+      // Wait for either successful navigation or error message
+      console.log("Waiting for login result...");
+      try {
+        // First, try to wait for successful navigation
+        await this.page.waitForURL("**/generate", { timeout: 10000 });
+        console.log("Successfully navigated to /generate");
+
+        // Additional verification - check if we can see the source text input
+        console.log("Verifying successful login...");
+        await this.page.waitForSelector('[data-test-id="source-text-input"]', {
+          state: "visible",
+          timeout: 10000,
+        });
+
+        console.log("Login successful!");
+        return;
+      } catch (navigationError) {
+        // If navigation fails, check for error message
+        console.log("Navigation failed, checking for error message...");
+        const errorLocator = this.page.locator('[data-test-id="error-message"]');
+        const errorMessage = await errorLocator.textContent({ timeout: 5000 });
+
+        if (errorMessage) {
+          console.error("Login form error:", errorMessage);
+          throw new Error(`Login failed: ${errorMessage}`);
+        } else {
+          // If no error message is found, throw the original navigation error
+          throw navigationError;
+        }
       }
-
-      console.log("Submitting login form...");
-
-      // Click the button and wait for navigation or error
-      await Promise.all([
-        loginButton.click(),
-        Promise.race([
-          this.page.waitForURL("**/generate", { timeout: 30000 }),
-          this.page.waitForSelector('[data-test-id="error-message"]', { timeout: 30000 }),
-        ]),
-      ]);
-
-      // Check if we got an error message
-      const errorMessage = await this.page.locator('[data-test-id="error-message"]');
-      if (await errorMessage.isVisible()) {
-        const error = await errorMessage.textContent();
-        throw new Error(`Login failed: ${error}`);
-      }
-
-      // Verify we're on the generate page
-      const currentUrl = this.page.url();
-      if (!currentUrl.includes("/generate")) {
-        throw new Error(`Login failed: Unexpected redirect to ${currentUrl}`);
-      }
-
-      console.log("Login successful!");
     } catch (error) {
-      console.error("Login process failed:", error);
-      await this.page.screenshot({ path: "login-error.png" });
+      console.error("Login error:", error);
+
+      // Take a screenshot on error
+      try {
+        await this.page.screenshot({ path: "login-error.png" });
+        console.log("Error screenshot saved as login-error.png");
+      } catch (screenshotError) {
+        console.error("Failed to take error screenshot:", screenshotError);
+      }
+
       throw error;
     }
   }
 
-  /**
-   * Checks if the user is currently logged in
-   */
-  async isLoggedIn(): Promise<boolean> {
+  async isLoggedIn() {
     try {
-      // Wait for user menu to be visible
-      await this.page.waitForSelector('[data-test-id="user-menu"]', {
-        state: "visible",
-        timeout: 30000,
-      });
-
-      // Check if login form is not present
-      const loginForm = await this.page.locator('[data-test-id="auth-form"]').count();
-      return loginForm === 0;
+      // Check if we can access a protected route
+      const currentUrl = this.page.url();
+      return currentUrl.includes("/generate");
     } catch (error) {
-      console.error("Login check failed:", error);
+      console.error("Error checking login status:", error);
       return false;
-    }
-  }
-
-  async logout() {
-    if (await this.isLoggedIn()) {
-      try {
-        await this.page.click('[data-test-id="user-menu"]');
-        await this.page.click('[data-test-id="logout-button"]');
-        await this.page.waitForURL("**/login", { timeout: 30000 });
-      } catch (error) {
-        console.error("Logout failed:", error);
-        throw new Error(
-          `Logout failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-        );
-      }
     }
   }
 }

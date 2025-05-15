@@ -1,26 +1,21 @@
 import { defineMiddleware } from "astro:middleware";
 import { createSupabaseServer, cookieOptions } from "../lib/supabase";
-import { createMockSupabaseServer } from "../../tests/e2e/mocks/supabase.mock";
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  // W trybie testowym używamy mocka
-  const supabase =
-    import.meta.env.MODE === "test"
-      ? createMockSupabaseServer()
-      : createSupabaseServer({
-          get: (name) => {
-            const cookie = context.cookies.get(name);
-            console.log("Reading cookie in middleware:", name, "exists:", !!cookie?.value);
-            return cookie?.value;
-          },
-          set: (name, value, options) => {
-            console.log("Setting cookie in middleware:", name);
-            context.cookies.set(name, value, {
-              ...cookieOptions,
-              ...options,
-            });
-          },
-        });
+  const supabase = createSupabaseServer({
+    get: (name) => {
+      const cookie = context.cookies.get(name);
+      console.log("Reading cookie in middleware:", name, "exists:", !!cookie?.value);
+      return cookie?.value;
+    },
+    set: (name, value, options) => {
+      console.log("Setting cookie in middleware:", name);
+      context.cookies.set(name, value, {
+        ...cookieOptions,
+        ...options,
+      });
+    },
+  });
 
   context.locals.supabase = supabase;
 
@@ -42,7 +37,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Handle response cookies for auth
   try {
     // Get all Supabase auth cookies
-    const supabaseCookies = ["sb-access-token", "sb-refresh-token"];
+    const supabaseCookies = [
+      "sb-access-token",
+      "sb-refresh-token",
+      "sb-auth-token",
+      "supabase-auth-token",
+    ];
 
     // Add Set-Cookie headers for Supabase auth cookies
     supabaseCookies.forEach((name) => {
