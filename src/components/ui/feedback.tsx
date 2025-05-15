@@ -1,5 +1,5 @@
-import type { HTMLAttributes, ReactNode } from "react";
-import { useEffect, useState } from "react";
+import type { HTMLAttributes } from "react";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 
 // Toast Component

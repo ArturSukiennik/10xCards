@@ -1,13 +1,22 @@
 import { test as base } from "@playwright/test";
 import { chromium } from "@playwright/test";
 import { AuthUtils } from "../utils/auth";
+import type { Cookie } from "@playwright/test";
 
 // Default viewport size for all tests
 const viewportSize = { width: 1920, height: 1080 };
 
+interface StorageState {
+  cookies: Cookie[];
+  origins: {
+    origin: string;
+    localStorage: { name: string; value: string }[];
+  }[];
+}
+
 // Eksportujemy test z obsługą stanu logowania
 export const test = base.extend({
-  storageState: async ({}, use) => {
+  storageState: async (_fixture, use) => {
     // Tworzymy nowy kontekst i stronę
     const browser = await chromium.launch();
     const context = await browser.newContext({
@@ -30,7 +39,7 @@ export const test = base.extend({
       const cookies = await context.cookies();
 
       // Używamy ciasteczek w testach
-      await use({ cookies, origins: [] });
+      await use({ cookies, origins: [] } as StorageState);
     } finally {
       // Zamykamy kontekst i przeglądarkę
       await context.close();
