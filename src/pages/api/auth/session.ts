@@ -45,7 +45,7 @@ export const GET: APIRoute = async ({ cookies }) => {
         headers: {
           "Content-Type": "application/json",
         },
-      },
+      }
     );
   } catch (error) {
     return new Response(JSON.stringify({ error: formatAuthError(error) }), {

@@ -59,7 +59,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         {
           status: 400,
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
     }
 
@@ -102,7 +102,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         {
           status: 500,
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
     }
     const generationDuration = Date.now() - startTime;
@@ -146,7 +146,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           headers: {
             "Content-Type": "application/json",
           },
-        },
+        }
       );
     } catch (error) {
       console.error("Error saving to database:", error);
@@ -160,7 +160,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           headers: {
             "Content-Type": "application/json",
           },
-        },
+        }
       );
     }
   } catch (error) {
@@ -177,7 +177,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         {
           status: 400,
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
     }
 
@@ -189,7 +189,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      },
+      }
     );
   }
 };

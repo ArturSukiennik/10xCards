@@ -58,7 +58,7 @@ export function Dialog({ children, isOpen, onClose, className = "", ...props }: 
         {children}
       </div>
     </div>,
-    document.body,
+    document.body
   );
 }
 

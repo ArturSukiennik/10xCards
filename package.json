@@ -4,10 +4,11 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "start": "astro dev",
+    "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "lint": "eslint .",
+    "lint": "eslint \"**/*.{js,jsx,ts,tsx}\" --ignore-pattern \".astro/**/*\"",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "test": "vitest",
@@ -15,6 +16,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report",
     "dev:e2e": "npm run astro dev -- --mode test"
   },
   "dependencies": {

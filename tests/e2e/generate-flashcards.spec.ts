@@ -121,7 +121,7 @@ test.describe("Flashcard Generation", () => {
       {
         state: "visible",
         timeout: 30000, // Increased timeout
-      },
+      }
     );
 
     // Sprawdź czy komunikat jest faktycznie widoczny w viewport
@@ -154,7 +154,7 @@ test.describe("Flashcard Generation", () => {
       {
         state: "visible",
         timeout: 30000, // Increased timeout
-      },
+      }
     );
 
     // Sprawdź czy komunikat błędu jest faktycznie widoczny w viewport
@@ -218,7 +218,7 @@ test.describe("Flashcard Generation", () => {
       {
         state: "visible",
         timeout: 30000, // Increased timeout
-      },
+      }
     );
 
     // Sprawdź czy komunikat jest faktycznie widoczny w viewport

@@ -12,7 +12,7 @@ export class AuthUtils {
 
     if (!email || !password) {
       throw new Error(
-        "Missing test user credentials. Please set SUPABASE_TEST_USER_EMAIL and SUPABASE_TEST_USER_PASSWORD in .env.test",
+        "Missing test user credentials. Please set SUPABASE_TEST_USER_EMAIL and SUPABASE_TEST_USER_PASSWORD in .env.test"
       );
     }
 

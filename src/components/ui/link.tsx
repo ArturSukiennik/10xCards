@@ -11,7 +11,7 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
         {children}
       </a>
     );
-  },
+  }
 );
 
 Link.displayName = "Link";

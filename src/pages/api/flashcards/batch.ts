@@ -62,7 +62,7 @@ export const POST: APIRoute = async ({ request, locals }: MiddlewareContext) => 
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      },
+      }
     );
   }
 };

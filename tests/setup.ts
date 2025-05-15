@@ -51,7 +51,7 @@ vi.stubGlobal(
   vi.fn(() => ({
     signal: { aborted: false },
     abort: vi.fn(),
-  })),
+  }))
 );
 
 // Configure crypto for tests

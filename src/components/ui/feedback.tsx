@@ -61,7 +61,7 @@ export function Toast({
         </svg>
       </button>
     </div>,
-    document.body,
+    document.body
   );
 }
 
@@ -86,15 +86,9 @@ export function ProgressBar({ progress, className = "", ...props }: ProgressBarP
 // Loading Spinner Component
 interface SpinnerProps extends HTMLAttributes<HTMLDivElement> {
   size?: "sm" | "md" | "lg";
-  color?: string;
 }
 
-export function Spinner({
-  size = "md",
-  color = "#FF385C",
-  className = "",
-  ...props
-}: SpinnerProps) {
+export function Spinner({ size = "md", className = "", ...props }: SpinnerProps) {
   const sizes = {
     sm: "w-4 h-4",
     md: "w-6 h-6",
