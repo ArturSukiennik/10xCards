@@ -50,7 +50,7 @@ export function LogoutButton() {
       disabled={isLoading}
       className="text-gray-600 hover:text-gray-900"
     >
-      {isLoading ? "Logging out..." : "Logout"}
+      Logout
     </Button>
   );
 }
