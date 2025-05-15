@@ -57,10 +57,16 @@ test.describe("Flashcard Generation", () => {
         await generateView.goto();
         // Wait for the page to be fully loaded and interactive
         await page.waitForLoadState("networkidle");
-        await page.waitForSelector('[data-test-id="source-text-input"]', {
+        const inputElement = await page.waitForSelector('[data-test-id="source-text-input"]', {
           state: "visible",
           timeout: 30000, // Increased timeout
         });
+
+        // Check if the element is actually visible in viewport
+        const isVisible = await inputElement.isVisible();
+        if (!isVisible) {
+          throw new Error("Input element is not visible in viewport");
+        }
         break;
       } catch (error) {
         console.log(`Navigation retry attempt ${4 - retries}, error:`, error);
@@ -109,10 +115,19 @@ test.describe("Flashcard Generation", () => {
     // 6. Zapisz wszystkie wygenerowane fiszki
     await generateView.flashcardsList.saveAllFlashcards();
 
-    // 7. Sprawdź końcowy stan z explicit wait
-    await generateView.page.waitForSelector('text="All flashcards saved successfully!"', {
-      timeout: 30000, // Increased timeout
-    });
+    // 7. Sprawdź końcowy stan z explicit wait i upewnij się, że komunikat jest widoczny
+    const successMessage = await generateView.page.waitForSelector(
+      'text="All flashcards saved successfully!"',
+      {
+        state: "visible",
+        timeout: 30000, // Increased timeout
+      },
+    );
+
+    // Sprawdź czy komunikat jest faktycznie widoczny w viewport
+    const isSuccessMessageVisible = await successMessage.isVisible();
+    expect(isSuccessMessageVisible).toBe(true);
+
     const finalState = await generateView.getCurrentState();
     expect(finalState.flashcardsCount).toBe(0);
   });
@@ -133,10 +148,19 @@ test.describe("Flashcard Generation", () => {
     const stateAfterText = await generateView.getCurrentState();
     expect(stateAfterText.characterCount).toBe(26);
 
-    // Wait for validation error to appear
-    await generateView.page.waitForSelector('text="Text must be at least 2000 characters long"', {
-      timeout: 30000, // Increased timeout
-    });
+    // Wait for validation error to appear and be visible
+    const errorMessage = await generateView.page.waitForSelector(
+      'text="Text must be at least 2000 characters long"',
+      {
+        state: "visible",
+        timeout: 30000, // Increased timeout
+      },
+    );
+
+    // Sprawdź czy komunikat błędu jest faktycznie widoczny w viewport
+    const isErrorMessageVisible = await errorMessage.isVisible();
+    expect(isErrorMessageVisible).toBe(true);
+
     expect(stateAfterText.validationErrors).toContain("Text must be at least 2000 characters long");
 
     // 4. Sprawdź czy przycisk generowania jest wyłączony
@@ -189,9 +213,18 @@ test.describe("Flashcard Generation", () => {
     await generateView.flashcardsList.saveAllFlashcards();
 
     // 4. Sprawdź czy lista została wyczyszczona i pojawił się komunikat o sukcesie
-    await generateView.page.waitForSelector('text="All flashcards saved successfully!"', {
-      timeout: 30000, // Increased timeout
-    });
+    const successMessage = await generateView.page.waitForSelector(
+      'text="All flashcards saved successfully!"',
+      {
+        state: "visible",
+        timeout: 30000, // Increased timeout
+      },
+    );
+
+    // Sprawdź czy komunikat jest faktycznie widoczny w viewport
+    const isSuccessMessageVisible = await successMessage.isVisible();
+    expect(isSuccessMessageVisible).toBe(true);
+
     const stateAfterSave = await generateView.getCurrentState();
     expect(stateAfterSave.flashcardsCount).toBe(0);
   });
