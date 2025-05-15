@@ -18,7 +18,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
           headers: {
             "Content-Type": "application/json",
           },
-        },
+        }
       );
     }
 
@@ -34,7 +34,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
           "Reading cookie in auth endpoint:",
           name,
           "value:",
-          value ? "exists" : "undefined",
+          value ? "exists" : "undefined"
         );
         return value;
       },
@@ -83,7 +83,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         headers: {
           "Content-Type": "application/json",
         },
-      },
+      }
     );
   } catch (error) {
     console.error("Unexpected error in auth endpoint:", error);
@@ -100,7 +100,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
           headers: {
             "Content-Type": "application/json",
           },
-        },
+        }
       );
     }
 

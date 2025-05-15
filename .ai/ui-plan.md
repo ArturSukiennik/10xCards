@@ -1,10 +1,13 @@
 # Architektura UI dla 10xCards
 
 ## 1. Przegląd struktury UI
+
 Architektura UI aplikacji 10xCards opiera się na minimalistycznym, intuicyjnym i responsywnym interfejsie, który umożliwia łatwe generowanie, przegląd i zarządzanie fiszkami. Główne zasady to przejrzystość, dostępność oraz bezpieczeństwo, z uwzględnieniem walidacji danych i obsługi błędów. Interfejs wspiera integrację z API, zapewniając spójne doświadczenie użytkownika zarówno na desktopie, jak i urządzeniach mobilnych.
 
 ## 2. Lista widoków
+
 - **Widok logowania/rejestracji**
+
   - Ścieżka: `/login` oraz `/register`
   - Główny cel: Umożliwienie użytkownikom autoryzacji i tworzenia kont.
   - Kluczowe informacje: Formularze z polami na e-mail i hasło, informacja o błędach, potwierdzenie rejestracji lub logowania.
@@ -12,13 +15,15 @@ Architektura UI aplikacji 10xCards opiera się na minimalistycznym, intuicyjnym 
   - UX/dostępność: Jasny układ formularzy, czytelne etykiety, walidacja w czasie rzeczywistym.
 
 - **Widok generowania fiszek**
+
   - Ścieżka: `/generate`
   - Główny cel: Umożliwienie użytkownikowi generowanie propozycji fiszek przez AI i ich rewizję (zaakceptuj, edytuj, odrzuć).
   - Kluczowe informacje: Pole tekstowe z ograniczeniem długości do wpropwadzenia tekstu. lista propozycji fiszek wygenerowanych przez AI, dropdown wyboru modelu, przycisk "Generuj", wskaźnik ładowania (spinner), przyciski akceptacji, edycji lub odrzucenia dla każdej fiszki.
   - Kluczowe komponenty: Edytor tekstu, dropdown, przycisk "Generuj fiszki", lista propozycji fiszek, przyciski akcji (zapisz wszystkie, zapisz zaakceptowane), komunikaty o błędach, wskaźnik ładowania (skeleton).
-  - UX/dostępność: Intuicyjna walidacja wpisanego tekstu (od 1000 do 10 000 znaków), responsywność,   przejrzyste komunikaty błędów i wskaźniki postępu, automatyczne przewijanie do błędów.
+  - UX/dostępność: Intuicyjna walidacja wpisanego tekstu (od 1000 do 10 000 znaków), responsywność, przejrzyste komunikaty błędów i wskaźniki postępu, automatyczne przewijanie do błędów.
 
 - **Widok "Moje fiszki"**
+
   - Ścieżka: `/my-flashcards`
   - Główny cel: Przegląd, edycja oraz usuwanie zapisanych fiszek.
   - Kluczowe informacje: Lista fiszek (10 na stronę), data utworzenia, skrócony podgląd treści.
@@ -26,6 +31,7 @@ Architektura UI aplikacji 10xCards opiera się na minimalistycznym, intuicyjnym 
   - UX/dostępność: Prosty, czytelny layout, modal do edycji fiszek, wymaganie potwierdzenia przy usuwaniu, responsywny design.
 
 - **Widok sesji nauki**
+
   - Ścieżka: `/learning-session`
   - Główny cel: Umożliwienie użytkownikowi rozpoczęcia sesji nauki z wykorzystaniem algorytmu powtórek.
   - Kluczowe informacje: Prezentacja fiszki, przycisk ujawniający odpowiedź, opcje oceny przyswojenia.
@@ -40,6 +46,7 @@ Architektura UI aplikacji 10xCards opiera się na minimalistycznym, intuicyjnym 
   - UX/dostępność: Intuicyjna edycja bez opuszczania głównego widoku, natychmiastowa walidacja, automatyczne przycinanie tekstu.
 
 ## 3. Mapa podróży użytkownika
+
 1. Użytkownik rozpoczyna od widoku logowania/rejestracji, gdzie tworzy konto lub loguje się do systemu.
 2. Po zalogowaniu użytkownik trafia do widoku generowania fiszek, gdzie wprowadza tekst i wybiera model AI.
 3. Po uruchomieniu procesu generacji, system wyświetla spinner i następnie listę proponowanych fiszek do akceptacji.
@@ -50,7 +57,9 @@ Architektura UI aplikacji 10xCards opiera się na minimalistycznym, intuicyjnym 
 8. Nawigacja pomiędzy widokami odbywa się za pomocą głównego menu oraz wewnętrznych przycisków akcji.
 
 ## 4. Układ i struktura nawigacji
+
 Interfejs będzie korzystał z głównego menu dostępnego na wszystkich stronach, które zawiera:
+
 - Link do widoku generowania fiszek (domyślny widok po zalogowaniu).
 - Link do widoku "Moje fiszki", umożliwiający przegląd i zarządzanie zapisanymi fiszkami.
 - Link do widoku sesji nauki, umożliwiający rozpoczęcie nauki.
@@ -62,9 +71,10 @@ Nawigacja została zaprojektowana tak, aby umożliwić bezproblemowe przechodzen
 Menu będzie responsywne, dostosowujące się do urządzeń mobilnych poprzez rozwijane menu oraz ikonki, co zapewni intuicyjną nawigację zarówno na desktopie, jak i na urządzeniach mobilnych.
 
 ## 5. Kluczowe komponenty
+
 - **Formularz generowania fiszek:** Pole tekstowe z walidacją, dropdown wyboru modelu AI, przycisk "Generuj" oraz wskaźnik ładowania (spinner).
 - **Lista fiszek:** Dynamicznie generowana lista fiszek z opcjami akceptacji, edycji i usuwania, z paginacją.
 - **Modal edycji:** Okno modalne umożliwiające edycję fiszki, wyposażone w licznik znaków, przyciski "Zapisz" i "Anuluj" oraz walidację formularza.
 - **System powiadomień:** Mechanizm wyświetlania komunikatów o błędach (czerwone chmurki), potwierdzeń operacji oraz informacji o sukcesie.
 - **Komponent sesji nauki:** Interaktywny moduł prezentujący fiszki, umożliwiający ocenę przyswojenia treści oraz automatyczny przepływ między kolejnymi fiszkami.
-- **Główne menu nawigacyjne:** Pasek menu umożliwiający łatwe przełączanie się między widokami, dostosowany do różnych rozdzielczości ekranu. 
+- **Główne menu nawigacyjne:** Pasek menu umożliwiający łatwe przełączanie się między widokami, dostosowany do różnych rozdzielczości ekranu.

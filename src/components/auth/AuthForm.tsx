@@ -23,15 +23,17 @@ const baseAuthSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+type BaseAuthSchemaType = z.infer<typeof baseAuthSchema>;
+
 export interface AuthFormProps {
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: BaseAuthSchemaType) => Promise<void>;
   title: string;
   buttonText: string;
   error?: string;
   isLoading?: boolean;
   extraFields?: React.ReactNode;
-  schema?: z.ZodType<any>;
-  defaultValues?: Record<string, any>;
+  schema?: z.ZodType<BaseAuthSchemaType>;
+  defaultValues?: Partial<BaseAuthSchemaType>;
 }
 
 export function AuthForm({

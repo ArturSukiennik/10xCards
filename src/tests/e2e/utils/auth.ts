@@ -1,5 +1,4 @@
-import { type Page } from "@playwright/test";
-import { TEST_CONFIG } from "../config";
+import type { Page } from "@playwright/test";
 
 export class AuthUtils {
   constructor(private page: Page) {}
@@ -13,7 +12,7 @@ export class AuthUtils {
 
     if (!email || !password) {
       throw new Error(
-        "Missing test user credentials. Please set SUPABASE_TEST_USER_EMAIL and SUPABASE_TEST_USER_PASSWORD in .env.test",
+        "Missing test user credentials. Please set SUPABASE_TEST_USER_EMAIL and SUPABASE_TEST_USER_PASSWORD in .env.test"
       );
     }
 

@@ -1,24 +1,28 @@
 # Plan implementacji endpointów Flashcards API
 
 ## 1. Przegląd punktów końcowych
+
 Implementacja dwóch endpointów REST API do tworzenia fiszek:
+
 - Pojedyncza fiszka (`/flashcards`) - tworzenie manualnych fiszek
 - Batch (`/flashcards/batch`) - tworzenie wielu fiszek jednocześnie, obsługa zarówno manualnych jak i AI-generowanych fiszek
 
 ## 2. Szczegóły żądania
 
 ### Endpoint: Create Flashcard
+
 - Metoda HTTP: POST
 - URL: `/flashcards`
 - Request Body:
   ```typescript
   {
-    front: string;    // max 200 znaków
-    back: string;     // max 500 znaków
+    front: string; // max 200 znaków
+    back: string; // max 500 znaków
   }
   ```
 
 ### Endpoint: Create Multiple Flashcards
+
 - Metoda HTTP: POST
 - URL: `/flashcards/batch`
 - Request Body:
@@ -38,9 +42,9 @@ Implementacja dwóch endpointów REST API do tworzenia fiszek:
 ```typescript
 // src/types.ts
 export enum FlashcardSource {
-  Manual = 'manual',
-  AIFull = 'ai-full',
-  AIEdited = 'ai-edited'
+  Manual = "manual",
+  AIFull = "ai-full",
+  AIEdited = "ai-edited",
 }
 
 export interface CreateFlashcardDTO {
@@ -75,12 +79,14 @@ export interface FlashcardBatchResponseDTO {
 ## 4. Przepływ danych
 
 ### Single Flashcard
+
 1. Walidacja request body
 2. Autoryzacja użytkownika (Supabase)
 3. Utworzenie rekordu w tabeli `flashcards`
 4. Zwrócenie utworzonej fiszki
 
 ### Batch Flashcards
+
 1. Walidacja request body
 2. Autoryzacja użytkownika (Supabase)
 3. Jeśli podano generation_id:
@@ -92,11 +98,13 @@ export interface FlashcardBatchResponseDTO {
 ## 5. Względy bezpieczeństwa
 
 1. Autoryzacja
+
    - Wykorzystanie Supabase do weryfikacji JWT
    - Sprawdzanie user_id z tokena
    - Middleware autoryzacyjne
 
 2. Walidacja danych
+
    - Sanityzacja inputu
    - Sprawdzanie długości pól
    - Walidacja source enum
@@ -113,26 +121,27 @@ export interface FlashcardBatchResponseDTO {
 export class ValidationError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'ValidationError';
+    this.name = "ValidationError";
   }
 }
 
 export class AuthorizationError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'AuthorizationError';
+    this.name = "AuthorizationError";
   }
 }
 
 export class GenerationNotFoundError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'GenerationNotFoundError';
+    this.name = "GenerationNotFoundError";
   }
 }
 ```
 
 Kody odpowiedzi:
+
 - 201: Pomyślne utworzenie
 - 400: Błędy walidacji
 - 401: Brak autoryzacji
@@ -142,11 +151,13 @@ Kody odpowiedzi:
 ## 7. Rozważania dotyczące wydajności
 
 1. Optymalizacja batch operacji:
+
    - Wykorzystanie `createMany` z Supabase
    - Transakcje dla spójności danych
    - Limit wielkości batcha (max 30 fiszek)
 
 2. Indeksy bazy danych:
+
    - Indeks na `user_id` w tabeli `flashcards`
    - Indeks na `generation_id` w tabeli `flashcards`
 
@@ -157,6 +168,7 @@ Kody odpowiedzi:
 ## 8. Etapy wdrożenia
 
 1. Przygotowanie środowiska
+
    ```typescript
    // src/lib/db.ts - klient Supabase
    // src/lib/validation.ts - funkcje walidacyjne
@@ -164,23 +176,29 @@ Kody odpowiedzi:
    ```
 
 2. Implementacja serwisu
+
    ```typescript
    // src/services/flashcards.service.ts
    export class FlashcardsService {
      async createFlashcard(userId: string, dto: CreateFlashcardDTO): Promise<FlashcardResponseDTO>;
-     async createFlashcards(userId: string, dto: CreateFlashcardBatchDTO): Promise<FlashcardBatchResponseDTO>;
+     async createFlashcards(
+       userId: string,
+       dto: CreateFlashcardBatchDTO
+     ): Promise<FlashcardBatchResponseDTO>;
      private validateFlashcard(flashcard: CreateFlashcardDTO): void;
      private validateBatchRequest(dto: CreateFlashcardBatchDTO): void;
    }
    ```
 
 3. Implementacja endpointów
+
    ```typescript
    // src/pages/api/flashcards.ts
    // src/pages/api/flashcards/batch.ts
    ```
 
 4. Implementacja middleware
+
    ```typescript
    // src/middleware/auth.ts
    // src/middleware/validation.ts
@@ -188,6 +206,7 @@ Kody odpowiedzi:
    ```
 
 5. Testy
+
    - Unit testy dla serwisu
    - Integracyjne testy dla endpointów
    - Testy wydajnościowe dla batch operacji
@@ -195,4 +214,4 @@ Kody odpowiedzi:
 6. Dokumentacja
    - Swagger/OpenAPI spec
    - Przykłady użycia
-   - Opis kodów błędów 
+   - Opis kodów błędów

@@ -3,26 +3,28 @@ Jako starszy programista frontendu Twoim zadaniem jest stworzenie szczegółoweg
 Najpierw przejrzyj następujące informacje:
 
 1. Product Requirements Document (PRD):
-<prd>
-@prd.md
-</prd>
+   <prd>
+   @prd.md
+   </prd>
 
 2. Opis widoku:
-<view_description>
- **Widok generowania fiszek**
-  - Ścieżka: `/generate`
-  - Główny cel: Umożliwienie użytkownikowi generowanie propozycji fiszek przez AI i ich rewizję (zaakceptuj, edytuj, odrzuć).
-  - Kluczowe informacje: Pole tekstowe z ograniczeniem długości do wpropwadzenia tekstu. lista propozycji fiszek wygenerowanych przez AI, dropdown wyboru modelu, przycisk "Generuj", wskaźnik ładowania (spinner), przyciski akceptacji, edycji lub odrzucenia dla każdej fiszki.
-  - Kluczowe komponenty: Edytor tekstu, dropdown, przycisk "Generuj fiszki", lista propozycji fiszek, przyciski akcji (zapisz wszystkie, zapisz zaakceptowane), komunikaty o błędach, wskaźnik ładowania (skeleton).
-  - UX/dostępność: Intuicyjna walidacja wpisanego tekstu (od 1000 do 10 000 znaków), responsywność,   przejrzyste komunikaty błędów i wskaźniki postępu, automatyczne przewijanie do błędów.
-</view_description>
+   <view_description>
+   **Widok generowania fiszek**
+
+- Ścieżka: `/generate`
+- Główny cel: Umożliwienie użytkownikowi generowanie propozycji fiszek przez AI i ich rewizję (zaakceptuj, edytuj, odrzuć).
+- Kluczowe informacje: Pole tekstowe z ograniczeniem długości do wpropwadzenia tekstu. lista propozycji fiszek wygenerowanych przez AI, dropdown wyboru modelu, przycisk "Generuj", wskaźnik ładowania (spinner), przyciski akceptacji, edycji lub odrzucenia dla każdej fiszki.
+- Kluczowe komponenty: Edytor tekstu, dropdown, przycisk "Generuj fiszki", lista propozycji fiszek, przyciski akcji (zapisz wszystkie, zapisz zaakceptowane), komunikaty o błędach, wskaźnik ładowania (skeleton).
+- UX/dostępność: Intuicyjna walidacja wpisanego tekstu (od 1000 do 10 000 znaków), responsywność, przejrzyste komunikaty błędów i wskaźniki postępu, automatyczne przewijanie do błędów.
+  </view_description>
 
 3. User Stories:
-<user_stories>
-ID: US-003
-Tytuł: Generowanie fiszek przy użyciu AI
-Opis: Jako zalogowany użytkownik chcę wkleić kawałek tekstu i za pomocą przycisku wygenerować propozycje fiszek, aby zaoszczędzić czas na ręcznym tworzeniu pytań i odpowiedzi.
-Kryteria akceptacji:
+   <user_stories>
+   ID: US-003
+   Tytuł: Generowanie fiszek przy użyciu AI
+   Opis: Jako zalogowany użytkownik chcę wkleić kawałek tekstu i za pomocą przycisku wygenerować propozycje fiszek, aby zaoszczędzić czas na ręcznym tworzeniu pytań i odpowiedzi.
+   Kryteria akceptacji:
+
 - W widoku generowania fiszek znajduje się pole tekstowe, w którym użytkownik może wkleić swój tekst.
 - Pole tekstowe oczekuje od 1000 do 10 000 znaków.
 - Po kliknięciu przycisku generowania aplikacja komunikuje się z API modelu LLM i wyświetla listę wygenerowanych propozycji fiszek do akceptacji przez użytkownika.
@@ -33,6 +35,7 @@ ID: US-004
 Tytuł: Przegląd i zatwierdzanie propozycji fiszek
 Opis: Jako zalogowany użytkownik chcę móc przeglądać wygenerowane fiszki i decydować, które z nich chcę dodać do mojego zestawu, aby zachować tylko przydatne pytania i odpowiedzi.
 Kryteria akceptacji:
+
 - Lista wygenerowanych fiszek jest wyświetlana pod formularzem generowania.
 - Przy każdej fiszce znajduje się przycisk pozwalający na jej zatwierdzenie, edycję lub odrzucenie.
 - Po zatwierdzeniu wybranych fiszek użytkownik może kliknąć przycisk zapisu i dodać je do bazy danych.
@@ -40,9 +43,10 @@ Kryteria akceptacji:
 </user_stories>
 
 4. Endpoint Description:
-<endpoint_description>
+   <endpoint_description>
 
 #### Generate Flashcards
+
 - Method: POST
 - Path: `/generations`
 - Description: Generate flashcards from text using LLM
@@ -78,6 +82,7 @@ Kryteria akceptacji:
   - 502 Bad Gateway (AI service unavailable)
 
 #### Create Multiple Flashcards
+
 - Method: POST
 - Path: `/flashcards/batch`
 - Description: Create multiple flashcards at once (supports manual creation and AI-generated flashcards)
@@ -101,7 +106,7 @@ Kryteria akceptacji:
         "source": "ai-edited"
       }
     ],
-    "generation_id": 123  // Optional, required only for AI-generated flashcards
+    "generation_id": 123 // Optional, required only for AI-generated flashcards
   }
   ```
 - Response Payload:
@@ -145,27 +150,30 @@ Kryteria akceptacji:
 </endpoint_description>
 
 5. Endpoint Implementation:
-<endpoint_implementation>
-@generations.ts, @flashcards.ts
-</endpoint_implementation>
+   <endpoint_implementation>
+   @generations.ts, @flashcards.ts
+   </endpoint_implementation>
 
 6. Type Definitions:
-<type_definitions>
-@types.ts
-</type_definitions>
+   <type_definitions>
+   @types.ts
+   </type_definitions>
 
 7. Tech Stack:
-<tech_stack>
-@tech-stack.md
-</tech_stack>
+   <tech_stack>
+   @tech-stack.md
+   </tech_stack>
 
 Przed utworzeniem ostatecznego planu wdrożenia przeprowadź analizę i planowanie wewnątrz tagów <implementation_breakdown> w swoim bloku myślenia. Ta sekcja może być dość długa, ponieważ ważne jest, aby być dokładnym.
 
 W swoim podziale implementacji wykonaj następujące kroki:
+
 1. Dla każdej sekcji wejściowej (PRD, User Stories, Endpoint Description, Endpoint Implementation, Type Definitions, Tech Stack):
-  - Podsumuj kluczowe punkty
- - Wymień wszelkie wymagania lub ograniczenia
- - Zwróć uwagę na wszelkie potencjalne wyzwania lub ważne kwestie
+
+- Podsumuj kluczowe punkty
+- Wymień wszelkie wymagania lub ograniczenia
+- Zwróć uwagę na wszelkie potencjalne wyzwania lub ważne kwestie
+
 2. Wyodrębnienie i wypisanie kluczowych wymagań z PRD
 3. Wypisanie wszystkich potrzebnych głównych komponentów, wraz z krótkim opisem ich opisu, potrzebnych typów, obsługiwanych zdarzeń i warunków walidacji
 4. Stworzenie wysokopoziomowego diagramu drzewa komponentów
@@ -184,12 +192,14 @@ Po przeprowadzeniu analizy dostarcz plan wdrożenia w formacie Markdown z nastę
 2. Routing widoku: Określenie ścieżki, na której widok powinien być dostępny.
 3. Struktura komponentów: Zarys głównych komponentów i ich hierarchii.
 4. Szczegóły komponentu: Dla każdego komponentu należy opisać:
- - Opis komponentu, jego przeznaczenie i z czego się składa
- - Główne elementy HTML i komponenty dzieci, które budują komponent
- - Obsługiwane zdarzenia
- - Warunki walidacji (szczegółowe warunki, zgodnie z API)
- - Typy (DTO i ViewModel) wymagane przez komponent
- - Propsy, które komponent przyjmuje od rodzica (interfejs komponentu)
+
+- Opis komponentu, jego przeznaczenie i z czego się składa
+- Główne elementy HTML i komponenty dzieci, które budują komponent
+- Obsługiwane zdarzenia
+- Warunki walidacji (szczegółowe warunki, zgodnie z API)
+- Typy (DTO i ViewModel) wymagane przez komponent
+- Propsy, które komponent przyjmuje od rodzica (interfejs komponentu)
+
 5. Typy: Szczegółowy opis typów wymaganych do implementacji widoku, w tym dokładny podział wszelkich nowych typów lub modeli widoku według pól i typów.
 6. Zarządzanie stanem: Szczegółowy opis sposobu zarządzania stanem w widoku, określenie, czy wymagany jest customowy hook.
 7. Integracja API: Wyjaśnienie sposobu integracji z dostarczonym punktem końcowym. Precyzyjnie wskazuje typy żądania i odpowiedzi.
@@ -208,16 +218,21 @@ Oto przykład tego, jak powinien wyglądać plik wyjściowy (treść jest do zas
 # Plan implementacji widoku [Nazwa widoku]
 
 ## 1. Przegląd
+
 [Krótki opis widoku i jego celu]
 
 ## 2. Routing widoku
+
 [Ścieżka, na której widok powinien być dostępny]
 
 ## 3. Struktura komponentów
+
 [Zarys głównych komponentów i ich hierarchii]
 
 ## 4. Szczegóły komponentów
+
 ### [Nazwa komponentu 1]
+
 - Opis komponentu [opis]
 - Główne elementy: [opis]
 - Obsługiwane interakcje: [lista]
@@ -226,27 +241,35 @@ Oto przykład tego, jak powinien wyglądać plik wyjściowy (treść jest do zas
 - Propsy: [lista]
 
 ### [Nazwa komponentu 2]
+
 [...]
 
 ## 5. Typy
+
 [Szczegółowy opis wymaganych typów]
 
 ## 6. Zarządzanie stanem
+
 [Opis zarządzania stanem w widoku]
 
 ## 7. Integracja API
+
 [Wyjaśnienie integracji z dostarczonym endpointem, wskazanie typów żądania i odpowiedzi]
 
 ## 8. Interakcje użytkownika
+
 [Szczegółowy opis interakcji użytkownika]
 
 ## 9. Warunki i walidacja
+
 [Szczegółowy opis warunków i ich walidacji]
 
 ## 10. Obsługa błędów
+
 [Opis obsługi potencjalnych błędów]
 
 ## 11. Kroki implementacji
+
 1. [Krok 1]
 2. [Krok 2]
 3. [...]

@@ -3,7 +3,7 @@ import type { Database } from "@/db/database.types";
 
 if (!process.env.PUBLIC_SUPABASE_URL || !process.env.PUBLIC_SUPABASE_ANON_KEY) {
   throw new Error(
-    "Missing Supabase environment variables. Make sure PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY are set.",
+    "Missing Supabase environment variables. Make sure PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY are set."
   );
 }
 
@@ -15,5 +15,5 @@ export const supabaseE2EClient = createClient<Database>(
       persistSession: false,
       autoRefreshToken: false,
     },
-  },
+  }
 );

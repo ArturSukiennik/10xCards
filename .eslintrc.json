@@ -1,12 +1,47 @@
 {
-  "extends": ["plugin:astro/recommended"],
+  "extends": ["plugin:astro/recommended", "plugin:@typescript-eslint/recommended"],
+  "plugins": ["@typescript-eslint", "astro"],
+  "parser": "@typescript-eslint/parser",
   "rules": {
-    "linebreak-style": "off"
+    "linebreak-style": "off",
+    "no-console": ["warn", { "allow": ["warn", "error", "info", "debug"] }],
+    "@typescript-eslint/no-unused-expressions": "warn",
+    "@typescript-eslint/no-empty-function": "warn",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/consistent-type-definitions": "off",
+    "@typescript-eslint/array-type": ["error", { "default": "array" }],
+    "@typescript-eslint/consistent-indexed-object-style": "off",
+    "@typescript-eslint/no-empty-object-type": "off",
+    "@typescript-eslint/triple-slash-reference": "off",
+    "@typescript-eslint/no-unused-vars": "off"
   },
+  "ignorePatterns": [
+    "playwright-report/**/*",
+    "dist/**/*",
+    "node_modules/**/*",
+    ".astro",
+    "*.astro"
+  ],
   "overrides": [
     {
-      "files": ["*.astro"],
-      "parser": "astro-eslint-parser"
+      "files": ["tests/**/*", "src/tests/**/*", "**/*.test.*", "**/*.spec.*", "**/*.e2e.*"],
+      "rules": {
+        "no-console": "off",
+        "@typescript-eslint/no-unused-expressions": "off",
+        "@typescript-eslint/no-empty-function": "off"
+      }
+    },
+    {
+      "files": [".astro/**/*.d.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/consistent-type-definitions": "off",
+        "@typescript-eslint/array-type": "off",
+        "@typescript-eslint/consistent-indexed-object-style": "off",
+        "@typescript-eslint/no-empty-object-type": "off",
+        "@typescript-eslint/triple-slash-reference": "off",
+        "@typescript-eslint/unified-signatures": "off"
+      }
     }
   ]
 }

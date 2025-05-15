@@ -145,7 +145,7 @@ export class GenerateViewPage {
           }
           return isGenerationResponse && response.status() === 200;
         },
-        { timeout: 120000 }, // Zwiększamy timeout do 120 sekund
+        { timeout: 120000 } // Zwiększamy timeout do 120 sekund
       );
 
       // Log response details for debugging

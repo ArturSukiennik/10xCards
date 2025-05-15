@@ -34,7 +34,7 @@ export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionP
 
     if (trimmedLength < MIN_TEXT_LENGTH) {
       errors.push(
-        `Text must be at least ${MIN_TEXT_LENGTH} characters long (current: ${trimmedLength})`,
+        `Text must be at least ${MIN_TEXT_LENGTH} characters long (current: ${trimmedLength})`
       );
     }
     if (trimmedLength > MAX_TEXT_LENGTH) {

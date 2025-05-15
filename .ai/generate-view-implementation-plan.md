@@ -1,14 +1,17 @@
 # Plan implementacji widoku generowania fiszek
 
 ## 1. Przegląd
+
 Widok generowania fiszek to kluczowy element aplikacji 10xCards, który umożliwia użytkownikom szybkie tworzenie zestawów propozycji fiszek przy pomocy AI. Użytkownik może wprowadzić tekst źródłowy, a następnie otrzymać, przejrzeć i zmodyfikować wygenerowane propozycje fiszek przed ich zapisaniem. Na koniec może zapisać do bazy danych wszystkie bądź tylko zaakceptowane fiszki.
 
 ## 2. Routing widoku
+
 - Ścieżka: `/generate`
 - Dostęp tylko dla zalogowanych użytkowników
 - Przekierowanie niezalogowanych użytkowników do strony logowania
 
 ## 3. Struktura komponentów
+
 ```
 GenerateView (strona)
 ├── ErrorBoundary
@@ -33,6 +36,7 @@ GenerateView (strona)
 ## 4. Szczegóły komponentów
 
 ### ErrorBoundary
+
 - Opis: Komponent wysokiego poziomu do przechwytywania i wyświetlania błędów w aplikacji
 - Główne elementy:
   - Alert z komunikatem błędu (shadcn/ui)
@@ -55,6 +59,7 @@ GenerateView (strona)
   ```
 
 ### ValidationError
+
 - Opis: Komponent do wyświetlania błędów walidacji w formularzu
 - Główne elementy:
   - Alert z komunikatem błędu (shadcn/ui)
@@ -72,6 +77,7 @@ GenerateView (strona)
   ```
 
 ### FlashcardError
+
 - Opis: Komponent do wyświetlania błędów związanych z pojedynczą fiszką
 - Główne elementy:
   - Komunikat błędu inline
@@ -89,12 +95,13 @@ GenerateView (strona)
   ```
 
 ### GenerateView
+
 - Opis: Główny komponent widoku, zarządzający stanem generowania i koordynujący interakcje między komponentami
-- Główne elementy: 
+- Główne elementy:
   - Layout z nagłówkiem
   - Sekcje TextInputSection i FlashcardsList
   - Toast notifications (shadcn/ui) do wyświetlania komunikatów
-- Obsługiwane interakcje: 
+- Obsługiwane interakcje:
   - Inicjowanie procesu generowania
   - Zarządzanie stanem ładowania
   - Obsługa błędów API
@@ -105,6 +112,7 @@ GenerateView (strona)
 - Propsy: brak (komponent na poziomie strony)
 
 ### TextInputSection
+
 - Opis: Sekcja zawierająca formularz do wprowadzania tekstu źródłowego i konfiguracji generowania
 - Główne elementy:
   - Textarea do wprowadzania tekstu
@@ -128,6 +136,7 @@ GenerateView (strona)
   ```
 
 ### FlashcardsList
+
 - Opis: Lista wygenerowanych propozycji fiszek z możliwością ich edycji i zatwierdzania
 - Główne elementy:
   - Lista komponentów FlashcardItem
@@ -152,6 +161,7 @@ GenerateView (strona)
   ```
 
 ### FlashcardItem
+
 - Opis: Komponent pojedynczej fiszki z kontrolkami do edycji i zatwierdzania
 - Główne elementy:
   - Podgląd przodu i tyłu fiszki
@@ -175,6 +185,7 @@ GenerateView (strona)
   ```
 
 ### BatchActions
+
 - Opis: Sekcja z przyciskami do operacji zbiorczych na wygenerowanych fiszkach
 - Główne elementy:
   - Przycisk "Zapamiętaj wszystkie" (SaveAllButton)
@@ -201,6 +212,7 @@ GenerateView (strona)
   ```
 
 ## 5. Typy
+
 ```typescript
 // Stan widoku
 interface GenerateViewState {
@@ -216,7 +228,7 @@ interface GenerateViewState {
 
 // Model propozycji fiszki
 interface FlashcardProposalViewModel extends TemporaryFlashcardDto {
-  status: 'pending' | 'accepted' | 'rejected';
+  status: "pending" | "accepted" | "rejected";
   isEditing: boolean;
   originalContent: {
     front: string;
@@ -229,17 +241,17 @@ interface FlashcardProposalViewModel extends TemporaryFlashcardDto {
 const flashcardSourceMapping = {
   accepted: {
     edited: FlashcardSource.AI_EDITED,
-    notEdited: FlashcardSource.AI_FULL
-  }
+    notEdited: FlashcardSource.AI_FULL,
+  },
 } as const;
 
 // Helper do określania źródła fiszki
 function determineFlashcardSource(proposal: FlashcardProposalViewModel): FlashcardSource {
-  if (proposal.status !== 'accepted') {
-    throw new Error('Cannot determine source for non-accepted flashcard');
+  if (proposal.status !== "accepted") {
+    throw new Error("Cannot determine source for non-accepted flashcard");
   }
-  return proposal.hasBeenEdited 
-    ? flashcardSourceMapping.accepted.edited 
+  return proposal.hasBeenEdited
+    ? flashcardSourceMapping.accepted.edited
     : flashcardSourceMapping.accepted.notEdited;
 }
 
@@ -250,7 +262,7 @@ interface ValidationErrors {
 }
 
 interface ErrorState {
-  type: 'validation' | 'api' | 'network' | 'unknown';
+  type: "validation" | "api" | "network" | "unknown";
   message: string;
   details?: ValidationErrors[];
   isRetryable: boolean;
@@ -264,19 +276,21 @@ interface FlashcardEditForm {
 ```
 
 ## 6. Zarządzanie stanem
+
 - Wykorzystanie React.useState dla lokalnego stanu komponentów
 - Utworzenie customowego hooka useFlashcardGeneration:
+
   ```typescript
   function useFlashcardGeneration() {
     const [state, setState] = useState<GenerateViewState>({...});
-    
+
     const generateFlashcards = async (command: GenerateFlashcardsCommand) => {...};
-    
+
     const updateFlashcard = (id: string, updates: Partial<TemporaryFlashcardDto>) => {
       setState(prev => ({
         ...prev,
-        flashcards: prev.flashcards.map(card => 
-          card.id === id 
+        flashcards: prev.flashcards.map(card =>
+          card.id === id
             ? {
                 ...card,
                 ...updates,
@@ -291,8 +305,8 @@ interface FlashcardEditForm {
     const updateFlashcardStatus = (id: string, status: 'accepted' | 'rejected') => {
       setState(prev => ({
         ...prev,
-        flashcards: prev.flashcards.map(card => 
-          card.id === id 
+        flashcards: prev.flashcards.map(card =>
+          card.id === id
             ? { ...card, status }
             : card
         )
@@ -303,7 +317,7 @@ interface FlashcardEditForm {
       const flashcardsToSave = state.flashcards.map(proposal => ({
         front: proposal.front,
         back: proposal.back,
-        source: proposal.status === 'accepted' 
+        source: proposal.status === 'accepted'
           ? determineFlashcardSource(proposal)
           : FlashcardSource.AI_FULL
       }));
@@ -320,7 +334,7 @@ interface FlashcardEditForm {
         }));
       // ... reszta implementacji
     };
-    
+
     return {
       state,
       generateFlashcards,
@@ -333,6 +347,7 @@ interface FlashcardEditForm {
   ```
 
 ## 7. Integracja API
+
 - Endpoint generowania: POST `/api/generations`
   - Request: `GenerateFlashcardsCommand`
   - Response: `GenerateFlashcardsResponseDto`
@@ -341,12 +356,15 @@ interface FlashcardEditForm {
   - Response: `CreateMultipleFlashcardsResponseDto`
 
 ## 8. Interakcje użytkownika
+
 1. Wprowadzanie tekstu:
+
    - Aktualizacja licznika znaków w czasie rzeczywistym
    - Walidacja długości tekstu
    - Blokada przycisku "Generuj" gdy tekst jest niepoprawny
 
 2. Generowanie fiszek:
+
    - Wyświetlenie loadera podczas generowania
    - Obsługa błędów API
    - Automatyczne przewijanie do listy wygenerowanych fiszek
@@ -361,12 +379,15 @@ interface FlashcardEditForm {
    - Wyświetlanie potwierdzenia zapisania
 
 ## 9. Warunki i walidacja
+
 1. Tekst źródłowy:
+
    - Minimum 1000 znaków
    - Maksimum 10000 znaków
    - Nie może być pusty
 
 2. Fiszki:
+
    - Przód: maksymalnie 200 znaków
    - Tył: maksymalnie 600 znaków
    - Oba pola wymagane
@@ -376,7 +397,9 @@ interface FlashcardEditForm {
    - Wszystkie zaakceptowane fiszki muszą być poprawne
 
 ## 10. Obsługa błędów
+
 1. Błędy API:
+
    - Timeout połączenia
    - Błędy autoryzacji
    - Błędy walidacji
@@ -384,12 +407,14 @@ interface FlashcardEditForm {
    - Wyświetlanie w ErrorAlert z możliwością ponownej próby
 
 2. Błędy użytkownika:
+
    - Niepoprawna długość tekstu (ValidationError w TextInputSection)
    - Niepoprawna długość fiszek (FlashcardError w FlashcardItem)
    - Próba zapisu bez zaakceptowanych fiszek (ValidationError w BatchActions)
    - Natychmiastowa walidacja podczas wprowadzania danych
 
 3. Obsługa stanu offline:
+
    - Zapisywanie stanu edycji w localStorage
    - Możliwość wznowienia sesji po utracie połączenia
    - Wyświetlanie komunikatu o braku połączenia
@@ -401,6 +426,7 @@ interface FlashcardEditForm {
    - Błędy fiszek (FlashcardError) - problemy z pojedynczymi fiszkami
 
 ## 11. Kroki implementacji
+
 1. Utworzenie podstawowej struktury widoku i routingu
 2. Implementacja komponentu TextInputSection z walidacją
 3. Utworzenie hooka useFlashcardGeneration
@@ -412,4 +438,4 @@ interface FlashcardEditForm {
 9. Dodanie obsługi błędów i komunikatów
 10. Implementacja mechanizmu autosave
 11. Optymalizacja wydajności i UX
-12. Testy i QA 
+12. Testy i QA
