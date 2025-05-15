@@ -32,8 +32,8 @@ export interface AuthFormProps {
   error?: string;
   isLoading?: boolean;
   extraFields?: React.ReactNode;
-  schema?: z.ZodType<BaseAuthSchemaType>;
-  defaultValues?: Partial<BaseAuthSchemaType>;
+  schema?: z.ZodType<any>;
+  defaultValues?: Partial<any>;
 }
 
 export function AuthForm({

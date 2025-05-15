@@ -19,7 +19,7 @@ export function ErrorAlert({ error, onRetry }: ErrorAlertProps) {
       <AlertDescription className="flex items-center justify-between">
         <span>{error.message}</span>
         {error.isRetryable && onRetry && (
-          <Button variant="outline" size="sm" onClick={onRetry}>
+          <Button variant="secondary" size="sm" onClick={onRetry}>
             Try Again
           </Button>
         )}
