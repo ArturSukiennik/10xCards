@@ -55,6 +55,7 @@ Na podstawie zebranych informacji, przedstawiam strukturę komponentów w formie
 Główne zależności między komponentami:
 
 1. `GenerateView.tsx` (komponent nadrzędny)
+
    - Wykorzystuje `TopBar.tsx`
    - Wykorzystuje `TextInputSection.tsx`
    - Wykorzystuje `FlashcardsList.tsx`
@@ -63,6 +64,7 @@ Główne zależności między komponentami:
 2. Wszystkie komponenty mogą wykorzystywać podstawowe komponenty UI z katalogu `ui/`
 
 3. Komponenty autoryzacji z katalogu `auth/` wykorzystują:
+
    - Komponenty UI z `ui/`
    - Integrację z Supabase
 

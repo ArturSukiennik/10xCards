@@ -1,9 +1,11 @@
 # 10xCards
 
 ## Project Description
+
 10xCards is a modern, innovative project designed to streamline and enhance card management. Built with a focus on performance, scalability, and user-centric design, 10xCards empowers users to manage, share, and create dynamic digital cards with ease. Its features are driven by a comprehensive product requirements document (PRD), ensuring a robust and flexible solution for modern demands.
 
 ## Tech Stack
+
 - **Backend:** Node.js, Express
 - **Frontend:** React
 - **Language:** JavaScript/TypeScript
@@ -11,6 +13,7 @@
 - **Other:** Additional tools as specified in the tech stack documentation.
 
 ## Getting Started Locally
+
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/your-username/10xCards.git
@@ -30,13 +33,16 @@
    ```
 
 ## Available Scripts
+
 - **start:** Runs the application locally.
 - **build:** Builds the application for production.
 - **test:** Runs tests.
 - **lint:** Checks code style and formatting.
 
 ## Project Scope
+
 The project scope includes:
+
 - Implementation of an intuitive UI/UX for card creation and management.
 - Integration with backend APIs for data storage and retrieval.
 - Ensuring high performance and scalability.
@@ -44,7 +50,9 @@ The project scope includes:
 - Additional features and improvements as outlined in the PRD document.
 
 ## Project Status
+
 This project is currently under active development. Features are continuously added and improved based on user feedback and evolving requirements.
 
 ## License
+
 This project is licensed under the [MIT License](LICENSE).

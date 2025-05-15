@@ -1,3 +1,4 @@
+---
 import { ViewTransitions } from "astro:transitions";
 import "@/styles/globals.css";
 
@@ -5,7 +6,10 @@ const { supabase } = Astro.locals;
 let isAuthenticated = false;
 
 try {
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
   if (error || !user) {
     // Clear any potentially invalid session
     await supabase.auth.signOut();
@@ -21,6 +25,7 @@ const isPublicRoute = ["/login", "/register"].includes(Astro.url.pathname);
 if (!isAuthenticated && !isPublicRoute && !Astro.url.pathname.startsWith("/api/")) {
   return Astro.redirect("/login");
 }
+---
 
 <!doctype html>
 <html lang="en">

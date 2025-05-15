@@ -3,17 +3,20 @@
 ## Zrealizowane kroki
 
 1. Implementacja podstawowych komponentów typograficznych:
+
    - H1, H2, H3 z odpowiednimi rozmiarami i wagami fontów
    - Body text z właściwym leadingiem
    - Caption dla tekstu pomocniczego
 
 2. Implementacja komponentu Button:
+
    - Warianty: primary, secondary, text
    - Rozmiary: sm, md, lg
    - Obsługa ikon
    - Stany: hover, focus, disabled
 
 3. Implementacja komponentu Input:
+
    - Obsługa label
    - Obsługa error state
    - Obsługa ikon
@@ -21,12 +24,14 @@
    - Pełna dostępność
 
 4. Implementacja komponentu Card:
+
    - Obsługa obrazów
    - Efekt hover
    - Komponenty pomocnicze: Header, Content, Footer
    - Responsywność
 
 5. Implementacja komponentu Dialog/Modal:
+
    - Portal do body
    - Backdrop z blur effect
    - Zamykanie przez Escape
@@ -34,6 +39,7 @@
    - Pełna dostępność
 
 6. Implementacja komponentu Form:
+
    - FormGroup dla grupowania pól
    - FormLabel z obsługą required state
    - FormHelper dla tekstu pomocniczego
@@ -41,6 +47,7 @@
    - FormActions dla przycisków
 
 7. Implementacja komponentu Navigation:
+
    - Wersja desktop i mobile
    - Hamburger menu
    - NavigationItem z obsługą active state
@@ -48,12 +55,14 @@
    - Pełna responsywność
 
 8. Implementacja komponentu List:
+
    - Wariant z separatorami
    - ListItem z obsługą active i disabled state
    - Komponenty pomocnicze: Start, Content, End, Title, Description
    - Pełna dostępność
 
 9. Implementacja komponentów Feedback:
+
    - Toast z auto-hide
    - ProgressBar z animacją
    - Spinner z różnymi rozmiarami

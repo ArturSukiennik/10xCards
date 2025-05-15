@@ -58,9 +58,7 @@ const {
         }
 
         const userDataElement = document.getElementById("user-data");
-        const userData = userDataElement
-          ? JSON.parse(userDataElement.textContent || "null")
-          : null;
+        const userData = userDataElement ? JSON.parse(userDataElement.textContent || "null") : null;
 
         if (userData) {
           console.log("Reinitializing auth store after page transition:", userData);
@@ -71,6 +69,6 @@ const {
         }
       });
     </script>
-    <script id="user-data" type="application/json">{JSON.stringify(user)}</script>
+    <script id="user-data" type="application/json" set:html={JSON.stringify(user)} />
   </body>
 </html>
