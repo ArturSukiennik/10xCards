@@ -32,6 +32,18 @@
       }
     },
     {
+      "files": [
+        "src/middleware/**/*",
+        "src/lib/services/**/*",
+        "src/lib/logger/**/*",
+        "src/pages/api/**/*",
+        "src/components/auth/**/*"
+      ],
+      "rules": {
+        "no-console": ["warn", { "allow": ["log", "warn", "error", "info", "debug"] }]
+      }
+    },
+    {
       "files": [".astro/**/*.d.ts"],
       "rules": {
         "@typescript-eslint/no-explicit-any": "off",
