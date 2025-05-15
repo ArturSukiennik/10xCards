@@ -32,8 +32,8 @@ export interface AuthFormProps {
   error?: string;
   isLoading?: boolean;
   extraFields?: React.ReactNode;
-  schema?: z.ZodType<any>;
-  defaultValues?: Partial<any>;
+  schema?: typeof baseAuthSchema;
+  defaultValues?: Partial<BaseAuthSchemaType>;
 }
 
 export function AuthForm({
@@ -49,12 +49,12 @@ export function AuthForm({
     password: "",
   },
 }: AuthFormProps) {
-  const form = useForm({
+  const form = useForm<BaseAuthSchemaType>({
     resolver: zodResolver(schema),
     defaultValues,
   });
 
-  const handleSubmit = async (data: z.infer<typeof schema>) => {
+  const handleSubmit = async (data: BaseAuthSchemaType) => {
     try {
       await onSubmit(data);
     } catch {
