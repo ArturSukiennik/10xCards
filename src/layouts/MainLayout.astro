@@ -1,24 +1,76 @@
 ---
+import { ViewTransitions } from "astro:transitions";
 import { Toaster } from "../components/ui/toaster";
+import { createSupabaseServer } from "@/lib/supabase";
 
 interface Props {
   title: string;
 }
 
 const { title } = Astro.props;
+
+// Get initial user state
+const supabase = createSupabaseServer({
+  get: (name) => Astro.cookies.get(name)?.value,
+  set: (name, value, options) => Astro.cookies.set(name, value, options),
+});
+
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class="h-full">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
+    <ViewTransitions />
   </head>
-  <body>
-    <main>
+  <body class="h-full">
+    <main class="min-h-full">
       <slot />
     </main>
     <Toaster client:load />
+    <script>
+      const userDataElement = document.getElementById("user-data");
+      const initialUser = userDataElement
+        ? JSON.parse(userDataElement.textContent || "null")
+        : null;
+
+      if (initialUser) {
+        const loginEvent = new CustomEvent("auth:login", {
+          detail: { user: initialUser },
+        });
+        window.dispatchEvent(loginEvent);
+      }
+
+      document.addEventListener("astro:page-load", () => {
+        const currentPath = window.location.pathname;
+        const isAuthPage = ["/login", "/register", "/reset-password"].includes(currentPath);
+        const hasAuthToken = document.cookie.includes("sb-access-token");
+
+        if (!hasAuthToken && !isAuthPage && currentPath !== "/") {
+          window.location.href = "/login";
+        } else if (hasAuthToken && isAuthPage) {
+          window.location.href = "/generate";
+        }
+
+        const userDataElement = document.getElementById("user-data");
+        const userData = userDataElement
+          ? JSON.parse(userDataElement.textContent || "null")
+          : null;
+
+        if (userData) {
+          console.log("Reinitializing auth store after page transition:", userData);
+          const loginEvent = new CustomEvent("auth:login", {
+            detail: { user: userData },
+          });
+          window.dispatchEvent(loginEvent);
+        }
+      });
+    </script>
+    <script id="user-data" type="application/json">{JSON.stringify(user)}</script>
   </body>
 </html>

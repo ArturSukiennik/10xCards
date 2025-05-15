@@ -18,7 +18,7 @@ interface TextInputSectionProps {
 const MIN_TEXT_LENGTH = 1000;
 const MAX_TEXT_LENGTH = 10000;
 
-const AI_MODELS = [{ id: "openai/gpt-4-turbo", label: "GPT-4 Turbo" }] as const;
+const AI_MODELS = [{ id: "openai/gpt-4o-mini", label: "gpt-4o-mini" }] as const;
 
 export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionProps) {
   const [sourceText, setSourceText] = useState("");
@@ -68,23 +68,31 @@ export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionP
       <div className="space-y-4">
         <div className="flex flex-col space-y-2">
           <h2 className="text-xl font-semibold">Enter Your Text</h2>
-          <span className={`text-sm ${isTextValid ? "text-green-600" : "text-red-600"}`}>
+          <span
+            data-test-id="character-count"
+            className={`text-sm ${isTextValid ? "text-green-600" : "text-red-600"}`}
+          >
             {textLength}/{MAX_TEXT_LENGTH} characters
           </span>
         </div>
 
         <textarea
+          data-test-id="source-text-input"
           value={sourceText}
           onChange={(e) => setSourceText(e.target.value)}
           placeholder="Paste your text here (minimum 100 characters)"
           className="min-h-[300px] w-full p-4 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
         />
 
-        {validationErrors.length > 0 && <ValidationError errors={validationErrors} />}
+        {validationErrors.length > 0 && (
+          <div data-test-id="validation-error">
+            <ValidationError errors={validationErrors} />
+          </div>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <Select value={selectedModel} onValueChange={setSelectedModel}>
-            <SelectTrigger className="w-full sm:w-[250px]">
+            <SelectTrigger data-test-id="model-select" className="w-full sm:w-[250px]">
               <SelectValue placeholder="Select AI Model" />
             </SelectTrigger>
             <SelectContent>
@@ -97,6 +105,7 @@ export function TextInputSection({ onGenerate, isGenerating }: TextInputSectionP
           </Select>
 
           <Button
+            data-test-id="generate-button"
             onClick={handleGenerate}
             disabled={!isTextValid || isGenerating}
             className="w-full sm:w-auto bg-green-600 hover:bg-green-700"

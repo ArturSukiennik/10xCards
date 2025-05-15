@@ -109,6 +109,7 @@ export function FlashcardItem({ flashcard, onUpdate, onStatusChange }: Flashcard
                 size="sm"
                 variant={flashcard.status === "accepted" ? "primary" : "secondary"}
                 className="w-24"
+                data-test-id={`flashcard-${flashcard.id}-accept`}
               >
                 <Check className="mr-1 h-4 w-4" />
                 Accept
@@ -118,6 +119,7 @@ export function FlashcardItem({ flashcard, onUpdate, onStatusChange }: Flashcard
                 size="sm"
                 variant={flashcard.status === "rejected" ? "primary" : "secondary"}
                 className="w-24"
+                data-test-id={`flashcard-${flashcard.id}-reject`}
               >
                 <X className="mr-1 h-4 w-4" />
                 Reject

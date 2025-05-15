@@ -46,6 +46,11 @@ function ensureInitialized() {
  * Initializes the OpenRouter service with the provided configuration
  */
 export function initialize(config: OpenRouterConfig) {
+  if (!config.apiKey || config.apiKey === "") {
+    throw new Error(
+      "OpenRouter API key is not configured. Please set OPENROUTER_API_KEY environment variable in .env file.",
+    );
+  }
   currentConfig = config;
   openRouterService = new OpenRouterService(currentConfig);
 }
@@ -85,7 +90,7 @@ export async function generateFlashcards(
     // Generate flashcards using OpenRouter
     const flashcards = await service.generateFlashcards({
       content: sourceText,
-      numberOfCards: 10,
+      numberOfCards: 8,
       difficulty: "basic",
       language: "pl",
     });

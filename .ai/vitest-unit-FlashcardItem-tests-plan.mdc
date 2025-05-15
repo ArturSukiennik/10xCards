@@ -1,0 +1,313 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Testy Jednostkowe dla FlashcardItem.tsx
+
+## Zakres Testów
+
+Komponent `FlashcardItem.tsx` jest kluczowym elementem biznesowym aplikacji, odpowiadającym za wyświetlanie i zarządzanie pojedynczą fiszką. Na podstawie analizy kodu i wymagań, testy powinny pokryć następujące obszary:
+
+1. Renderowanie komponentu
+2. Interakcje użytkownika
+3. Zarządzanie stanem
+4. Walidacja danych
+5. Obsługa warunków brzegowych
+
+## Przykładowe Dane Testowe
+
+```typescript
+const mockFlashcard: FlashcardProposalViewModel = {
+  id: "test-id-1",
+  front: "Example front",
+  back: "Example back",
+  status: "pending",
+  originalContent: {
+    front: "Original front",
+    back: "Original back"
+  },
+  hasBeenEdited: false
+};
+
+const mockHandlers = {
+  onUpdate: vi.fn(),
+  onStatusChange: vi.fn()
+};
+```
+
+## Plan Testów
+
+### 1. Renderowanie Podstawowe
+
+```typescript
+describe('FlashcardItem - Rendering', () => {
+  it('should render initial content correctly', () => {
+    render(<FlashcardItem
+      flashcard={mockFlashcard}
+      onUpdate={mockHandlers.onUpdate}
+      onStatusChange={mockHandlers.onStatusChange}
+    />);
+
+    expect(screen.getByText('Front:')).toBeInTheDocument();
+    expect(screen.getByText('Back:')).toBeInTheDocument();
+    expect(screen.getByText(mockFlashcard.front)).toBeInTheDocument();
+    expect(screen.getByText(mockFlashcard.back)).toBeInTheDocument();
+  });
+
+  it('should render buttons in correct state', () => {
+    render(<FlashcardItem
+      flashcard={mockFlashcard}
+      onUpdate={mockHandlers.onUpdate}
+      onStatusChange={mockHandlers.onStatusChange}
+    />);
+
+    expect(screen.getByText('Accept')).toBeInTheDocument();
+    expect(screen.getByText('Reject')).toBeInTheDocument();
+    expect(screen.getByText('Edit')).toBeInTheDocument();
+    expect(screen.queryByText('Reset')).not.toBeInTheDocument(); // Reset nie powinien być widoczny dla niemodyfikowanej fiszki
+  });
+
+  it('should apply opacity style when flashcard is rejected', () => {
+    const rejectedFlashcard = { ...mockFlashcard, status: 'rejected' };
+    render(<FlashcardItem
+      flashcard={rejectedFlashcard}
+      onUpdate={mockHandlers.onUpdate}
+      onStatusChange={mockHandlers.onStatusChange}
+    />);
+
+    const card = screen.getByRole('article'); // lub inny selektor dla głównego kontenera
+    expect(card).toHaveClass('opacity-60');
+  });
+});
+```
+
+### 2. Tryb Edycji
+
+```typescript
+describe('FlashcardItem - Edit Mode', () => {
+  it('should enter edit mode when Edit button is clicked', async () => {
+    render(<FlashcardItem
+      flashcard={mockFlashcard}
+      onUpdate={mockHandlers.onUpdate}
+      onStatusChange={mockHandlers.onStatusChange}
+    />);
+
+    await userEvent.click(screen.getByText('Edit'));
+
+    expect(screen.getByLabelText('Front:')).toBeInTheDocument();
+    expect(screen.getByLabelText('Back:')).toBeInTheDocument();
+    expect(screen.getByText('Save')).toBeInTheDocument();
+    expect(screen.getByText('Cancel')).toBeInTheDocument();
+  });
+
+  it('should update content and exit edit mode on save', async () => {
+    render(<FlashcardItem
+      flashcard={mockFlashcard}
+      onUpdate={mockHandlers.onUpdate}
+      onStatusChange={mockHandlers.onStatusChange}
+    />);
+
+    await userEvent.click(screen.getByText('Edit'));
+
+    const frontInput = screen.getByLabelText('Front:');
+    const backInput = screen.getByLabelText('Back:');
+
+    await userEvent.clear(frontInput);
+    await userEvent.type(frontInput, 'New front content');
+    await userEvent.clear(backInput);
+    await userEvent.type(backInput, 'New back content');
+
+    await userEvent.click(screen.getByText('Save'));
+
+    expect(mockHandlers.onUpdate).toHaveBeenCalledWith(
+      mockFlashcard.id,
+      {
+        front: 'New front content',
+        back: 'New back content'
+      }
+    );
+    expect(screen.queryByText('Save')).not.toBeInTheDocument();
+  });
+
+  it('should restore original content on cancel', async () => {
+    render(<FlashcardItem
+      flashcard={mockFlashcard}
+      onUpdate={mockHandlers.onUpdate}
+      onStatusChange={mockHandlers.onStatusChange}
+    />);
+
+    await userEvent.click(screen.getByText('Edit'));
+
+    const frontInput = screen.getByLabelText('Front:');
+    await userEvent.clear(frontInput);
+    await userEvent.type(frontInput, 'New front content');
+
+    await userEvent.click(screen.getByText('Cancel'));
+
+    expect(screen.getByText(mockFlashcard.front)).toBeInTheDocument();
+    expect(mockHandlers.onUpdate).not.toHaveBeenCalled();
+  });
+});
+```
+
+### 3. Zarządzanie Statusem
+
+```typescript
+describe('FlashcardItem - Status Management', () => {
+  it('should call onStatusChange with "accepted" when Accept is clicked', async () => {
+    render(<FlashcardItem
+      flashcard={mockFlashcard}
+      onUpdate={mockHandlers.onUpdate}
+      onStatusChange={mockHandlers.onStatusChange}
+    />);
+
+    await userEvent.click(screen.getByText('Accept'));
+
+    expect(mockHandlers.onStatusChange).toHaveBeenCalledWith(
+      mockFlashcard.id,
+      'accepted'
+    );
+  });
+
+  it('should call onStatusChange with "rejected" when Reject is clicked', async () => {
+    render(<FlashcardItem
+      flashcard={mockFlashcard}
+      onUpdate={mockHandlers.onUpdate}
+      onStatusChange={mockHandlers.onStatusChange}
+    />);
+
+    await userEvent.click(screen.getByText('Reject'));
+
+    expect(mockHandlers.onStatusChange).toHaveBeenCalledWith(
+      mockFlashcard.id,
+      'rejected'
+    );
+  });
+
+  it('should highlight Accept button when flashcard is accepted', () => {
+    const acceptedFlashcard = { ...mockFlashcard, status: 'accepted' };
+    render(<FlashcardItem
+      flashcard={acceptedFlashcard}
+      onUpdate={mockHandlers.onUpdate}
+      onStatusChange={mockHandlers.onStatusChange}
+    />);
+
+    const acceptButton = screen.getByText('Accept').closest('button');
+    expect(acceptButton).toHaveClass('variant-primary');
+  });
+});
+```
+
+### 4. Obsługa Resetu
+
+```typescript
+describe('FlashcardItem - Reset Functionality', () => {
+  const editedFlashcard = {
+    ...mockFlashcard,
+    hasBeenEdited: true,
+    front: 'Edited front',
+    back: 'Edited back'
+  };
+
+  it('should show Reset button only for edited flashcards', () => {
+    render(<FlashcardItem
+      flashcard={editedFlashcard}
+      onUpdate={mockHandlers.onUpdate}
+      onStatusChange={mockHandlers.onStatusChange}
+    />);
+
+    expect(screen.getByText('Reset')).toBeInTheDocument();
+  });
+
+  it('should restore original content when Reset is clicked', async () => {
+    render(<FlashcardItem
+      flashcard={editedFlashcard}
+      onUpdate={mockHandlers.onUpdate}
+      onStatusChange={mockHandlers.onStatusChange}
+    />);
+
+    await userEvent.click(screen.getByText('Reset'));
+
+    expect(mockHandlers.onUpdate).toHaveBeenCalledWith(
+      editedFlashcard.id,
+      {
+        front: editedFlashcard.originalContent.front,
+        back: editedFlashcard.originalContent.back
+      }
+    );
+  });
+});
+```
+
+### 5. Walidacja Danych
+
+```typescript
+describe('FlashcardItem - Data Validation', () => {
+  it('should enforce maxLength on front textarea', async () => {
+    render(<FlashcardItem
+      flashcard={mockFlashcard}
+      onUpdate={mockHandlers.onUpdate}
+      onStatusChange={mockHandlers.onStatusChange}
+    />);
+
+    await userEvent.click(screen.getByText('Edit'));
+    const frontInput = screen.getByLabelText('Front:');
+
+    expect(frontInput).toHaveAttribute('maxLength', '200');
+  });
+
+  it('should enforce maxLength on back textarea', async () => {
+    render(<FlashcardItem
+      flashcard={mockFlashcard}
+      onUpdate={mockHandlers.onUpdate}
+      onStatusChange={mockHandlers.onStatusChange}
+    />);
+
+    await userEvent.click(screen.getByText('Edit'));
+    const backInput = screen.getByLabelText('Back:');
+
+    expect(backInput).toHaveAttribute('maxLength', '600');
+  });
+});
+```
+
+## Setup Testowy
+
+```typescript
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
+import { FlashcardItem } from '@/components/generate/FlashcardItem';
+
+// Reset wszystkich mocków przed każdym testem
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+```
+
+## Pokrycie Testami
+
+Powyższy zestaw testów powinien zapewnić pokrycie kodu na poziomie >80%, zgodnie z wymaganiami dla komponentów z logiką biznesową. Testy pokrywają:
+
+- Renderowanie komponentu w różnych stanach
+- Interakcje użytkownika (edycja, akceptacja, odrzucenie, reset)
+- Walidację danych wejściowych
+- Obsługę warunków brzegowych
+- Poprawność wywołań funkcji zwrotnych
+
+## Uwagi Implementacyjne
+
+1. Należy użyć `@testing-library/react` i `@testing-library/user-event` dla symulacji interakcji użytkownika
+2. Wykorzystać `vitest` jako framework testowy
+3. Stosować zasadę "testuj zachowanie, nie implementację"
+4. Używać semantycznych selektorów z `@testing-library/react`
+5. Unikać testowania implementacji bibliotek zewnętrznych (np. shadcn/ui)
+
+## Następne Kroki
+
+1. Implementacja testów zgodnie z powyższym planem
+2. Weryfikacja pokrycia kodu
+3. Dodanie testów dla nowych przypadków użycia w miarę rozwoju komponentu
+4. Integracja z CI/CD
+

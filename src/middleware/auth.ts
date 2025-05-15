@@ -1,21 +1,27 @@
-import type { MiddlewareHandler, MiddlewareContext, MiddlewareNext } from "../types/astro";
+import type { MiddlewareHandler } from "astro";
+import type { AstroCookies } from "astro";
+import { createSupabaseServer } from "@/lib/supabase";
 
-// Mocked user for development
-const MOCK_USER = {
-  id: "mock-user-id-123",
-  email: "mock@example.com",
-  role: "authenticated",
-  aud: "authenticated",
-  app_metadata: {},
-  user_metadata: {},
-  created_at: new Date().toISOString(),
-};
+export const authMiddleware: MiddlewareHandler = async (context) => {
+  const { cookies, url, redirect } = context;
 
-export const authMiddleware: MiddlewareHandler = async (
-  { locals }: MiddlewareContext,
-  next: MiddlewareNext,
-) => {
-  // Skip real authentication and use mock user
-  locals.user = MOCK_USER;
-  return next();
+  // Skip auth check for public routes
+  const publicRoutes = ["/login", "/register", "/reset-password", "/"];
+  if (publicRoutes.includes(url.pathname)) {
+    return;
+  }
+
+  const supabase = createSupabaseServer({
+    get: (name: string) => cookies.get(name)?.value,
+    set: (name: string, value: string, options?: any) => cookies.set(name, value, options),
+  });
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    return redirect("/login");
+  }
 };

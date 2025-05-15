@@ -1,0 +1,51 @@
+graph TD
+    %% Main Pages
+    Login["/login.astro"]
+    Register["/register.astro"]
+    ResetPassword["/reset-password.astro"]
+    Dashboard["/dashboard"]
+
+    %% Components
+    AuthForm["AuthForm.tsx\n(Base Component)"]
+    LoginForm["LoginForm.tsx"]
+    RegisterForm["RegisterForm.tsx"]
+    LogoutButton["LogoutButton.tsx"]
+
+    %% Services & Middleware
+    AuthMiddleware["authMiddleware.ts"]
+    AuthService["authService.ts"]
+    ValidationService["validationService.ts"]
+    SupabaseAuth["Supabase Auth"]
+
+    %% Flow Connections
+    Login --> AuthForm
+    Register --> AuthForm
+    AuthForm --> ValidationService
+
+    LoginForm --> AuthForm
+    RegisterForm --> AuthForm
+
+    LoginForm --> AuthService
+    RegisterForm --> AuthService
+    LogoutButton --> AuthService
+
+    AuthService --> SupabaseAuth
+
+    %% Protected Routes Flow
+    AuthMiddleware --> Dashboard
+
+    %% Authentication States
+    Login -- "Success" --> Dashboard
+    Register -- "Success" --> Dashboard
+    LogoutButton -- "Success" --> Login
+
+    %% Styling
+    classDef page fill:#f9f,stroke:#333,stroke-width:2px
+    classDef component fill:#bbf,stroke:#333,stroke-width:2px
+    classDef service fill:#bfb,stroke:#333,stroke-width:2px
+    classDef external fill:#ddd,stroke:#333,stroke-width:2px
+
+    class Login,Register,ResetPassword,Dashboard page
+    class AuthForm,LoginForm,RegisterForm,LogoutButton component
+    class AuthMiddleware,AuthService,ValidationService service
+    class SupabaseAuth external

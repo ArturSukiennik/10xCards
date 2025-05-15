@@ -1,0 +1,33 @@
+---
+import MainLayout from "@/layouts/MainLayout.astro";
+import { LoginForm } from "@/components/auth/LoginForm";
+import { createSupabaseServer } from "@/lib/supabase";
+
+// Disable prerendering to allow access to request headers
+export const prerender = false;
+
+// Get redirect URL from query params
+const { searchParams } = new URL(Astro.request.url);
+const from = searchParams.get("from") || "/generate";
+
+// Create server client
+const supabase = createSupabaseServer({
+  get: (name) => Astro.cookies.get(name)?.value,
+  set: (name, value, options) => Astro.cookies.set(name, value, options),
+});
+
+// Server-side redirect
+const {
+  data: { session },
+} = await supabase.auth.getSession();
+
+if (session) {
+  return Astro.redirect(from);
+}
+---
+
+<MainLayout title="Login - 10xCards">
+  <main class="container max-w-screen-sm mx-auto px-4 py-8" transition:animate="slide">
+    <LoginForm client:load redirectTo={from} />
+  </main>
+</MainLayout>

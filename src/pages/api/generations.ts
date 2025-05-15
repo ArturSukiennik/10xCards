@@ -22,12 +22,28 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (!locals.supabase) {
       return new Response(JSON.stringify({ error: "Database client not available" }), {
         status: 500,
+        headers: { "Content-Type": "application/json" },
       });
     }
 
-    // 2. Parse and validate request body
+    // 2. Get user from locals (set by middleware)
+    if (!locals.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // 3. Parse and validate request body
     const rawBody: GenerateFlashcardsCommand = await request.json();
-    const validationResult = generateFlashcardsSchema.safeParse(rawBody);
+
+    // Set default model if not provided
+    const bodyWithDefaults = {
+      ...rawBody,
+      model: rawBody.model || "openai/gpt-4o-mini",
+    };
+
+    const validationResult = generateFlashcardsSchema.safeParse(bodyWithDefaults);
 
     if (!validationResult.success) {
       const errors = validationResult.error.errors.map((err) => ({
@@ -40,28 +56,32 @@ export const POST: APIRoute = async ({ request, locals }) => {
           error: "Validation failed",
           details: errors,
         }),
-        { status: 400 },
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
       );
     }
 
     const body = validationResult.data;
 
-    // 3. Validate source text is not empty
+    // 4. Validate source text is not empty
     if (!body.source_text.trim()) {
       return new Response(JSON.stringify({ error: "Source text cannot be empty" }), {
         status: 400,
+        headers: { "Content-Type": "application/json" },
       });
     }
 
-    // 4. Generate flashcards using OpenRouter service
+    // 5. Generate flashcards using OpenRouter service
     let generationResult: GenerateFlashcardsResponseDto;
     const startTime = Date.now();
     try {
       const flashcards = await openRouterService.generateFlashcards({
         content: body.source_text,
-        numberOfCards: 4,
-        difficulty: "intermediate",
-        language: "en",
+        numberOfCards: 8,
+        difficulty: "basic",
+        language: "pl",
       });
 
       generationResult = {
@@ -73,51 +93,76 @@ export const POST: APIRoute = async ({ request, locals }) => {
         })),
       };
     } catch (error) {
-      console.error("Failed to generate flashcards:", error);
+      console.error("Error generating flashcards:", error);
       return new Response(
         JSON.stringify({
           error: "Failed to generate flashcards",
           details: error instanceof Error ? error.message : "Unknown error",
         }),
-        { status: 500 },
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
       );
     }
     const generationDuration = Date.now() - startTime;
 
-    // 5. Create generation record
+    // 6. Create generation record using authenticated client from middleware
     const sourceTextHash = crypto.createHash("sha256").update(body.source_text).digest("hex");
-    const { supabase } = locals;
 
-    const { data: generation, error: dbError } = await supabase
-      .from("generations")
-      .insert({
-        user_id: null,
-        model: body.model,
-        generated_count: generationResult.generated_flashcards.length,
-        source_text_hash: sourceTextHash,
-        source_text_length: body.source_text.length,
-        generation_duration: generationDuration,
-        generated_unedited_count: generationResult.generated_flashcards.length,
-      })
-      .select()
-      .single();
+    try {
+      const { data: generation, error: dbError } = await locals.supabase
+        .from("generations")
+        .insert({
+          user_id: locals.user.id,
+          model: body.model,
+          generated_count: generationResult.generated_flashcards.length,
+          source_text_hash: sourceTextHash,
+          source_text_length: body.source_text.length,
+          generation_duration: generationDuration,
+          generated_unedited_count: generationResult.generated_flashcards.length,
+          accepted_edited_count: 0,
+        })
+        .select()
+        .single();
 
-    if (dbError) {
-      console.error("Failed to create generation record:", dbError);
+      if (dbError) {
+        console.error("Database error:", dbError);
+        throw new Error(`Database error: ${dbError.message}`);
+      }
+
+      if (!generation) {
+        throw new Error("Failed to create generation record - no data returned");
+      }
+
+      // Return complete response with generation ID
       return new Response(
-        JSON.stringify({ error: "Failed to create generation record", details: dbError }),
-        { status: 500 },
+        JSON.stringify({
+          ...generationResult,
+          generation_id: generation.id,
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    } catch (error) {
+      console.error("Error saving to database:", error);
+      return new Response(
+        JSON.stringify({
+          error: "Failed to create generation record",
+          details: error instanceof Error ? error.message : "Unknown error",
+        }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
       );
     }
-
-    // 6. Return complete response
-    return new Response(
-      JSON.stringify({
-        ...generationResult,
-        generation_id: generation.id,
-      }),
-      { status: 200 },
-    );
   } catch (error) {
     console.error("Unexpected error:", error);
     if (error instanceof ZodError) {
@@ -129,16 +174,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
             message: err.message,
           })),
         }),
-        { status: 400 },
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
       );
     }
 
     return new Response(
       JSON.stringify({
-        error: "Internal server error",
+        error: "An unexpected error occurred",
         details: error instanceof Error ? error.message : "Unknown error",
       }),
-      { status: 500 },
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
     );
   }
 };

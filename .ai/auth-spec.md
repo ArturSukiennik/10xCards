@@ -1,102 +1,221 @@
-# Specyfikacja modułu autoryzacji w 10xCards
+# Specyfikacja techniczna integracji autentykacji
 
-## ARCHITEKTURA INTERFEJSU UŻYTKOWNIKA
+## 1. Architektura interfejsu użytkownika
 
-### 1. Strony
-- **Rejestracja (/register):**
-  - Strona zawiera formularz rejestracyjny z polami: email, hasło oraz potwierdzenie hasła.
-  - Formularz implementowany przy użyciu komponentów React z walidacją po stronie klienta.
+### 1.1 Nowe komponenty React (src/components/auth)
 
-- **Logowanie (/login):**
-  - Formularz logowania składa się z pól email i hasło.
-  - W przypadku błędnych danych wyświetlane są precyzyjne komunikaty błędów, np. "Invalid credentials".
+#### AuthForm.tsx
+- Współdzielony komponent formularza dla logowania i rejestracji
+- Obsługa walidacji pól email i hasła
+- Integracja z Shadcn/ui dla spójnego wyglądu
+- Obsługa różnych stanów (loading, error, success)
+- Brak integracji z zewnętrznymi dostawcami autoryzacji (Google, GitHub, etc.)
 
-- **Resetowanie hasła (/forgot-password):**
-  - Strona umożliwiająca wprowadzenie adresu email w celu wysłania linku do resetu hasła.
+#### LoginForm.tsx
+- Rozszerza AuthForm o logikę logowania
+- Integracja z Supabase Auth (tylko email/password)
+- Przekierowanie po udanym logowaniu do /dashboard
+- Obsługa błędów logowania
 
-- **Wylogowanie:**
-  - Przycisk wylogowania znajduje się w prawym górnym rogu głównego layoutu (np. `Layout.astro`) dla zalogowanych użytkowników.
+#### RegisterForm.tsx
+- Rozszerza AuthForm o logikę rejestracji
+- Dodatkowe pole potwierdzenia hasła
+- Integracja z Supabase Auth (tylko email/password)
+- Przekierowanie po udanej rejestracji do /dashboard
+- Obsługa błędów rejestracji
 
-### 2. Layouty i Komponenty
-- **Layout (Layout.astro):**
-  - Główny layout aplikacji odpowiedzialny za prezentację widoków autoryzowanych i nieautoryzowanych.
-  - Dla użytkowników zalogowanych wyświetla dodatkowe elementy, takie jak przycisk wylogowania.
+#### LogoutButton.tsx
+- Przycisk wylogowania w prawym górnym rogu layoutu
+- Integracja z Supabase Auth
+- Przekierowanie po wylogowaniu do strony logowania
 
-- **Komponenty formularzy:**
-  - Formularze są dynamicznymi komponentami React, korzystającymi z biblioteki Shadcn/ui, z wbudowaną walidacją i obsługą stanu błędów.
+### 1.2 Nowe strony Astro (src/pages)
 
-- **Komponenty powiadomień:**
-  - Informują użytkownika o wynikach operacji (np. sukces rejestracji, błędy walidacji) przy użyciu komunikatów w języku angielskim (np. "Registration Successful", "Invalid email address").
+#### login.astro
+- Strona logowania
+- Server-side rendering
+- Przekierowanie zalogowanych użytkowników do /dashboard
+- Integracja LoginForm
 
-### 3. Walidacja i Komunikaty Błędów
-- **Walidacja danych:**
-  - Po stronie klienta sprawdzane są poprawność formatu email, siła hasła, zgodność hasła i potwierdzenia.
-  - Dodatkowa walidacja odbywa się na backendzie, aby zapewnić spójność i bezpieczeństwo danych.
+#### register.astro
+- Strona rejestracji
+- Server-side rendering
+- Przekierowanie zalogowanych użytkowników do /dashboard
+- Integracja RegisterForm
 
-- **Komunikaty błędów:**
-  - Precyzyjne komunikaty zwracane są zarówno po stronie klienta, jak i serwera, np. "Invalid email address", "Password does not meet strength requirements", "Passwords do not match".
+#### reset-password.astro
+- Strona resetowania hasła
+- Obsługa tokenów resetowania z URL
+- Integracja PasswordResetForm
 
-### 4. Integracja z Backendem
-- Formularze wysyłają zapytania do dedykowanych endpointów API (opisanych poniżej).
-- Po udanej operacji użytkownik jest przekierowywany do głównych widoków aplikacji, takich jak widok generowania fiszek.
+### 1.3 Modyfikacje istniejących komponentów
 
-## LOGIKA BACKENDOWA
+#### Layout.astro
+- Dodanie LogoutButton dla zalogowanych użytkowników
+- Warunkowe renderowanie elementów nawigacji
+- Obsługa stanu autentykacji
 
-### 1. Struktura Endpointów API
-- **POST /api/auth/register:**
-  - Endpoint do rejestracji nowego użytkownika.
-  - Wykonuje walidację danych wejściowych, tworzy konto w systemie Supabase i zwraca odpowiedni status operacji.
+### 1.4 Walidacja i komunikaty błędów
 
-- **POST /api/auth/login:**
-  - Endpoint logowania użytkownika.
-  - Weryfikuje dane logowania z użyciem Supabase Auth i obsługuje sesje.
+#### Walidacja client-side
+- Email: format, wymagane pole
+- Hasło: min. 8 znaków, wymagane pole
+- Potwierdzenie hasła: zgodność z hasłem
 
-- **POST /api/auth/logout:**
-  - Endpoint odpowiedzialny za wylogowanie użytkownika, zarządzanie sesją i czyszczenie tokenów.
+#### Komunikaty błędów
+- Nieprawidłowe dane logowania
+- Błąd rejestracji (np. email już istnieje)
+- Błąd resetowania hasła
+- Problemy z połączeniem z Supabase
 
-- **POST /api/auth/forgot-password:**
-  - Endpoint do obsługi resetu hasła.
-  - Wysyła link resetujący hasło na podany adres email po weryfikacji.
+## 2. Logika backendowa
 
-### 2. Walidacja i Obsługa Błędów
-- **Mechanizm walidacji:**
-  - Użycie bibliotek do walidacji (np. Zod) w celu precyzyjnej weryfikacji danych wejściowych w każdym endpointcie.
+### 2.1 Endpointy API (src/pages/api)
 
-- **Obsługa wyjątków:**
-  - Wykorzystanie wczesnych zabezpieczeń (guard clauses) w celu natychmiastowego wychwytywania nieprawidłowych stanów.
-  - Logowanie błędów i zwracanie odpowiednich kodów HTTP (np. 400, 401, 500) z przyjaznymi komunikatami.
+#### auth/session.ts
+- GET: Sprawdzenie stanu sesji
+- DELETE: Wylogowanie użytkownika
 
-### 3. Renderowanie Stron Server-Side
-- Aktualizacja sposobu renderowania stron Astro, aby dynamicznie dostosowywać widoki w zależności od stanu autoryzacji użytkownika.
-- Layouty uwzględniają identyfikację i rekomendacje dotyczące widocznych elementów dla użytkownika (np. widoczność przycisku logout tylko dla zalogowanych użytkowników).
+#### auth/register.ts
+- POST: Rejestracja nowego użytkownika
+- Walidacja danych wejściowych
+- Utworzenie konta w Supabase Auth (tylko email/password)
 
-## SYSTEM AUTENTYKACJI
+#### auth/login.ts
+- POST: Logowanie użytkownika
+- Walidacja danych wejściowych
+- Utworzenie sesji
+- Brak obsługi zewnętrznych providerów auth
 
-### 1. Integracja z Supabase Auth
-- **Supabase Auth:**
-  - Wykorzystanie w pełni funkcjonalnego systemu autoryzacji Supabase do rejestracji, logowania, resetowania hasła oraz wylogowania.
-  - Korzystanie z wbudowanych metod Supabase umożliwiających szybkie wdrożenie i zapewnienie skalowalności.
+#### auth/reset-password.ts
+- POST: Inicjacja procesu resetowania hasła
+- PUT: Aktualizacja hasła z tokenem
 
-### 2. Moduły i Serwisy
-- **Serwis Autentykacji:**
-  - Warstwa serwisowa odpowiedzialna za integrację z Supabase, zarządzanie sesjami oraz tokenami autoryzacyjnymi (przechowywanie w cookies lub localStorage).
-  - Umożliwia odnawianie tokenów i monitorowanie stanu sesji.
+### 2.2 Middleware (src/middleware)
 
-- **Middleware Astro:**
-  - Integracja z middleware w Astro, która sprawdza stan autoryzacji użytkownika przed renderowaniem stron chronionych.
+#### authMiddleware.ts
+- Weryfikacja sesji użytkownika
+- Przekierowania dla chronionych ścieżek
+- Obsługa tokenów sesji
 
-### 3. Kontrakty i Typy Danych
-- **Wspólne Typy:**
-  - Definicje typów danych użytkownika i sesji umieszczone w pliku `src/types.ts` dla ujednolicenia kontraktów między front-endem a back-endem.
+### 2.3 Serwisy (src/lib)
 
-- **Schematy Request/Response:**
-  - Precyzyjne kontrakty HTTP definiujące strukturę zapytań i odpowiedzi dla endpointów autoryzacyjnych, co ułatwia utrzymanie spójności systemu.
+#### authService.ts
+- Inicjalizacja klienta Supabase Auth
+- Metody pomocnicze dla operacji autentykacji
+- Obsługa tokenów i sesji
 
-## PODSUMOWANIE
+#### validationService.ts
+- Walidacja danych wejściowych
+- Generowanie komunikatów błędów
+- Sanityzacja danych
 
-Implementacja modułu autoryzacji w 10xCards obejmuje pełną ścieżkę użytkownika od rejestracji, przez logowanie i reset hasła, aż po wylogowanie. Dzięki integracji z Supabase Auth, aplikacja zapewnia bezpieczne i skalowalne środowisko. Kluczowe elementy obejmują:
-- Dokładnie zaplanowaną strukturę interfejsu użytkownika, w tym strony, layouty oraz dynamiczne komponenty React.
-- Solidną logikę backendową, z dedykowanymi endpointami API, walidacją danych i obsługą wyjątków.
-- Bezproblemową integrację z systemem autoryzacji Supabase, wykorzystującą istniejący stos technologiczny (Astro 5, React 19, TypeScript 5, Tailwind 4, Shadcn/ui).
+### 2.4 Typy (src/types.ts)
 
-This specification serves as a detailed technical guide to implement the authentication module without compromising the existing functionality of the application.
+```typescript
+interface AuthUser {
+  id: string;
+  email: string;
+  created_at: string;
+}
+
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+interface RegisterCredentials extends LoginCredentials {
+  password_confirmation: string;
+}
+
+interface PasswordResetCredentials {
+  email: string;
+}
+
+interface NewPasswordCredentials {
+  password: string;
+  token: string;
+}
+```
+
+## 3. System autentykacji
+
+### 3.1 Konfiguracja Supabase Auth
+
+```typescript
+// src/lib/supabase.ts
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+
+// Konfiguracja klienta Supabase z wyłączeniem zewnętrznych providerów
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+})
+```
+
+### 3.2 Integracja z Astro
+
+#### Middleware
+- Weryfikacja sesji na chronionych ścieżkach
+- Przekierowania dla niezalogowanych użytkowników
+- Obsługa wygasłych sesji
+
+#### Server-side rendering
+- Sprawdzanie stanu autentykacji przed renderowaniem
+- Warunkowe renderowanie komponentów
+- Obsługa SEO dla stron auth
+
+### 3.3 Bezpieczeństwo
+
+#### Ochrona danych
+- Szyfrowanie haseł (handled by Supabase)
+- Bezpieczne przechowywanie tokenów
+- Walidacja CSRF
+
+#### Rate limiting
+- Ograniczenie prób logowania
+- Ograniczenie prób resetowania hasła
+- Ochrona przed atakami brute-force
+
+### 3.4 Obsługa błędów
+
+#### Typy błędów
+- AuthenticationError
+- ValidationError
+- NetworkError
+- ServerError
+
+#### Logowanie błędów
+- Szczegółowe logi dla debugowania
+- Monitoring błędów autentykacji
+- Alerty dla podejrzanych aktywności
+
+## 4. Wdrożenie
+
+### 4.1 Zmienne środowiskowe
+```env
+PUBLIC_SUPABASE_URL=
+PUBLIC_SUPABASE_ANON_KEY=
+```
+
+### 4.2 Migracje bazy danych
+- Automatyczne migracje Supabase
+- Backup danych użytkowników
+- Plan rollback
+
+### 4.3 Testy
+- Unit testy dla komponentów auth
+- Testy integracyjne flow autentykacji
+- Testy bezpieczeństwa
+- Testy wydajności
+
+### 4.4 Monitoring
+- Logowanie aktywności użytkowników
+- Monitorowanie prób nieudanego logowania
+- Alerty bezpieczeństwa

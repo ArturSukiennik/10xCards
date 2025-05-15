@@ -3,25 +3,12 @@ import { FlashcardsService } from "../../../lib/services/flashcards.service";
 import { ValidationError, GenerationNotFoundError } from "../../../lib/errors";
 import type { MiddlewareContext } from "../../../types/astro";
 
-// Mock user for development (same as in auth middleware)
-const MOCK_USER = {
-  id: "00000000-0000-0000-0000-000000000000", // Valid UUID format for development
-  email: "mock@example.com",
-  role: "authenticated",
-  aud: "authenticated",
-  app_metadata: {},
-  user_metadata: {},
-  created_at: new Date().toISOString(),
-};
-
 export const prerender = false;
 
 // POST /api/flashcards/batch
 export const POST: APIRoute = async ({ request, locals }: MiddlewareContext) => {
   try {
-    // Use mock user instead of real authentication
-    locals.user = MOCK_USER;
-
+    // Check if supabase client is available
     if (!locals.supabase) {
       console.error("Supabase client not available");
       return new Response(JSON.stringify({ error: "Database connection not available" }), {
@@ -30,13 +17,18 @@ export const POST: APIRoute = async ({ request, locals }: MiddlewareContext) => 
       });
     }
 
+    // Check if user is authenticated
+    if (!locals.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     const flashcardsService = new FlashcardsService(locals.supabase);
     const body = await request.json();
 
-    console.log("Request body:", body);
-
     const result = await flashcardsService.createFlashcards(locals.user.id, body);
-    console.log("Created flashcards:", result);
 
     return new Response(JSON.stringify(result), {
       status: 201,
