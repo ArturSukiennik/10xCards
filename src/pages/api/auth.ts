@@ -10,6 +10,7 @@ const loginSchema = z.object({
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     if (!request.headers.get("Content-Type")?.includes("application/json")) {
+      console.error("Invalid Content-Type:", request.headers.get("Content-Type"));
       return new Response(
         JSON.stringify({ error: { message: "Content-Type must be application/json" } }),
         {
@@ -22,19 +23,35 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const body = await request.json();
+    console.log("Received login request for email:", body.email);
+
     const validatedData = loginSchema.parse(body);
 
     const supabase = createSupabaseServer({
-      get: (name) => cookies.get(name)?.value,
-      set: (name, value, options) => cookies.set(name, value, options),
+      get: (name) => {
+        const value = cookies.get(name)?.value;
+        console.log(
+          "Reading cookie in auth endpoint:",
+          name,
+          "value:",
+          value ? "exists" : "undefined",
+        );
+        return value;
+      },
+      set: (name, value, options) => {
+        console.log("Setting cookie in auth endpoint:", name, "options:", options);
+        cookies.set(name, value, options);
+      },
     });
 
+    console.log("Attempting to sign in with password...");
     const { data, error } = await supabase.auth.signInWithPassword({
       email: validatedData.email,
       password: validatedData.password,
     });
 
     if (error) {
+      console.error("Supabase auth error:", error);
       return new Response(JSON.stringify({ error: formatAuthError(error) }), {
         status: error.status || 400,
         headers: {
@@ -44,6 +61,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     if (!data.user) {
+      console.error("Authentication succeeded but no user data returned");
       return new Response(JSON.stringify({ error: { message: "Authentication failed" } }), {
         status: 401,
         headers: {
@@ -52,6 +70,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
+    console.log("Authentication successful for user:", data.user.email);
     return new Response(
       JSON.stringify({
         user: {
@@ -67,6 +86,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       },
     );
   } catch (error) {
+    console.error("Unexpected error in auth endpoint:", error);
     if (error instanceof z.ZodError) {
       return new Response(
         JSON.stringify({

@@ -3,12 +3,17 @@ import { test as base } from "@playwright/test";
 import { chromium } from "@playwright/test";
 import { AuthUtils } from "../utils/auth";
 
+// Default viewport size for all tests
+const viewportSize = { width: 1920, height: 1080 };
+
 // Eksportujemy test z obsługą stanu logowania
 export const test = base.extend({
   storageState: async ({}, use) => {
     // Tworzymy nowy kontekst i stronę
     const browser = await chromium.launch();
-    const context = await browser.newContext();
+    const context = await browser.newContext({
+      viewport: viewportSize,
+    });
     const page = await context.newPage();
 
     try {

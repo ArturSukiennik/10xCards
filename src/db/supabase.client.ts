@@ -11,4 +11,21 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
+export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
+  global: {
+    headers: {
+      "x-application-name": "10xCards",
+    },
+  },
+  db: {
+    schema: "public",
+  },
+  realtime: {
+    timeout: 30000, // Increase timeout to 30 seconds
+  },
+});

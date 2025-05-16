@@ -37,7 +37,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Handle response cookies for auth
   try {
     // Get all Supabase auth cookies
-    const supabaseCookies = ["sb-access-token", "sb-refresh-token"];
+    const supabaseCookies = [
+      "sb-access-token",
+      "sb-refresh-token",
+      "sb-auth-token",
+      "supabase-auth-token",
+    ];
 
     // Add Set-Cookie headers for Supabase auth cookies
     supabaseCookies.forEach((name) => {
