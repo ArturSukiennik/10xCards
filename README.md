@@ -2,7 +2,7 @@
 
 ## Project Description
 
-10xCards is a modern, innovative project designed to streamline and enhance card management. Built with a focus on performance, scalability, and user-centric design, 10xCards empowers users to manage, share, and create dynamic digital cards with ease. Its features are driven by a comprehensive product requirements document (PRD), ensuring a robust and flexible solution for modern demands.
+10xCards is a automatically generated card management application. Built with a focus on performance, scalability, and user-centric design, 10xCards empowers users to manage, share, and create dynamic digital cards with ease. Its features are driven by a comprehensive product requirements document (PRD), ensuring a robust and flexible solution for modern demands.
 
 ## Tech Stack
 
