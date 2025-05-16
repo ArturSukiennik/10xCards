@@ -152,7 +152,13 @@ export function useFlashcardGeneration() {
         throw new Error("Failed to save flashcards");
       }
 
-      // Reset state after successful save
+      const data = await response.json();
+
+      if (data.created_count !== flashcardsToSave.length) {
+        throw new Error("Not all flashcards were saved");
+      }
+
+      // Reset state after successful save and verification
       setState(initialState);
     } catch (error) {
       setState((prev) => ({

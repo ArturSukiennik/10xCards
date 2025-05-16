@@ -23,6 +23,19 @@ try {
   throw new Error("Invalid Supabase URL format");
 }
 
+// Create the default supabase client
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+  },
+  global: {
+    headers: {
+      "x-application-name": "10xCards",
+    },
+  },
+});
+
 export const cookieOptions: CookieOptions = {
   path: "/",
   secure: import.meta.env.PROD,

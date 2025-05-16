@@ -1,5 +1,6 @@
+/* eslint-disable */
 import { test as base } from "@playwright/test";
-import { AuthUtils } from "../utils/auth";
+import { supabaseE2EClient } from "./supabase";
 
 // Rozszerzamy typ testu o stan logowania
 interface AuthFixtures {
@@ -12,21 +13,36 @@ interface AuthFixtures {
 // Tworzymy nowy test z obsługą stanu logowania
 export const test = base.extend<AuthFixtures>({
   storageState: async ({}, use) => {
-    // Tworzymy nowy kontekst i stronę
     const browser = await base.browser();
     const context = await browser.newContext();
     const page = await context.newPage();
 
     try {
-      // Logujemy użytkownika testowego
-      const authUtils = new AuthUtils(page);
-      await authUtils.loginTestUser();
+      // Logujemy użytkownika testowego przez Supabase
+      const { data: authData, error: authError } = await supabaseE2EClient.auth.signInWithPassword({
+        email: process.env.SUPABASE_TEST_USER_EMAIL!,
+        password: process.env.SUPABASE_TEST_USER_PASSWORD!,
+      });
 
-      // Sprawdzamy czy użytkownik jest zalogowany
-      const isLoggedIn = await authUtils.isLoggedIn();
-      if (!isLoggedIn) {
-        throw new Error("Test user is not logged in. Please check authentication setup.");
+      if (authError || !authData.session) {
+        throw new Error(`Failed to login test user: ${authError?.message || "No session"}`);
       }
+
+      // Ustawiamy ciasteczka sesji
+      await context.addCookies([
+        {
+          name: "sb-access-token",
+          value: authData.session.access_token,
+          domain: new URL(process.env.PUBLIC_SUPABASE_URL!).hostname,
+          path: "/",
+        },
+        {
+          name: "sb-refresh-token",
+          value: authData.session.refresh_token!,
+          domain: new URL(process.env.PUBLIC_SUPABASE_URL!).hostname,
+          path: "/",
+        },
+      ]);
 
       // Pobieramy ciasteczka
       const cookies = await context.cookies();

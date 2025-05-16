@@ -3,9 +3,10 @@ Jesteś doświadczonym architektem oprogramowania, którego zadaniem jest stworz
 Zanim zaczniemy, zapoznaj się z poniższymi informacjami:
 
 1. Route API specification:
-<route_api_specification>
+   <route_api_specification>
 
 #### Generate Flashcards
+
 - Method: POST
 - Path: `/generations`
 - Description: Generate flashcards from text using LLM
@@ -43,8 +44,10 @@ Zanim zaczniemy, zapoznaj się z poniższymi informacjami:
 </route_api_specification>
 
 2. Related database resources:
-<related_db_resources>
+   <related_db_resources>
+
 ### Tabela `users`
+
 - `id` UUID PRIMARY KEY
 - `email`: VARCHAR(255) NOT NULL UNIQUE
 - `encrypted_password`: VARCHAR NOT NULL
@@ -53,6 +56,7 @@ Zanim zaczniemy, zapoznaj się z poniższymi informacjami:
 - To jest tabela zarządzana przez Supabase.
 
 ### Tabela `flashcards`
+
 - `id` BIGSERIAL PRIMARY KEY
 - `user_id` UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT
 - `front` VARCHAR(200) NOT NULL
@@ -60,9 +64,10 @@ Zanim zaczniemy, zapoznaj się z poniższymi informacjami:
 - `source` VARCHAR(20) NOT NULL CHECK (source IN ('ai-full', 'ai-edited', 'manual'))
 - `created_at` TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 - `updated_at` TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
-- `generation_id` BIGSERIAL  NOT NULL REFERENCES generations(id)
+- `generation_id` BIGSERIAL NOT NULL REFERENCES generations(id)
 
 ### Tabela `generations`
+
 - `id` BIGSERIAL PRIMARY KEY
 - `user_id` UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT
 - `model` VARCHAR NOT NULL
@@ -70,12 +75,13 @@ Zanim zaczniemy, zapoznaj się z poniższymi informacjami:
 - `generated_unedited_count` INTEGER NULLABLE
 - `accepted_edited_count` INTEGER NULLABLE
 - `source_text_hash` VARCHAR NOT NULL
-- `generation_duration` INTEGER NOT NULL 
+- `generation_duration` INTEGER NOT NULL
 - `source_text_lemgth` TEXT NOT NULL CHECK (char_length(source_text) BETWEEN 1000 AND 10000)
 - `created_at` TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 - `updated_at` TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 
 ### Tabela `generation_error_logs`
+
 - `id` BIGSERIAL PRIMARY KEY
 - `user_id` UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT
 - `model` VARCHAR NOT NULL
@@ -86,25 +92,26 @@ Zanim zaczniemy, zapoznaj się z poniższymi informacjami:
 - `created_at` TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 
 ## 2. Relacje między tabelami
+
 - Relacja 1:n: Jeden użytkownik (`users`) może posiadać wiele rekordów w tabelach `flashcards`, `generations` oraz `generation_error_logs`.
 - Klucze obce na kolumnie `user_id` zapewniają integralność danych i są ustawione z mechanizmem `ON DELETE RESTRICT`.
 
 </related_db_resources>
 
 3. Definicje typów:
-<type_definitions>
-@types.ts
-</type_definitions>
+   <type_definitions>
+   @types.ts
+   </type_definitions>
 
-3. Tech stack:
-<tech_stack>
-@tech-stack.md
-</tech_stack>
+4. Tech stack:
+   <tech_stack>
+   @tech-stack.md
+   </tech_stack>
 
-4. Implementation rules:
-<implementation_rules>
-@shared.mdc, @backend.mdc, @astro.mdc
-</implementation_rules>
+5. Implementation rules:
+   <implementation_rules>
+   @shared.mdc, @backend.mdc, @astro.mdc
+   </implementation_rules>
 
 Twoim zadaniem jest stworzenie kompleksowego planu wdrożenia endpointu interfejsu API REST. Przed dostarczeniem ostatecznego planu użyj znaczników <analysis>, aby przeanalizować informacje i nakreślić swoje podejście. W tej analizie upewnij się, że:
 
@@ -129,6 +136,7 @@ Po przeprowadzeniu analizy utwórz szczegółowy plan wdrożenia w formacie mark
 8. Kroki implementacji
 
 W całym planie upewnij się, że
+
 - Używać prawidłowych kodów stanu API:
   - 200 dla pomyślnego odczytu
   - 201 dla pomyślnego utworzenia
@@ -142,12 +150,15 @@ W całym planie upewnij się, że
 Końcowym wynikiem powinien być dobrze zorganizowany plan wdrożenia w formacie markdown. Oto przykład tego, jak powinny wyglądać dane wyjściowe:
 
 ``markdown
+
 # API Endpoint Implementation Plan: [Nazwa punktu końcowego]
 
 ## 1. Przegląd punktu końcowego
+
 [Krótki opis celu i funkcjonalności punktu końcowego]
 
 ## 2. Szczegóły żądania
+
 - Metoda HTTP: [GET/POST/PUT/DELETE]
 - Struktura URL: [wzorzec URL]
 - Parametry:
@@ -156,30 +167,39 @@ Końcowym wynikiem powinien być dobrze zorganizowany plan wdrożenia w formacie
 - Request Body: [Struktura treści żądania, jeśli dotyczy]
 
 ## 3. Wykorzystywane typy
+
 [DTOs i Command Modele niezbędne do implementacji]
 
 ## 3. Szczegóły odpowiedzi
+
 [Oczekiwana struktura odpowiedzi i kody statusu]
 
 ## 4. Przepływ danych
+
 [Opis przepływu danych, w tym interakcji z zewnętrznymi usługami lub bazami danych]
 
 ## 5. Względy bezpieczeństwa
+
 [Szczegóły uwierzytelniania, autoryzacji i walidacji danych]
 
 ## 6. Obsługa błędów
+
 [Lista potencjalnych błędów i sposób ich obsługi]
 
 ## 7. Rozważania dotyczące wydajności
+
 [Potencjalne wąskie gardła i strategie optymalizacji]
 
 ## 8. Etapy wdrożenia
+
 1. [Krok 1]
 2. [Krok 2]
 3. [Krok 3]
-...
+   ...
+
 ```
 
 Końcowe wyniki powinny składać się wyłącznie z planu wdrożenia w formacie markdown i nie powinny powielać ani powtarzać żadnej pracy wykonanej w sekcji analizy.
 
 Pamiętaj, aby zapisać swój plan wdrożenia jako .ai/genertions-endpoint-implemntation-plan.md. Upewnij się, że plan jest szczegółowy, przejrzysty i zapewnia kompleksowe wskazówki dla zespołu programistów.
+```

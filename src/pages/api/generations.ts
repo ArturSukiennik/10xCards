@@ -4,21 +4,17 @@ import { generateFlashcardsSchema } from "../../lib/validation/generation.schema
 import { ZodError } from "zod";
 import crypto from "crypto";
 import { OpenRouterService } from "../../lib/services/openrouter.service";
-import { MockOpenRouterService } from "../../../tests/e2e/mocks/openrouter.service.mock";
 
 export const prerender = false;
 
 // Initialize OpenRouter service with default configuration
-const openRouterService =
-  import.meta.env.MODE === "test" && !import.meta.env.USE_REAL_OPENROUTER
-    ? new MockOpenRouterService()
-    : new OpenRouterService({
-        apiKey: import.meta.env.OPENROUTER_API_KEY || "",
-        defaultModel: "openai/gpt-4o-mini",
-        maxRetries: 3,
-        timeout: 30000,
-        baseUrl: "https://openrouter.ai/api/v1",
-      });
+const openRouterService = new OpenRouterService({
+  apiKey: import.meta.env.OPENROUTER_API_KEY || "",
+  defaultModel: "openai/gpt-4o-mini",
+  maxRetries: 3,
+  timeout: 30000,
+  baseUrl: "https://openrouter.ai/api/v1",
+});
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {

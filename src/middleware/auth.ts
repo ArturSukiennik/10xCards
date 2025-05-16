@@ -1,5 +1,4 @@
 import type { MiddlewareHandler } from "astro";
-import type { AstroCookies } from "astro";
 import { createSupabaseServer } from "@/lib/supabase";
 
 export const authMiddleware: MiddlewareHandler = async (context) => {
@@ -13,7 +12,8 @@ export const authMiddleware: MiddlewareHandler = async (context) => {
 
   const supabase = createSupabaseServer({
     get: (name: string) => cookies.get(name)?.value,
-    set: (name: string, value: string, options?: any) => cookies.set(name, value, options),
+    set: (name: string, value: string, options?: { expires?: Date }) =>
+      cookies.set(name, value, options),
   });
 
   const {

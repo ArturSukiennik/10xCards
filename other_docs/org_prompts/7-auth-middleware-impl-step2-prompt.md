@@ -1,4 +1,4 @@
-Przeprowadź integrację @login.astro @LoginForm.tsx  z backendem Astro na podstawie specyfikacji @auth-spec.md. Rozpocznij od analizy istniejącego kodu w kontekście najlepszych praktyk @astro.mdc i @react.mdc
+Przeprowadź integrację @login.astro @LoginForm.tsx z backendem Astro na podstawie specyfikacji @auth-spec.md. Rozpocznij od analizy istniejącego kodu w kontekście najlepszych praktyk @astro.mdc i @react.mdc
 
 Przedstawiony plan powinien spełniać założenia wyszczególnione w sekcji user stories: @project-prd.md
 

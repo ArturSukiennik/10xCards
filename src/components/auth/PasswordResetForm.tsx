@@ -20,7 +20,7 @@ export function PasswordResetForm() {
     try {
       // Note: Backend implementation will be added later
       console.log("Password reset attempt:", data);
-    } catch (err) {
+    } catch {
       setError("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);

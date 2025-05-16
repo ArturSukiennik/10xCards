@@ -16,6 +16,7 @@ Session Notes:
 <session_notes>
 <conversation_summary>
 <decisions>
+
 1. System powiadomień zostanie zaimplementowany w późniejszej fazie, nie w MVP
 2. Statystyki generowania fiszek będą prezentowane jako prosty wskaźnik akceptacji/odrzucenia
 3. Użytkownik będzie miał możliwość wyboru modelu AI w widoku generowania
@@ -34,22 +35,26 @@ Session Notes:
 16. Usuwanie fiszek zawsze będzie wymagać potwierdzenia
 17. Komunikaty błędów będą ogólne, bez szczegółów technicznych
 18. Przekroczenie limitu znaków będzie skutkować automatycznym przycinaniem tekstu
-</decisions>
+    </decisions>
 
 <matched_recommendations>
+
 1. Interfejs generowania fiszek:
+
    - Pole tekstowe z walidacją
    - Prosty dropdown wyboru modelu AI
    - Przycisk "Generuj" (aktywny/nieaktywny)
    - Podstawowy spinner podczas ładowania
 
 2. System prezentacji wygenerowanych fiszek:
+
    - Lista do akceptacji/odrzucenia
    - Wskaźnik "X/Y" aktualizowany na żywo
    - Zachowanie tekstu przy błędach
    - Automatyczne przewijanie do błędów
 
 3. Widok "Moje fiszki":
+
    - 10 fiszek na stronę
    - Sortowanie po dacie utworzenia
    - Skrócony podgląd treści
@@ -57,6 +62,7 @@ Session Notes:
    - Data utworzenia
 
 4. Modal edycji fiszki:
+
    - Pola z licznikami znaków
    - Przyciski "Zapisz" i "Anuluj"
    - Informacja o źródle (AI/manual)
@@ -72,7 +78,9 @@ Session Notes:
 </matched_recommendations>
 
 <ui_architecture_planning_summary>
+
 1. Główne wymagania UI:
+
    - Minimalistyczny, intuicyjny interfejs
    - Dwie główne zakładki nawigacyjne
    - Szybka edycja i podgląd fiszek
@@ -81,24 +89,28 @@ Session Notes:
 
 2. Kluczowe widoki i przepływy:
    a) Generowanie fiszek:
-      - Wprowadzanie tekstu
-      - Wybór modelu AI
-      - Akceptacja/odrzucanie propozycji
-      - Wskaźnik postępu
+
+   - Wprowadzanie tekstu
+   - Wybór modelu AI
+   - Akceptacja/odrzucanie propozycji
+   - Wskaźnik postępu
 
    b) Zarządzanie fiszkami:
-      - Lista z paginacją
-      - Modal edycji
-      - Potwierdzenie usunięcia
-      - Szybki podgląd
+
+   - Lista z paginacją
+   - Modal edycji
+   - Potwierdzenie usunięcia
+   - Szybki podgląd
 
 3. Integracja z API:
+
    - Obsługa błędów przez chmurki
    - Zachowanie stanu przy błędach
    - Podstawowe wskaźniki ładowania
    - Automatyczna walidacja limitów
 
 4. Responsywność i dostępność:
+
    - Dostosowanie do różnych ekranów
    - Czytelne komunikaty błędów
    - Intuicyjna nawigacja
@@ -113,13 +125,14 @@ Session Notes:
 </ui_architecture_planning_summary>
 
 <unresolved_issues>
+
 1. Szczegółowy wygląd spinnera podczas ładowania
 2. Dokładny format skróconego podglądu treści fiszek
 3. Sposób prezentacji statystyk na urządzeniach mobilnych
 4. Szczegółowy wygląd czerwonych chmurek z błędami
 5. Dokładna treść komunikatów potwierdzenia usunięcia
-</unresolved_issues>
-</conversation_summary>
+   </unresolved_issues>
+   </conversation_summary>
 
 </session_notes>
 
@@ -155,6 +168,7 @@ Przedstaw ostateczną architekturę interfejsu użytkownika w następującym for
 ## 2. Lista widoków
 
 [Dla każdego widoku podaj:
+
 - Nazwa widoku
 - Ścieżka widoku
 - Główny cel

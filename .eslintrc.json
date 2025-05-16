@@ -7,6 +7,18 @@
     {
       "files": ["*.astro"],
       "parser": "astro-eslint-parser"
+    },
+    {
+      "files": [".astro/**/*.d.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/array-type": "off",
+        "@typescript-eslint/consistent-indexed-object-style": "off",
+        "@typescript-eslint/consistent-type-definitions": "off",
+        "@typescript-eslint/unified-signatures": "off",
+        "@typescript-eslint/no-empty-object-type": "off",
+        "@typescript-eslint/triple-slash-reference": "off"
+      }
     }
   ]
 }

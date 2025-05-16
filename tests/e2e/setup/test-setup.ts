@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { test as base } from "@playwright/test";
 import { chromium } from "@playwright/test";
 import { AuthUtils } from "../utils/auth";

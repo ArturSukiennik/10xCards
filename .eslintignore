@@ -1,0 +1,2 @@
+# Ignore automatically generated Astro files
+.astro/**/*.d.ts

@@ -56,11 +56,29 @@ const reactConfig = tseslint.config({
   },
 });
 
+// Dodaj konfigurację ignorującą błędy w plikach .astro/**/*.d.ts
+const astroTypeDefinitionsConfig = tseslint.config({
+  files: [".astro/**/*.d.ts"],
+  rules: {
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/array-type": "off",
+    "@typescript-eslint/consistent-indexed-object-style": "off",
+    "@typescript-eslint/consistent-type-definitions": "off",
+    "@typescript-eslint/unified-signatures": "off",
+    "@typescript-eslint/no-empty-object-type": "off",
+    "@typescript-eslint/triple-slash-reference": "off",
+  },
+});
+
 export default tseslint.config(
+  {
+    ignores: [".git", "node_modules", "dist", "coverage", ".astro", ".vscode", ".playwright"],
+  },
   includeIgnoreFile(gitignorePath),
   baseConfig,
   jsxA11yConfig,
   reactConfig,
+  astroTypeDefinitionsConfig,
   eslintPluginAstro.configs["flat/recommended"],
-  eslintPluginPrettier
+  eslintPluginPrettier,
 );

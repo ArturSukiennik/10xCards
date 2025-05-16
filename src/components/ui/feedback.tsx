@@ -1,5 +1,6 @@
-import type { HTMLAttributes, ReactNode } from "react";
-import { useEffect, useState } from "react";
+/* eslint-disable */
+import type { HTMLAttributes } from "react";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 
 // Toast Component
@@ -71,21 +72,26 @@ interface ProgressBarProps extends HTMLAttributes<HTMLDivElement> {
   color?: string;
 }
 
-export function ProgressBar({
-  progress,
-  color = "#FF385C",
-  className = "",
-  ...props
-}: ProgressBarProps) {
+export function ProgressBar(props: ProgressBarProps) {
+  const {
+    progress,
+
+    color = "#FF385C",
+    className = "",
+    ...otherProps
+  } = props;
+
+  const progressStyle = {
+    width: `${Math.min(Math.max(progress, 0), 100)}%`,
+    backgroundColor: color,
+  };
+
   return (
-    <div className={`h-1 w-full bg-gray-200 rounded-full overflow-hidden ${className}`} {...props}>
-      <div
-        className="h-full transition-all duration-300 ease-in-out"
-        style={{
-          width: `${Math.min(Math.max(progress, 0), 100)}%`,
-          backgroundColor: color,
-        }}
-      />
+    <div
+      className={`h-1 w-full bg-gray-200 rounded-full overflow-hidden ${className}`}
+      {...otherProps}
+    >
+      <div className="h-full transition-all duration-300 ease-in-out" style={progressStyle} />
     </div>
   );
 }

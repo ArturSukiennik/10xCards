@@ -1,4 +1,5 @@
-import "@testing-library/jest-dom/vitest";
+/* eslint-disable */
+import "@testing-library/jest-dom";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 
@@ -41,3 +42,25 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
 
 // Suppress console errors during tests
 console.error = vi.fn();
+
+// Configure fetch API for tests
+global.fetch = vi.fn();
+
+// Configure AbortController for tests
+vi.stubGlobal(
+  "AbortController",
+  vi.fn(() => ({
+    signal: { aborted: false },
+    abort: vi.fn(),
+  })),
+);
+
+// Configure crypto for tests
+Object.defineProperty(global, "crypto", {
+  value: {
+    getRandomValues: vi.fn((buffer) => buffer),
+    subtle: {},
+    randomUUID: vi.fn(() => "test-uuid"),
+  },
+  configurable: true,
+});

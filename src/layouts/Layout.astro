@@ -1,3 +1,4 @@
+---
 import { ViewTransitions } from "astro:transitions";
 import "@/styles/globals.css";
 
@@ -21,6 +22,7 @@ const isPublicRoute = ["/login", "/register"].includes(Astro.url.pathname);
 if (!isAuthenticated && !isPublicRoute && !Astro.url.pathname.startsWith("/api/")) {
   return Astro.redirect("/login");
 }
+---
 
 <!doctype html>
 <html lang="en">

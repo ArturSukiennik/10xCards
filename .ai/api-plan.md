@@ -1,6 +1,7 @@
 # REST API Plan
 
 ## 1. Resources
+
 - **Users**: Maps to `users` table for authentication and user management
 - **Flashcards**: Maps to `flashcards` table for managing individual flashcards
 - **Generations**: Maps to `generations` table for tracking AI generation sessions
@@ -11,6 +12,7 @@
 ### Flashcards Endpoints
 
 #### List Flashcards
+
 - Method: GET
 - Path: `/flashcards`
 - Description: Get flashcards for the authenticated user
@@ -46,6 +48,7 @@
   - 401 Unauthorized (Not logged in)
 
 #### Get Flashcard
+
 - Method: GET
 - Path: `/flashcards/{id}`
 - Description: Get a specific flashcard
@@ -67,6 +70,7 @@
   - 404 Not Found (Flashcard not found)
 
 #### Create Flashcard (Manual)
+
 - Method: POST
 - Path: `/flashcards`
 - Description: Create a new flashcard manually
@@ -94,6 +98,7 @@
   - 401 Unauthorized (Not logged in)
 
 #### Create Multiple Flashcards
+
 - Method: POST
 - Path: `/flashcards/batch`
 - Description: Create multiple flashcards at once (supports manual creation and AI-generated flashcards)
@@ -117,7 +122,7 @@
         "source": "ai-edited"
       }
     ],
-    "generation_id": 123  // Optional, required only for AI-generated flashcards
+    "generation_id": 123 // Optional, required only for AI-generated flashcards
   }
   ```
 - Response Payload:
@@ -159,6 +164,7 @@
   - 404 Not Found (Generation not found, if generation_id is provided)
 
 #### Update Flashcard
+
 - Method: PUT
 - Path: `/flashcards/{id}`
 - Description: Update an existing flashcard
@@ -188,6 +194,7 @@
   - 404 Not Found (Flashcard not found)
 
 #### Delete Flashcard
+
 - Method: DELETE
 - Path: `/flashcards/{id}`
 - Description: Delete a flashcard
@@ -206,6 +213,7 @@
 ### Generation Endpoints
 
 #### Generate Flashcards
+
 - Method: POST
 - Path: `/generations`
 - Description: Generate flashcards from text using LLM
@@ -241,6 +249,7 @@
   - 502 Bad Gateway (AI service unavailable)
 
 #### Save Generated Flashcards
+
 - Method: POST
 - Path: `/generations/{generation_id}/save`
 - Description: Save accepted/edited flashcards from a generation
@@ -290,6 +299,7 @@
   - 404 Not Found (Generation not found)
 
 #### Get Generation Statistics
+
 - Method: GET
 - Path: `/generations/stats`
 - Description: Get statistics about flashcards generation for current user
@@ -313,7 +323,6 @@
 - Errors:
   - 401 Unauthorized (Not logged in)
 
-
 ## 3. Authentication and Authorization
 
 The API will use Supabase authentication:
@@ -330,21 +339,25 @@ The API will use Supabase authentication:
 ## 4. Validation and Business Logic
 
 ### User Validation
+
 - Email must be valid format
 - Password must be at least 8 characters
 
 ### Flashcard Validation
+
 - `front` field must be between 1 and 200 characters
 - `back` field must be between 1 and 500 characters
 - `source` must be one of: 'ai-full', 'ai-edited', 'manual'
 
 ### Generation Validation
+
 - `source_text` must be between 1,000 and 10,000 characters
 - `model` must be a valid model identifier
 
 ### Business Logic Implementation
+
 - The API will enforce all database constraints defined in the schema
 - Source text will be hashed for efficient storage and duplicate detection
 - AI-generated flashcards will be presented to the user for review before saving
 - When a user deletes their account, all associated data (flashcards, generations, logs) will be deleted
-- Error logging will capture issues during AI generation for monitoring and improvement 
+- Error logging will capture issues during AI generation for monitoring and improvement
