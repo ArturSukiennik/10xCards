@@ -41,11 +41,11 @@ export class TextInputSectionPage {
     await this.generateButton.click();
     // Wait for the button to show loading state
     await this.page.waitForSelector(
-      '[data-test-id="generate-flashcards-button"]:has-text("Generating...")'
+      '[data-test-id="generate-flashcards-button"]:has-text("Generating...")',
     );
     // Wait for the generation to complete (button text changes back)
     await this.page.waitForSelector(
-      '[data-test-id="generate-flashcards-button"]:has-text("Generate Flashcards")'
+      '[data-test-id="generate-flashcards-button"]:has-text("Generate Flashcards")',
     );
   }
 

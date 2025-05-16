@@ -39,7 +39,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             message: "Failed to create user account",
           },
         }),
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -51,7 +51,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         },
         message: "Check your email for the confirmation link.",
       }),
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -62,7 +62,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             details: error.errors,
           },
         }),
-        { status: 400 }
+        { status: 400 },
       );
     }
 

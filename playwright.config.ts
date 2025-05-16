@@ -22,32 +22,30 @@ for (const envVar of requiredEnvVars) {
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  fullyParallel: false, // Wyłączamy równoległe wykonywanie testów
+  fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 1, // Dodajemy 1 ponowną próbę nawet w trybie dev
-  workers: 1, // Wymuszamy jednego workera
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
   reporter: "html",
-  timeout: 300000, // Increased to 5 minutes for the entire test
+  timeout: 180000, // Zwiększamy timeout do 180 sekund dla całego testu
 
   use: {
     baseURL: process.env.TEST_BASE_URL || "http://localhost:3000",
-    trace: "retain-on-failure",
-    video: "retain-on-failure",
+    trace: "on-first-retry",
+    video: "on-first-retry",
     screenshot: "only-on-failure",
-    actionTimeout: 120000, // Increased to 2 minutes
-    navigationTimeout: 120000, // Increased to 2 minutes
+    actionTimeout: 60000, // Zwiększamy timeout akcji do 60 sekund
+    navigationTimeout: 60000, // Zwiększamy timeout nawigacji do 60 sekund
   },
 
   projects: [
     {
       name: "chromium",
-      use: {
-        ...devices["Desktop Chrome"],
-        viewport: { width: 1280, height: 720 },
-        launchOptions: {
-          args: ["--disable-gpu", "--no-sandbox", "--disable-setuid-sandbox"],
-        },
-      },
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
     },
   ],
 
@@ -55,6 +53,6 @@ export default defineConfig({
     command: "npm run dev",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
-    timeout: 180000, // Increased to 3 minutes
+    timeout: 120 * 1000, // 120 seconds
   },
 });

@@ -246,7 +246,9 @@ const flashcardSourceMapping = {
 } as const;
 
 // Helper do określania źródła fiszki
-function determineFlashcardSource(proposal: FlashcardProposalViewModel): FlashcardSource {
+function determineFlashcardSource(
+  proposal: FlashcardProposalViewModel,
+): FlashcardSource {
   if (proposal.status !== "accepted") {
     throw new Error("Cannot determine source for non-accepted flashcard");
   }

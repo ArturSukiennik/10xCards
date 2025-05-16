@@ -196,7 +196,7 @@ export class OpenRouterService {
             typeof card.front === "string" &&
             typeof card.back === "string" &&
             card.front.trim() !== "" &&
-            card.back.trim() !== ""
+            card.back.trim() !== "",
         );
 
         if (!validFlashcards) {
@@ -215,7 +215,7 @@ export class OpenRouterService {
           "Failed to parse AI response as JSON array of flashcards",
           "INVALID_RESPONSE_FORMAT",
           200,
-          { content: response.content }
+          { content: response.content },
         );
       }
     } catch (error) {
@@ -302,7 +302,7 @@ export class OpenRouterService {
           "Invalid API response format",
           "INVALID_RESPONSE",
           response.status,
-          { response: data }
+          { response: data },
         );
       }
 
@@ -323,7 +323,7 @@ export class OpenRouterService {
   // Private helper method for executing requests with retry logic
   private async executeWithRetry<T>(
     operation: () => Promise<T>,
-    retries: number = this.config.maxRetries
+    retries: number = this.config.maxRetries,
   ): Promise<T> {
     let lastError: Error | null = null;
 

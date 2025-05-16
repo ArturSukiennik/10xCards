@@ -7,7 +7,6 @@ import { Link } from "@/components/ui/link";
 
 const resetSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
 });
 
 export function PasswordResetForm() {
@@ -21,8 +20,7 @@ export function PasswordResetForm() {
     try {
       // Note: Backend implementation will be added later
       console.log("Password reset attempt:", data);
-    } catch (err) {
-      console.error("Password reset error:", err);
+    } catch {
       setError("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);

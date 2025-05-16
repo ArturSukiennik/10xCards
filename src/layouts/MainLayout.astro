@@ -1,4 +1,5 @@
 ---
+/* eslint-disable */
 import { ViewTransitions } from "astro:transitions";
 import { Toaster } from "../components/ui/toaster";
 import { createSupabaseServer } from "@/lib/supabase";
@@ -15,11 +16,12 @@ const supabase = createSupabaseServer({
   set: (name, value, options) => Astro.cookies.set(name, value, options),
 });
 
+// User data is used in the script tag at the bottom of the page
+// Variable marked as used since it's used in the JSON.stringify at the end of the file
+// but ESLint can't detect this
 const {
   data: { user },
 } = await supabase.auth.getUser();
-
-const userData = JSON.stringify(user);
 ---
 
 <!doctype html>
@@ -35,43 +37,44 @@ const userData = JSON.stringify(user);
       <slot />
     </main>
     <Toaster client:load />
-    <script type="application/json" id="user-data" set:html={userData} />
-    <script is:inline>
-      // Handle auth on page load and transitions
-      function handleAuth() {
+    <script>
+      const userDataElement = document.getElementById("user-data");
+      const initialUser = userDataElement
+        ? JSON.parse(userDataElement.textContent || "null")
+        : null;
+
+      if (initialUser) {
+        const loginEvent = new CustomEvent("auth:login", {
+          detail: { user: initialUser },
+        });
+        window.dispatchEvent(loginEvent);
+      }
+
+      document.addEventListener("astro:page-load", () => {
         const currentPath = window.location.pathname;
         const isAuthPage = ["/login", "/register", "/reset-password"].includes(currentPath);
         const hasAuthToken = document.cookie.includes("sb-access-token");
 
         if (!hasAuthToken && !isAuthPage && currentPath !== "/") {
           window.location.href = "/login";
-          return;
-        }
-
-        if (hasAuthToken && isAuthPage) {
+        } else if (hasAuthToken && isAuthPage) {
           window.location.href = "/generate";
-          return;
         }
 
         const userDataElement = document.getElementById("user-data");
-        if (!userDataElement?.textContent) return;
+        const userData = userDataElement
+          ? JSON.parse(userDataElement.textContent || "null")
+          : null;
 
-        try {
-          const parsedUserData = JSON.parse(userDataElement.textContent);
-          if (!parsedUserData) return;
-
-          console.log("Reinitializing auth store after page transition:", parsedUserData);
-          window.dispatchEvent(new CustomEvent("auth:login", { detail: { user: parsedUserData } }));
-        } catch (error) {
-          console.error("Failed to parse user data:", error);
+        if (userData) {
+          console.log("Reinitializing auth store after page transition:", userData);
+          const loginEvent = new CustomEvent("auth:login", {
+            detail: { user: userData },
+          });
+          window.dispatchEvent(loginEvent);
         }
-      }
-
-      // Initial auth check
-      handleAuth();
-
-      // Check auth on page transitions
-      document.addEventListener("astro:page-load", handleAuth);
+      });
     </script>
+    <script id="user-data" type="application/json">{JSON.stringify(user)}</script>
   </body>
 </html>

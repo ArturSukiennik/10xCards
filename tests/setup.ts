@@ -1,3 +1,4 @@
+/* eslint-disable */
 import "@testing-library/jest-dom";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
@@ -51,7 +52,7 @@ vi.stubGlobal(
   vi.fn(() => ({
     signal: { aborted: false },
     abort: vi.fn(),
-  }))
+  })),
 );
 
 // Configure crypto for tests

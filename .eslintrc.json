@@ -1,58 +1,23 @@
 {
-  "extends": ["plugin:astro/recommended", "plugin:@typescript-eslint/recommended"],
-  "plugins": ["@typescript-eslint", "astro"],
-  "parser": "@typescript-eslint/parser",
+  "extends": ["plugin:astro/recommended"],
   "rules": {
-    "linebreak-style": "off",
-    "no-console": ["warn", { "allow": ["warn", "error", "info", "debug"] }],
-    "@typescript-eslint/no-unused-expressions": "warn",
-    "@typescript-eslint/no-empty-function": "warn",
-    "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/consistent-type-definitions": "off",
-    "@typescript-eslint/array-type": ["error", { "default": "array" }],
-    "@typescript-eslint/consistent-indexed-object-style": "off",
-    "@typescript-eslint/no-empty-object-type": "off",
-    "@typescript-eslint/triple-slash-reference": "off",
-    "@typescript-eslint/no-unused-vars": "off"
+    "linebreak-style": "off"
   },
-  "ignorePatterns": [
-    "playwright-report/**/*",
-    "dist/**/*",
-    "node_modules/**/*",
-    ".astro",
-    "*.astro"
-  ],
   "overrides": [
     {
-      "files": ["tests/**/*", "src/tests/**/*", "**/*.test.*", "**/*.spec.*", "**/*.e2e.*"],
-      "rules": {
-        "no-console": "off",
-        "@typescript-eslint/no-unused-expressions": "off",
-        "@typescript-eslint/no-empty-function": "off"
-      }
-    },
-    {
-      "files": [
-        "src/middleware/**/*",
-        "src/lib/services/**/*",
-        "src/lib/logger/**/*",
-        "src/pages/api/**/*",
-        "src/components/auth/**/*"
-      ],
-      "rules": {
-        "no-console": ["warn", { "allow": ["log", "warn", "error", "info", "debug"] }]
-      }
+      "files": ["*.astro"],
+      "parser": "astro-eslint-parser"
     },
     {
       "files": [".astro/**/*.d.ts"],
       "rules": {
         "@typescript-eslint/no-explicit-any": "off",
-        "@typescript-eslint/consistent-type-definitions": "off",
         "@typescript-eslint/array-type": "off",
         "@typescript-eslint/consistent-indexed-object-style": "off",
+        "@typescript-eslint/consistent-type-definitions": "off",
+        "@typescript-eslint/unified-signatures": "off",
         "@typescript-eslint/no-empty-object-type": "off",
-        "@typescript-eslint/triple-slash-reference": "off",
-        "@typescript-eslint/unified-signatures": "off"
+        "@typescript-eslint/triple-slash-reference": "off"
       }
     }
   ]

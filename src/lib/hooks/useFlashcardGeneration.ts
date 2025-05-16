@@ -74,7 +74,7 @@ export function useFlashcardGeneration() {
             back: card.back,
           },
           hasBeenEdited: false,
-        })
+        }),
       );
 
       setState((prev) => ({
@@ -107,7 +107,7 @@ export function useFlashcardGeneration() {
               hasBeenEdited: true,
               isEditing: false,
             }
-          : card
+          : card,
       ),
     }));
   };

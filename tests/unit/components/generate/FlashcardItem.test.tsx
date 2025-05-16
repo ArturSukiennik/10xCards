@@ -27,7 +27,7 @@ describe("FlashcardItem", () => {
         flashcard={flashcard}
         onUpdate={mockOnUpdate}
         onStatusChange={mockOnStatusChange}
-      />
+      />,
     );
   };
 

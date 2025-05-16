@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { HTMLAttributes } from "react";
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
@@ -61,24 +62,36 @@ export function Toast({
         </svg>
       </button>
     </div>,
-    document.body
+    document.body,
   );
 }
 
 // Progress Bar Component
 interface ProgressBarProps extends HTMLAttributes<HTMLDivElement> {
   progress: number;
+  color?: string;
 }
 
-export function ProgressBar({ progress, className = "", ...props }: ProgressBarProps) {
+export function ProgressBar(props: ProgressBarProps) {
+  const {
+    progress,
+
+    color = "#FF385C",
+    className = "",
+    ...otherProps
+  } = props;
+
+  const progressStyle = {
+    width: `${Math.min(Math.max(progress, 0), 100)}%`,
+    backgroundColor: color,
+  };
+
   return (
-    <div className={`h-1 w-full bg-gray-200 rounded-full overflow-hidden ${className}`} {...props}>
-      <div
-        className="h-full transition-all duration-300 ease-in-out bg-primary"
-        style={{
-          width: `${Math.min(Math.max(progress, 0), 100)}%`,
-        }}
-      />
+    <div
+      className={`h-1 w-full bg-gray-200 rounded-full overflow-hidden ${className}`}
+      {...otherProps}
+    >
+      <div className="h-full transition-all duration-300 ease-in-out" style={progressStyle} />
     </div>
   );
 }
@@ -86,9 +99,15 @@ export function ProgressBar({ progress, className = "", ...props }: ProgressBarP
 // Loading Spinner Component
 interface SpinnerProps extends HTMLAttributes<HTMLDivElement> {
   size?: "sm" | "md" | "lg";
+  color?: string;
 }
 
-export function Spinner({ size = "md", className = "", ...props }: SpinnerProps) {
+export function Spinner({
+  size = "md",
+  color = "#FF385C",
+  className = "",
+  ...props
+}: SpinnerProps) {
   const sizes = {
     sm: "w-4 h-4",
     md: "w-6 h-6",

@@ -18,7 +18,7 @@ export class FlashcardsService {
 
   async getFlashcards(
     userId: string,
-    options: { page: number; limit: number }
+    options: { page: number; limit: number },
   ): Promise<FlashcardListResponseDto> {
     const { page, limit } = options;
     const offset = (page - 1) * limit;
@@ -78,7 +78,7 @@ export class FlashcardsService {
 
   async createFlashcards(
     userId: string,
-    dto: CreateFlashcardBatchSchema
+    dto: CreateFlashcardBatchSchema,
   ): Promise<CreateMultipleFlashcardsResponseDto> {
     const validationResult = createFlashcardBatchSchema.safeParse(dto);
 

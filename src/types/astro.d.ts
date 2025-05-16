@@ -19,7 +19,7 @@ export interface MiddlewareContext {
 
 export type MiddlewareHandler = (
   context: MiddlewareContext,
-  next: MiddlewareNext
+  next: MiddlewareNext,
 ) => Promise<Response> | Response;
 
 // Need this to be a module

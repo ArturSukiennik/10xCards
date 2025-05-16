@@ -44,7 +44,7 @@ export class TextInputSectionPage {
     await this.page.waitForSelector('[data-test-id="generate-button"]:has-text("Generating...")');
     // Wait for the generation to complete (button text changes back)
     await this.page.waitForSelector(
-      '[data-test-id="generate-button"]:has-text("Generate Flashcards")'
+      '[data-test-id="generate-button"]:has-text("Generate Flashcards")',
     );
   }
 

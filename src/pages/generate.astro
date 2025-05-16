@@ -16,7 +16,7 @@ const {
 } = await supabase.auth.getUser();
 
 // If not authenticated, redirect to login
-if (!user || !user.email) {
+if (!user) {
   return Astro.redirect("/login");
 }
 ---

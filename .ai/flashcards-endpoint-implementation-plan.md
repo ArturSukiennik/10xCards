@@ -180,10 +180,13 @@ Kody odpowiedzi:
    ```typescript
    // src/services/flashcards.service.ts
    export class FlashcardsService {
-     async createFlashcard(userId: string, dto: CreateFlashcardDTO): Promise<FlashcardResponseDTO>;
+     async createFlashcard(
+       userId: string,
+       dto: CreateFlashcardDTO,
+     ): Promise<FlashcardResponseDTO>;
      async createFlashcards(
        userId: string,
-       dto: CreateFlashcardBatchDTO
+       dto: CreateFlashcardBatchDTO,
      ): Promise<FlashcardBatchResponseDTO>;
      private validateFlashcard(flashcard: CreateFlashcardDTO): void;
      private validateBatchRequest(dto: CreateFlashcardBatchDTO): void;

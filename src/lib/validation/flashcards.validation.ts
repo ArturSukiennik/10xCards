@@ -32,7 +32,7 @@ export const createFlashcardBatchSchema = z
           source: z.nativeEnum(FlashcardSource, {
             errorMap: () => ({ message: "Invalid flashcard source" }),
           }),
-        })
+        }),
       )
       .min(1, "Flashcards array cannot be empty")
       .max(MAX_BATCH_SIZE, `Cannot create more than ${MAX_BATCH_SIZE} flashcards at once`),
@@ -41,14 +41,14 @@ export const createFlashcardBatchSchema = z
   .refine(
     (data) => {
       const hasAiFlashcards = data.flashcards.some(
-        (f) => f.source === FlashcardSource.AI_FULL || f.source === FlashcardSource.AI_EDITED
+        (f) => f.source === FlashcardSource.AI_FULL || f.source === FlashcardSource.AI_EDITED,
       );
       return !hasAiFlashcards || (hasAiFlashcards && data.generation_id !== undefined);
     },
     {
       message: "generation_id is required for AI-generated flashcards",
       path: ["generation_id"],
-    }
+    },
   );
 
 export type CreateFlashcardSchema = z.infer<typeof createFlashcardSchema>;

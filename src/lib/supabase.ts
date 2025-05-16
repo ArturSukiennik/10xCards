@@ -23,6 +23,19 @@ try {
   throw new Error("Invalid Supabase URL format");
 }
 
+// Create the default supabase client
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+  },
+  global: {
+    headers: {
+      "x-application-name": "10xCards",
+    },
+  },
+});
+
 export const cookieOptions: CookieOptions = {
   path: "/",
   secure: import.meta.env.PROD,
@@ -65,23 +78,6 @@ export const createSupabaseServer = (cookies: {
       remove: (name: string, options?: CookieOptions) => {
         console.log("Removing cookie:", name);
         cookies.set(name, "", { ...options, maxAge: 0 });
-      },
-    },
-    auth: {
-      flowType: "pkce",
-      detectSessionInUrl: true,
-      persistSession: true,
-      autoRefreshToken: true,
-    },
-    global: {
-      headers: {
-        "x-application-name": "10xCards",
-      },
-      fetch: (url, options) => {
-        return fetch(url, {
-          ...options,
-          signal: AbortSignal.timeout(30000), // 30 second timeout
-        });
       },
     },
   });

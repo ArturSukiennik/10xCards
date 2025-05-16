@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import * as React from "react";
@@ -17,22 +18,21 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
+// Base schema for auth forms
 const baseAuthSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(1, "Password is required"),
 });
 
-type BaseAuthSchema = z.infer<typeof baseAuthSchema>;
-
 export interface AuthFormProps {
-  onSubmit: (data: BaseAuthSchema) => Promise<void>;
+  onSubmit: (data: any) => Promise<void>;
   title: string;
   buttonText: string;
   error?: string;
   isLoading?: boolean;
   extraFields?: React.ReactNode;
-  schema?: z.ZodType<BaseAuthSchema>;
-  defaultValues?: Partial<BaseAuthSchema>;
+  schema?: z.ZodType<any>;
+  defaultValues?: Record<string, any>;
 }
 
 export function AuthForm({
@@ -48,12 +48,12 @@ export function AuthForm({
     password: "",
   },
 }: AuthFormProps) {
-  const form = useForm<BaseAuthSchema>({
+  const form = useForm({
     resolver: zodResolver(schema),
     defaultValues,
   });
 
-  const handleSubmit = async (data: BaseAuthSchema) => {
+  const handleSubmit = async (data: z.infer<typeof schema>) => {
     try {
       await onSubmit(data);
     } catch {

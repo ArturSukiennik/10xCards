@@ -25,7 +25,7 @@ function ensureInitialized() {
   if (!openRouterService) {
     if (!currentConfig.apiKey || currentConfig.apiKey === "") {
       throw new Error(
-        "OpenRouter API key is not configured. Please set OPENROUTER_API_KEY environment variable in .env file."
+        "OpenRouter API key is not configured. Please set OPENROUTER_API_KEY environment variable in .env file.",
       );
     }
     try {
@@ -48,7 +48,7 @@ function ensureInitialized() {
 export function initialize(config: OpenRouterConfig) {
   if (!config.apiKey || config.apiKey === "") {
     throw new Error(
-      "OpenRouter API key is not configured. Please set OPENROUTER_API_KEY environment variable in .env file."
+      "OpenRouter API key is not configured. Please set OPENROUTER_API_KEY environment variable in .env file.",
     );
   }
   currentConfig = config;
@@ -82,7 +82,7 @@ function validateFlashcardLength(front: string, back: string, index: number): vo
  * @returns Generated flashcards with generation ID
  */
 export async function generateFlashcards(
-  sourceText: string
+  sourceText: string,
 ): Promise<GenerateFlashcardsResponseDto> {
   try {
     const service = ensureInitialized();

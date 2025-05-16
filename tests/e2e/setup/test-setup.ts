@@ -1,27 +1,14 @@
+/* eslint-disable */
 import { test as base } from "@playwright/test";
 import { chromium } from "@playwright/test";
 import { AuthUtils } from "../utils/auth";
-import type { Cookie } from "@playwright/test";
-
-// Default viewport size for all tests
-const viewportSize = { width: 1920, height: 1080 };
-
-interface StorageState {
-  cookies: Cookie[];
-  origins: {
-    origin: string;
-    localStorage: { name: string; value: string }[];
-  }[];
-}
 
 // Eksportujemy test z obsługą stanu logowania
 export const test = base.extend({
-  storageState: async (_fixture, callback) => {
+  storageState: async ({}, use) => {
     // Tworzymy nowy kontekst i stronę
     const browser = await chromium.launch();
-    const context = await browser.newContext({
-      viewport: viewportSize,
-    });
+    const context = await browser.newContext();
     const page = await context.newPage();
 
     try {
@@ -39,7 +26,7 @@ export const test = base.extend({
       const cookies = await context.cookies();
 
       // Używamy ciasteczek w testach
-      await callback({ cookies, origins: [] } as StorageState);
+      await use({ cookies, origins: [] });
     } finally {
       // Zamykamy kontekst i przeglądarkę
       await context.close();

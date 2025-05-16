@@ -23,7 +23,7 @@ class OpenRouterService {
       maxRetries?: number;
       timeout?: number;
       baseUrl?: string;
-    }
+    },
   ) {
     // Walidacja konfiguracji
     if (!config.apiKey) throw new Error("API key is required");
@@ -108,7 +108,7 @@ class OpenRouterError extends Error {
     message: string,
     public readonly code: string,
     public readonly status?: number,
-    public readonly details?: unknown
+    public readonly details?: unknown,
   ) {
     super(message);
   }
